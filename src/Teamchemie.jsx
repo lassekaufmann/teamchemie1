@@ -981,6 +981,7 @@ export default function Teamchemie({ user, onLogout }) {
       setChat(prev=>[...prev, msg]);
     }
   }
+  async function sendAiMessage() {
   function saveNumber(pid){
     const n=parseInt(numInput);
     if(!isNaN(n)&&n>0&&n<=99){setPlayers(prev=>prev.map(p=>p.id===pid?{...p,number:n}:p));showNotif("Rückennummer gespeichert");}
@@ -1319,24 +1320,47 @@ export default function Teamchemie({ user, onLogout }) {
 
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-          <div>
-            <div style={{fontSize:26,fontWeight:900,letterSpacing:"-0.5px"}}>
-              <span style={{color:C.white}}>Team</span><span style={{color:C.accent}}>chemie</span>
-            </div>
-            <div style={{color:C.grayDark,fontSize:11,marginTop:1}}>
-              {user?.teamName || "FC Beispiel"} · {isTrainer ? "Trainer" : user?.name || "Spieler"}
-            </div>
-            {isTrainer && user?.teamCode && (
-              <div style={{color:C.accent,fontSize:11,marginTop:2,fontWeight:600}}>
-                Team-Code: {user.teamCode}
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            {/* Logo Icon */}
+            <svg width="32" height="32" viewBox="230 16 220 220" style={{flexShrink:0}}>
+              <rect x="230" y="16" width="220" height="220" rx="22" fill="#1a1a35" stroke="rgba(200,74,255,0.5)" strokeWidth="2"/>
+              <rect x="252" y="36" width="176" height="180" rx="2" fill="none" stroke="rgba(200,74,255,0.55)" strokeWidth="2.5"/>
+              <line x1="252" y1="126" x2="428" y2="126" stroke="rgba(200,74,255,0.55)" strokeWidth="2.5"/>
+              <circle cx="340" cy="126" r="22" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="2"/>
+              <rect x="288" y="36" width="104" height="33" rx="1.5" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="2"/>
+              <rect x="317" y="36" width="46" height="11" rx="1" fill="none" stroke="rgba(200,74,255,0.35)" strokeWidth="1.5"/>
+              <rect x="326" y="29" width="28" height="8" rx="1" fill="none" stroke="rgba(200,74,255,0.65)" strokeWidth="2"/>
+              <path d="M322 69 A18 18 0 0 0 358 69" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="1.5"/>
+              <rect x="288" y="183" width="104" height="33" rx="1.5" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="2"/>
+              <rect x="317" y="205" width="46" height="11" rx="1" fill="none" stroke="rgba(200,74,255,0.35)" strokeWidth="1.5"/>
+              <rect x="326" y="215" width="28" height="8" rx="1" fill="none" stroke="rgba(200,74,255,0.65)" strokeWidth="2"/>
+              <path d="M322 183 A18 18 0 0 1 358 183" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="1.5"/>
+              <ellipse cx="340" cy="126" rx="54" ry="21" fill="none" stroke="#c84aff" strokeWidth="2.5" opacity="0.85"/>
+              <ellipse cx="340" cy="126" rx="54" ry="21" fill="none" stroke="#c84aff" strokeWidth="2" opacity="0.5" transform="rotate(60,340,126)"/>
+              <ellipse cx="340" cy="126" rx="54" ry="21" fill="none" stroke="#c84aff" strokeWidth="1.5" opacity="0.3" transform="rotate(120,340,126)"/>
+              <circle cx="340" cy="126" r="8" fill="#c84aff"/>
+              <circle cx="394" cy="126" r="5" fill="#c84aff" opacity="0.9"/>
+              <circle cx="313" cy="111" r="4" fill="#c84aff" opacity="0.7"/>
+            </svg>
+            <div>
+              <div style={{fontSize:22,fontWeight:900,letterSpacing:"-0.5px",lineHeight:1}}>
+                <span style={{color:C.white}}>Team</span><span style={{color:C.accent}}>chemie</span>
               </div>
-            )}
+              <div style={{color:C.grayDark,fontSize:11,marginTop:2}}>
+                {user?.teamName || "FC Beispiel"} · {isTrainer ? "Trainer" : user?.name || "Spieler"}
+              </div>
+              {isTrainer && user?.teamCode && (
+                <div style={{color:C.accent,fontSize:10,marginTop:1,fontWeight:600}}>
+                  Code: {user.teamCode}
+                </div>
+              )}
+            </div>
           </div>
           <button onClick={()=>setShowSettings(true)} style={{
             width:36,height:36,borderRadius:"50%",background:C.surface,
             border:`1px solid ${C.border}`,cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center",
-            color:C.gray,fontSize:17,
+            color:C.gray,fontSize:17,flexShrink:0,
           }}>⚙</button>
         </div>
 
