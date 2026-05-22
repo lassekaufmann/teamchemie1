@@ -955,7 +955,36 @@ export default function Teamchemie({ user, onLogout }) {
     setEditingNum(null);setNumInput("");
   }
   function chooseTactic(t){setTactic(t);setTacticReleased(false);setSwapFirst(null);setFieldSelected(null);showNotif(`"${t.name}" ausgewählt — noch nicht freigegeben`);}
-  function releaseTactic(){setReleasedTactic(tactic);setTacticReleased(true);showNotif(`"${tactic.name}" an alle Spieler freigegeben`);}
+  // Taktik aus Firebase laden (für Spieler)
+  useEffect(() => {
+    if (!user?.teamCode) return;
+    const unsub = onSnapshot(doc(db, "teams", user.teamCode), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.releasedTacticId) {
+        const found = [...ALL_TACTICS, ...customTactics].find(t => t.id === data.releasedTacticId);
+        if (found) {
+          setReleasedTactic(found);
+          if (!isTrainer) setTactic(found);
+        }
+      }
+    });
+    return unsub;
+  }, [user?.teamCode, customTactics]);
+
+  function releaseTactic(){
+    setReleasedTactic(tactic);
+    setTacticReleased(true);
+    // In Firebase speichern
+    if (user?.teamCode) {
+      updateDoc(doc(db, "teams", user.teamCode), {
+        releasedTacticId:   tactic.id,
+        releasedTacticName: tactic.name,
+        releasedTacticNote: tactic.note,
+      }).catch(console.error);
+    }
+    showNotif(`"${tactic.name}" an alle Spieler freigegeben`);
+  }
   function handleFieldTap(idx){
     if (typeof swapFirst === "string" && swapFirst.startsWith("bank_")) {
       // Bankspieler wurde zuerst gewählt, jetzt Feldspieler
