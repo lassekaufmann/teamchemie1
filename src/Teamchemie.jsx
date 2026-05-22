@@ -814,9 +814,10 @@ function TacticEditor({players, onSave, onClose}) {
 }
 
 // ── HAUPTKOMPONENTE ───────────────────────────────────────
-export default function Teamchemie() {
-  const [view,setView]         = useState("trainer");
-  const [tab,setTab]           = useState("feld");
+export default function Teamchemie({ user, onLogout }) {
+  const isTrainer = user?.role === "trainer";
+  const [view,setView]         = useState(user?.role || "player");
+  const [tab,setTab]           = useState(isTrainer ? "feld" : "status");
   const [players,setPlayers]   = useState(INIT_PLAYERS);
   const [order,setOrder]       = useState(INIT_PLAYERS.map(p=>p.id));
   const [tactic,setTactic]     = useState(ALL_TACTICS[0]);
@@ -1119,7 +1120,14 @@ export default function Teamchemie() {
             <div style={{fontSize:26,fontWeight:900,letterSpacing:"-0.5px"}}>
               <span style={{color:C.white}}>Team</span><span style={{color:C.accent}}>chemie</span>
             </div>
-            <div style={{color:C.grayDark,fontSize:11,marginTop:1}}>FC Beispiel · Saison 2025/26</div>
+            <div style={{color:C.grayDark,fontSize:11,marginTop:1}}>
+              {user?.teamName || "FC Beispiel"} · {isTrainer ? "Trainer" : user?.name || "Spieler"}
+            </div>
+            {isTrainer && user?.teamCode && (
+              <div style={{color:C.accent,fontSize:11,marginTop:2,fontWeight:600}}>
+                Team-Code: {user.teamCode}
+              </div>
+            )}
           </div>
           <button onClick={()=>setShowSettings(true)} style={{
             width:36,height:36,borderRadius:"50%",background:C.surface,
@@ -1143,16 +1151,18 @@ export default function Teamchemie() {
 
               {/* Account */}
               <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Account</div>
-              {[
-                {label:"Profil bearbeiten",     icon:"—"},
-                {label:"Passwort ändern",        icon:"—"},
-                {label:"Benachrichtigungen",     icon:"—"},
-              ].map(item=>(
-                <div key={item.label} style={{display:"flex",alignItems:"center",gap:14,padding:"13px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
-                  <span style={{color:C.grayLight,fontSize:13,flex:1}}>{item.label}</span>
-                  <span style={{color:C.grayDark,fontSize:14}}>›</span>
+              <div style={{background:C.surface,borderRadius:12,padding:14,marginBottom:12,border:`1px solid ${C.border}`}}>
+                <div style={{color:C.white,fontWeight:700,fontSize:14}}>{user?.name}</div>
+                <div style={{color:C.gray,fontSize:12,marginTop:2}}>{user?.email}</div>
+                <div style={{color:C.accent,fontSize:11,marginTop:4}}>{isTrainer?"Trainer":"Spieler"} · {user?.teamName}</div>
+              </div>
+              {isTrainer && user?.teamCode && (
+                <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:14,marginBottom:12}}>
+                  <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Team-Code für Spieler</div>
+                  <div style={{color:C.accent,fontSize:28,fontWeight:900,letterSpacing:4,textAlign:"center"}}>{user.teamCode}</div>
+                  <div style={{color:C.gray,fontSize:11,textAlign:"center",marginTop:6}}>Teile diesen Code mit deinen Spielern</div>
                 </div>
-              ))}
+              )}
 
               {/* Abo */}
               <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,marginTop:20}}>Abo</div>
@@ -1188,24 +1198,14 @@ export default function Teamchemie() {
                 </div>
               ))}
 
-              <button style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:20}}>
+              <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:20}}>
                 Abmelden
               </button>
             </div>
           </div>
         )}
 
-        {/* Role Switch */}
-        <div style={{display:"flex",background:C.surface,borderRadius:10,padding:3,marginBottom:20,border:`1px solid ${C.border}`}}>
-          {[["trainer","Trainer"],["player","Spieler (Lars)"]].map(([key,label])=>(
-            <button key={key} onClick={()=>{setView(key);setTab(key==="trainer"?"feld":"status");setSwapFirst(null);setFieldSelected(null);}}
-              style={{flex:1,padding:"9px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:12,fontFamily:"inherit",transition:"all 0.15s",
-                background:view===key?(key==="trainer"?C.accentDim:C.surface2):"transparent",
-                color:view===key?(key==="trainer"?C.accent:C.grayLight):C.gray}}>
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Rolle wird aus Login bestimmt - kein manueller Umschalter */}
 
         {/* ── TRAINER ── */}
         {view==="trainer"&&<>
