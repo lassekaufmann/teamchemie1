@@ -1256,8 +1256,16 @@ export default function Teamchemie({ user, onLogout }) {
               {isTrainer && user?.teamCode && (
                 <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:14,marginBottom:12}}>
                   <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Team-Code für Spieler</div>
-                  <div style={{color:C.accent,fontSize:28,fontWeight:900,letterSpacing:4,textAlign:"center"}}>{user.teamCode}</div>
-                  <div style={{color:C.gray,fontSize:11,textAlign:"center",marginTop:6}}>Teile diesen Code mit deinen Spielern</div>
+                  <div style={{color:C.accent,fontSize:28,fontWeight:900,letterSpacing:4,textAlign:"center",marginBottom:10}}>{user.teamCode}</div>
+                  <div style={{color:C.gray,fontSize:11,textAlign:"center",marginBottom:12}}>Teile diesen Code mit deinen Spielern</div>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`Hey! Lade dich zu unserem Team auf Teamchemie ein.\n\n1. App öffnen: https://teamchemie1.vercel.app\n2. Als Spieler registrieren\n3. Team-Code eingeben: ${user.teamCode}\n\nBis gleich!`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{display:"block",background:"#25D366",border:"none",borderRadius:10,color:"#fff",padding:"12px",cursor:"pointer",fontSize:13,fontWeight:700,textAlign:"center",textDecoration:"none"}}
+                  >
+                    Per WhatsApp einladen
+                  </a>
                 </div>
               )}
 
