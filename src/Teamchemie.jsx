@@ -858,6 +858,21 @@ export default function Teamchemie({ user, onLogout }) {
   const [playerMenu,setPlayerMenu]       = useState(null);
   const [showSettings,setShowSettings]   = useState(false);
   const [standards,setStandards] = useState({elfmeter:10, freistoss:6, eckeLinks:9, eckeRechts:5});
+  const [swipeStartX, setSwipeStartX]   = useState(null);
+
+  const trainerTabs = ["feld","spieler","taktik","chat","ai"];
+  const playerTabs  = ["status","feld","chat"];
+
+  function handleSwipe(endX) {
+    if (swipeStartX === null) return;
+    const dx = endX - swipeStartX;
+    if (Math.abs(dx) < 50) return;
+    const tabs = isTrainer ? trainerTabs : playerTabs;
+    const idx  = tabs.indexOf(tab);
+    if (dx < 0 && idx < tabs.length-1) setTab(tabs[idx+1]);
+    if (dx > 0 && idx > 0)             setTab(tabs[idx-1]);
+    setSwipeStartX(null);
+  }
   const [trainerAttributes, setTrainerAttributes] = useState({}); // {uid: {gesamtwertung:8, potenzial:7, ...}}
   const [trainerStrengths, setTrainerStrengths] = useState({}); // {uid: ["abschluss", ...]}
   const [aiMessages, setAiMessages] = useState([]);
@@ -1341,7 +1356,10 @@ Gib konkrete, kurze und hilfreiche Antworten auf Deutsch. Beziehe dich immer auf
   // ── HAUPTANSICHT ──────────────────────────────────────────
   const ruheCount=players.filter(p=>p.ruhe).length;
   return (
-    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",color:C.white}}>
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",color:C.white}}
+      onTouchStart={e=>setSwipeStartX(e.touches[0].clientX)}
+      onTouchEnd={e=>handleSwipe(e.changedTouches[0].clientX)}
+    >
       <div style={{maxWidth:440,margin:"0 auto",padding:"20px 20px 48px"}}>
 
         {/* Header */}
@@ -1439,6 +1457,24 @@ Gib konkrete, kurze und hilfreiche Antworten auf Deutsch. Beziehe dich immer auf
               <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:20}}>
                 Abmelden
               </button>
+
+              {/* Impressum */}
+              <div style={{marginTop:24,paddingTop:20,borderTop:`1px solid ${C.border}`}}>
+                <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:12}}>Rechtliches</div>
+                <div style={{color:C.grayDark,fontSize:12,lineHeight:1.8}}>
+                  <div style={{color:C.grayLight,fontWeight:600,marginBottom:4}}>Teamchemie</div>
+                  <div>Lasse Kaufmann</div>
+                  <div>Frankfurt am Main</div>
+                  <div>Deutschland</div>
+                  <div style={{marginTop:8}}>Kontakt: lassekaufmann01@gmail.com</div>
+                  <div style={{marginTop:8,color:C.grayDark,fontSize:11}}>
+                    Diese App befindet sich in der Entwicklung. Alle Daten werden über Firebase (Google) gespeichert.
+                  </div>
+                  <div style={{marginTop:8,color:C.grayDark,fontSize:11}}>
+                    Version 1.0.0 · © 2025 Teamchemie
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
