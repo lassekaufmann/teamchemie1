@@ -857,6 +857,7 @@ export default function Teamchemie({ user, onLogout }) {
   const [confirmRemove,setConfirmRemove] = useState(null);
   const [playerMenu,setPlayerMenu]       = useState(null);
   const [showSettings,setShowSettings]   = useState(false);
+  const [showImpressum,setShowImpressum] = useState(false);
   const [standards,setStandards] = useState({elfmeter:10, freistoss:6, eckeLinks:9, eckeRechts:5});
   const [swipeStartX, setSwipeStartX]   = useState(null);
 
@@ -1445,7 +1446,6 @@ Gib konkrete, kurze und hilfreiche Antworten auf Deutsch. Beziehe dich immer auf
               <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,marginTop:20}}>Sonstiges</div>
               {[
                 {label:"Datenschutz"},
-                {label:"Impressum"},
                 {label:"App-Version 1.0"},
               ].map(item=>(
                 <div key={item.label} style={{display:"flex",alignItems:"center",gap:14,padding:"13px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
@@ -1454,27 +1454,28 @@ Gib konkrete, kurze und hilfreiche Antworten auf Deutsch. Beziehe dich immer auf
                 </div>
               ))}
 
+              {/* Impressum aufklappbar */}
+              <div onClick={()=>setShowImpressum(p=>!p)}
+                style={{display:"flex",alignItems:"center",padding:"13px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
+                <span style={{color:C.grayLight,fontSize:13,flex:1}}>Impressum</span>
+                <span style={{color:C.grayDark,fontSize:14}}>{showImpressum?"∨":"›"}</span>
+              </div>
+              {showImpressum&&(
+                <div style={{background:C.surface,borderRadius:10,padding:14,margin:"8px 0",border:`1px solid ${C.border}`}}>
+                  <div style={{color:C.grayLight,fontWeight:600,marginBottom:8,fontSize:13}}>Teamchemie</div>
+                  <div style={{color:C.gray,fontSize:12,lineHeight:1.9}}>
+                    <div>Lasse Kaufmann</div>
+                    <div>Frankfurt am Main, Deutschland</div>
+                    <div style={{marginTop:6}}>lassekaufmann01@gmail.com</div>
+                    <div style={{marginTop:8,color:C.grayDark,fontSize:11}}>Diese App befindet sich in der Entwicklung. Daten werden über Firebase (Google) gespeichert.</div>
+                    <div style={{marginTop:4,color:C.grayDark,fontSize:11}}>Version 1.0.0 · © 2025 Teamchemie</div>
+                  </div>
+                </div>
+              )}
+
               <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:20}}>
                 Abmelden
               </button>
-
-              {/* Impressum */}
-              <div style={{marginTop:24,paddingTop:20,borderTop:`1px solid ${C.border}`}}>
-                <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:12}}>Rechtliches</div>
-                <div style={{color:C.grayDark,fontSize:12,lineHeight:1.8}}>
-                  <div style={{color:C.grayLight,fontWeight:600,marginBottom:4}}>Teamchemie</div>
-                  <div>Lasse Kaufmann</div>
-                  <div>Frankfurt am Main</div>
-                  <div>Deutschland</div>
-                  <div style={{marginTop:8}}>Kontakt: lassekaufmann01@gmail.com</div>
-                  <div style={{marginTop:8,color:C.grayDark,fontSize:11}}>
-                    Diese App befindet sich in der Entwicklung. Alle Daten werden über Firebase (Google) gespeichert.
-                  </div>
-                  <div style={{marginTop:8,color:C.grayDark,fontSize:11}}>
-                    Version 1.0.0 · © 2025 Teamchemie
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}
