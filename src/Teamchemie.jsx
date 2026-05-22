@@ -119,12 +119,26 @@ const POSITION_GROUPS = [
 const ROLE_LABELS = ["Torwart","Außenverteidiger L","Innenverteidiger L","Innenverteidiger R","Außenverteidiger R","Mittelfeld 1","Mittelfeld 2","Mittelfeld 3","Außenbahn L","Stürmer","Außenbahn R"];
 
 const STRENGTHS_LIST = [
-  {id:"abschluss", label:"Abschluss",  info:"Schussgenauigkeit und Timing vor dem Tor. Wie sicher bist du in der Abschlusssituation?"},
-  {id:"flanken",   label:"Flanken",    info:"Qualität der Hereingaben von der Außenbahn. Entscheidend für Flügel- und Außenverteidiger."},
-  {id:"standards", label:"Standards",  info:"Freistöße und Ecken. Wer übernimmt die gefährlichen Standardsituationen?"},
-  {id:"elfmeter",  label:"Elfmeter",   info:"Nervenstärke und Technik beim Strafstoß. Wer übernimmt Verantwortung vom Punkt?"},
-  {id:"dribbling", label:"Dribbling",  info:"Fähigkeit, Gegner im Eins-gegen-Eins zu überwinden. Wichtig für Flügel- und Offensivspieler."},
-  {id:"passspiel", label:"Passspiel",  info:"Präzision und Kreativität beim Passen – kurze Pässe, Steilpässe, Verlagerungen."},
+  {id:"abschluss",    label:"Abschluss",       info:"Schussgenauigkeit und Timing vor dem Tor."},
+  {id:"flanken",      label:"Flanken",         info:"Qualität der Hereingaben von der Außenbahn."},
+  {id:"standards",    label:"Standards",       info:"Freistöße und Ecken – gefährliche Standardsituationen."},
+  {id:"elfmeter",     label:"Elfmeter",        info:"Nervenstärke und Technik beim Strafstoß."},
+  {id:"dribbling",    label:"Dribbling",       info:"Fähigkeit, Gegner im Eins-gegen-Eins zu überwinden."},
+  {id:"passspiel",    label:"Passspiel",       info:"Präzision und Kreativität beim Passen."},
+  {id:"kopfball",     label:"Kopfball",        info:"Stärke bei Kopfbällen – offensiv wie defensiv."},
+  {id:"zweikampf",    label:"Zweikampf",       info:"Aggressivität und Erfolgsquote in direkten Duellen."},
+  {id:"schnelligkeit",label:"Schnelligkeit",   info:"Tempo auf kurzen und langen Distanzen."},
+  {id:"ausdauer",     label:"Ausdauer",        info:"Fitness und Laufbereitschaft über 90 Minuten."},
+  {id:"fuehrung",     label:"Führungsqualität",info:"Kommunikation, Motivation und Vorbildfunktion im Team."},
+  {id:"intelligenz",  label:"Spielintelligenz",info:"Taktisches Verständnis, Antizipation und kluge Entscheidungen."},
+];
+
+// Trainer-Attribute (nur Trainer sieht diese)
+const TRAINER_ATTRIBUTES = [
+  {id:"gesamtwertung",  label:"Gesamtwertung",   info:"Deine persönliche Einschätzung des Spielers (1-10)."},
+  {id:"potenzial",      label:"Potenzial",        info:"Entwicklungspotenzial des Spielers (1-10)."},
+  {id:"einstellung",    label:"Einstellung",      info:"Trainingsfleiß, Disziplin und Teamgeist (1-10)."},
+  {id:"konstanz",       label:"Konstanz",         info:"Wie verlässlich ist die Leistung des Spielers (1-10)?"},
 ];
 
 const STRONG_FOOT_OPTIONS = [
@@ -844,6 +858,11 @@ export default function Teamchemie({ user, onLogout }) {
   const [playerMenu,setPlayerMenu]       = useState(null);
   const [showSettings,setShowSettings]   = useState(false);
   const [standards,setStandards] = useState({elfmeter:10, freistoss:6, eckeLinks:9, eckeRechts:5});
+  const [trainerAttributes, setTrainerAttributes] = useState({}); // {uid: {gesamtwertung:8, potenzial:7, ...}}
+  const [trainerStrengths, setTrainerStrengths] = useState({}); // {uid: ["abschluss", ...]}
+  const [aiMessages, setAiMessages] = useState([]);
+  const [aiInput, setAiInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const ME_ID = user?.uid;
   const meData = players.find(p=>p.uid===ME_ID) || players[0] || INIT_PLAYERS[7];
@@ -949,7 +968,52 @@ export default function Teamchemie({ user, onLogout }) {
       setChat(prev=>[...prev, msg]);
     }
   }
-  function saveNumber(pid){
+  async function sendAiMessage() {
+    if (!aiInput.trim() || aiLoading) return;
+    const userMsg = aiInput.trim();
+    setAiInput("");
+    setAiMessages(prev=>[...prev, {role:"user", text:userMsg}]);
+    setAiLoading(true);
+
+    // Spielerdaten als Kontext aufbauen
+    const playerContext = players.map(p => {
+      const attrs = trainerAttributes[p.uid] || {};
+      const tStrengths = trainerStrengths[p.uid] || [];
+      const allStrengths = [...new Set([...(p.strengths||[]), ...tStrengths])];
+      return `- ${p.name} (#${p.number}): Position: ${p.wishRole||"unbekannt"}, Stärken: ${allStrengths.map(s=>STRENGTHS_LIST.find(x=>x.id===s)?.label||s).join(", ")||"keine"}, Fitness: ${p.fitness}%, Harmonie mit: ${(p.partners||[]).map(pid=>players.find(x=>x.id===pid)?.name?.split(" ")[0]).filter(Boolean).join(", ")||"niemand"}, Trainer-Wertung: ${attrs.gesamtwertung||"–"}/10`;
+    }).join("\n");
+
+    const systemPrompt = `Du bist Teamchemie AI, ein intelligenter Fußball-Assistent für Hobbytrainer. Du kennst folgende Spieler des Teams "${user?.teamName}":
+
+${playerContext}
+
+Aktive Taktik: ${tactic.name} – ${tactic.note}
+Spielausrichtung: ${mentalitaetLabel(mentalitaet)}
+
+Gib konkrete, kurze und hilfreiche Antworten auf Deutsch. Beziehe dich immer auf die echten Spielerdaten.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [
+            ...aiMessages.map(m=>({role:m.role, content:m.text})),
+            {role:"user", content:userMsg}
+          ],
+        })
+      });
+      const data = await response.json();
+      const reply = data.content?.[0]?.text || "Keine Antwort erhalten.";
+      setAiMessages(prev=>[...prev, {role:"assistant", text:reply}]);
+    } catch(e) {
+      setAiMessages(prev=>[...prev, {role:"assistant", text:"Verbindungsfehler. Bitte versuche es erneut."}]);
+    }
+    setAiLoading(false);
+  }
     const n=parseInt(numInput);
     if(!isNaN(n)&&n>0&&n<=99){setPlayers(prev=>prev.map(p=>p.id===pid?{...p,number:n}:p));showNotif("Rückennummer gespeichert");}
     setEditingNum(null);setNumInput("");
@@ -1200,6 +1264,48 @@ export default function Teamchemie({ user, onLogout }) {
 
           {dp.note&&<Card style={{marginBottom:10}}><Label>Nachricht</Label><div style={{color:C.grayLight,fontSize:13,fontStyle:"italic"}}>"{dp.note}"</div></Card>}
 
+          {/* Trainer-Attribute (nur Trainer sieht das) */}
+          <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.2)"}}>
+            <Label info="Diese Bewertungen sind nur für dich als Trainer sichtbar. Spieler sehen diese Informationen nicht.">Trainer-Bewertung (privat)</Label>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {TRAINER_ATTRIBUTES.map(attr=>{
+                const val = (trainerAttributes[dp.uid]||{})[attr.id] || 0;
+                return (
+                  <div key={attr.id}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{color:C.gray,fontSize:11}}>{attr.label}</span>
+                      <span style={{color:C.accent,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                    </div>
+                    <div style={{display:"flex",gap:4}}>
+                      {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                        <button key={n} onClick={()=>setTrainerAttributes(prev=>({...prev,[dp.uid]:{...(prev[dp.uid]||{}),[attr.id]:n}}))}
+                          style={{flex:1,height:20,borderRadius:3,border:"none",cursor:"pointer",background:n<=val?C.accent:"rgba(200,74,255,0.15)",transition:"all 0.1s"}}/>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Trainer kann eigene Stärken vergeben */}
+          <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.2)"}}>
+            <Label info="Weise dem Spieler Stärken zu die du als Trainer erkennst. Ergänzt die Selbsteinschätzung des Spielers.">Stärken vom Trainer (privat)</Label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {STRENGTHS_LIST.map(s=>{
+                const active=(trainerStrengths[dp.uid]||[]).includes(s.id);
+                return (
+                  <button key={s.id} onClick={()=>setTrainerStrengths(prev=>{
+                    const cur=prev[dp.uid]||[];
+                    return {...prev,[dp.uid]:active?cur.filter(x=>x!==s.id):[...cur,s.id]};
+                  })} style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",border:`1px solid ${active?C.accentBorder:C.border}`,background:active?C.accentDim:"transparent",color:active?C.accent:C.gray}}>
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
           <Card style={{marginBottom:10}}>
             <Label>Position ändern</Label>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
@@ -1343,8 +1449,8 @@ export default function Teamchemie({ user, onLogout }) {
 
         {/* ── TRAINER ── */}
         {view==="trainer"&&<>
-          <div style={{display:"flex",gap:6,marginBottom:16}}>
-            {[["feld","Feld"],["spieler","Spieler"],["taktik","Taktik"],["chat","Chat"]].map(([key,label])=>(
+          <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+            {[["feld","Feld"],["spieler","Spieler"],["taktik","Taktik"],["chat","Chat"],["ai","TC-KI"]].map(([key,label])=>(
               <Tab key={key} label={label} active={tab===key} onClick={()=>{setTab(key);setSwapFirst(null);setFieldSelected(null);}}/>
             ))}
           </div>
@@ -1631,6 +1737,76 @@ export default function Teamchemie({ user, onLogout }) {
           {tab==="chat"&&<>
             <Label>Direktchat — Lars Hofmann</Label>
             <ChatUI chat={chat} chatInput={chatInput} setChatInput={setChatInput} sendChat={sendChat} isTrainer={true}/>
+          </>}
+
+          {tab==="ai"&&<>
+            <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:14,marginBottom:14}}>
+              <div style={{color:C.accent,fontSize:13,fontWeight:700,marginBottom:4}}>Teamchemie KI</div>
+              <div style={{color:C.gray,fontSize:12}}>Frag mich nach der optimalen Aufstellung, Taktik oder Spieler-Harmonie. Ich kenne alle Spielerdaten.</div>
+            </div>
+
+            {/* Vorschläge */}
+            {aiMessages.length===0&&(
+              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
+                {[
+                  "Welche Aufstellung empfiehlst du basierend auf den Spielerstärken?",
+                  "Wer harmoniert am besten miteinander?",
+                  "Welche Taktik passt am besten zu meinem Kader?",
+                  "Wer sollte den Elfmeter schießen?",
+                ].map(suggestion=>(
+                  <button key={suggestion} onClick={()=>{setAiInput(suggestion);}} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,color:C.grayLight,padding:"10px 14px",cursor:"pointer",fontSize:12,fontFamily:"inherit",textAlign:"left"}}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Chat-Verlauf */}
+            {aiMessages.length>0&&(
+              <div style={{background:C.surface,borderRadius:10,padding:12,maxHeight:400,overflowY:"auto",display:"flex",flexDirection:"column",gap:12,marginBottom:10,border:`1px solid ${C.border}`}}>
+                {aiMessages.map((msg,i)=>(
+                  <div key={i} style={{display:"flex",flexDirection:"column",alignItems:msg.role==="user"?"flex-end":"flex-start"}}>
+                    {msg.role==="assistant"&&(
+                      <div style={{color:C.accent,fontSize:10,fontWeight:700,marginBottom:4}}>Teamchemie KI</div>
+                    )}
+                    <div style={{
+                      maxWidth:"88%",
+                      background:msg.role==="user"?C.accentDim:C.surface2,
+                      border:`1px solid ${msg.role==="user"?C.accentBorder:C.border}`,
+                      borderRadius:12,padding:"10px 14px",
+                    }}>
+                      <div style={{color:C.white,fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{msg.text}</div>
+                    </div>
+                  </div>
+                ))}
+                {aiLoading&&(
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <div style={{color:C.accent,fontSize:10,fontWeight:700}}>Teamchemie KI</div>
+                    <div style={{color:C.gray,fontSize:12}}>Analysiert Spielerdaten...</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Eingabe */}
+            <div style={{display:"flex",gap:8}}>
+              <input
+                value={aiInput}
+                onChange={e=>setAiInput(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&sendAiMessage()}
+                placeholder="Frage die KI..."
+                style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none"}}
+              />
+              <button onClick={sendAiMessage} disabled={aiLoading} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"0 16px",cursor:"pointer",fontSize:13,fontWeight:700,opacity:aiLoading?0.5:1}}>
+                {aiLoading?"...":"Senden"}
+              </button>
+            </div>
+
+            {aiMessages.length>0&&(
+              <button onClick={()=>setAiMessages([])} style={{width:"100%",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",marginTop:8}}>
+                Gespräch zurücksetzen
+              </button>
+            )}
           </>}
         </>}
 
