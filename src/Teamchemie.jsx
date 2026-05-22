@@ -999,14 +999,7 @@ export default function Teamchemie({ user, onLogout }) {
       return `- ${p.name} (#${p.number}): Position: ${p.wishRole||"unbekannt"}, Stärken: ${allStrengths.map(s=>STRENGTHS_LIST.find(x=>x.id===s)?.label||s).join(", ")||"keine"}, Fitness: ${p.fitness}%, Harmonie mit: ${(p.partners||[]).map(pid=>players.find(x=>x.id===pid)?.name?.split(" ")[0]).filter(Boolean).join(", ")||"niemand"}, Trainer-Wertung: ${attrs.gesamtwertung||"–"}/10`;
     }).join("\n");
 
-    const systemPrompt = `Du bist Teamchemie AI, ein intelligenter Fußball-Assistent für Hobbytrainer. Du kennst folgende Spieler des Teams "${user?.teamName}":
-
-${playerContext}
-
-Aktive Taktik: ${tactic.name} – ${tactic.note}
-Spielausrichtung: ${mentalitaetLabel(mentalitaet)}
-
-Gib konkrete, kurze und hilfreiche Antworten auf Deutsch. Beziehe dich immer auf die echten Spielerdaten.`;
+    const systemPrompt = `Du bist Teamchemie AI, ein intelligenter Fußball-Assistent für Hobbytrainer. Du kennst folgende Spieler des Teams "${user?.teamName}":\n\n${playerContext}\n\nAktive Taktik: ${tactic.name} – ${tactic.note}\nSpielausrichtung: ${mentalitaetLabel(mentalitaet)}\n\nGib konkrete, kurze und hilfreiche Antworten auf Deutsch. Beziehe dich immer auf die echten Spielerdaten.`;
 
     try {
       const response = await fetch("/api/chat", {
