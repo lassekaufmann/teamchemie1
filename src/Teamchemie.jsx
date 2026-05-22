@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { db } from "./App.jsx";
+import { collection, onSnapshot, doc, setDoc, updateDoc, query, where, orderBy } from "firebase/firestore";
 
 const C = {
   bg:         "#12122a",
@@ -820,6 +822,7 @@ export default function Teamchemie({ user, onLogout }) {
   const [tab,setTab]           = useState(isTrainer ? "feld" : "status");
   const [players,setPlayers]   = useState(INIT_PLAYERS);
   const [order,setOrder]       = useState(INIT_PLAYERS.map(p=>p.id));
+  const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [tactic,setTactic]     = useState(ALL_TACTICS[0]);
   const [tacticReleased,setTacticReleased] = useState(true); // erste Taktik ist bereits freigegeben
   const [releasedTactic,setReleasedTactic] = useState(ALL_TACTICS[0]); // was Spieler sehen
@@ -842,8 +845,8 @@ export default function Teamchemie({ user, onLogout }) {
   const [showSettings,setShowSettings]   = useState(false);
   const [standards,setStandards] = useState({elfmeter:10, freistoss:6, eckeLinks:9, eckeRechts:5});
 
-  const ME_ID=8;
-  const meData=players.find(p=>p.id===ME_ID);
+  const ME_ID = user?.uid;
+  const meData = players.find(p=>p.uid===ME_ID) || players[0] || INIT_PLAYERS[7];
   const [myFitness,setMyFitness]     = useState(meData.fitness);
   const [myRuhe,setMyRuhe]           = useState(meData.ruhe);
   const [myFokus,setMyFokus]         = useState(meData.ruhe ? 80 : 20);
@@ -858,6 +861,40 @@ export default function Teamchemie({ user, onLogout }) {
   const positions = tactic.custom
     ? tactic.posGrund
     : FORMATIONS[formKey] || FORMATIONS["4-3-3"];
+
+  // Spieler aus Firebase laden
+  useEffect(() => {
+    if (!user?.teamCode) return;
+    const q = query(
+      collection(db, "users"),
+      where("teamCode", "==", user.teamCode),
+      where("role", "==", "player")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      if (snap.empty) {
+        setLoadingPlayers(false);
+        return;
+      }
+      const firebasePlayers = snap.docs.map((doc, idx) => ({
+        id:         idx + 1,
+        uid:        doc.id,
+        name:       doc.data().name || "Unbekannt",
+        number:     doc.data().number || idx + 1,
+        fitness:    doc.data().fitness || 85,
+        ruhe:       doc.data().ruhe || false,
+        partners:   doc.data().partners || [],
+        note:       doc.data().note || "",
+        wishRole:   doc.data().wishRole || "",
+        wishFormation: doc.data().wishFormation || "",
+        strengths:  doc.data().strengths || [],
+        strongFoot: doc.data().strongFoot || "",
+      }));
+      setPlayers(firebasePlayers);
+      setOrder(firebasePlayers.map(p => p.id));
+      setLoadingPlayers(false);
+    });
+    return unsub;
+  }, [user?.teamCode]);
 
   function showNotif(msg){setNotif(msg);setTimeout(()=>setNotif(null),2200);}
   function sendChat(){
@@ -904,7 +941,21 @@ export default function Teamchemie({ user, onLogout }) {
     setOrder(o);showNotif(`${dp.name.split(" ")[0]} — ${ROLE_LABELS[slotIdx]}`);
   }
   function syncStatus(){
-    setPlayers(prev=>prev.map(p=>p.id===ME_ID?{...p,fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,partners:myPartners,strengths:myStrengths,strongFoot:myFoot,wishFormation:myFormation}:p));
+    // Lokaler State
+    setPlayers(prev=>prev.map(p=>p.uid===user.uid?{...p,fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,partners:myPartners,strengths:myStrengths,strongFoot:myFoot,wishFormation:myFormation}:p));
+    // Firebase speichern
+    if (user?.uid) {
+      updateDoc(doc(db, "users", user.uid), {
+        fitness:   myFitness,
+        ruhe:      myFokus > 50,
+        note:      myNote,
+        wishRole:  myWish,
+        partners:  myPartners,
+        strengths: myStrengths,
+        strongFoot:myFoot,
+        wishFormation: myFormation,
+      }).catch(console.error);
+    }
     showNotif("Status an Trainer übermittelt");
   }
 
