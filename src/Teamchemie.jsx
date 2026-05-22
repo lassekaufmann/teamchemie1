@@ -897,11 +897,57 @@ export default function Teamchemie({ user, onLogout }) {
   }, [user?.teamCode]);
 
   function showNotif(msg){setNotif(msg);setTimeout(()=>setNotif(null),2200);}
-  function sendChat(){
-    if(!chatInput.trim())return;
-    const time=new Date().toLocaleTimeString("de",{hour:"2-digit",minute:"2-digit"});
-    setChat(prev=>[...prev,{from:view==="trainer"?"trainer":"player",text:chatInput,time}]);
+
+  // Chat aus Firebase laden (1:1 zwischen Trainer und Spieler)
+  const chatPartnerUid = isTrainer
+    ? (detailId ? players.find(p=>p.id===detailId)?.uid : null)
+    : user?.uid;
+
+  const chatId = user?.teamCode && chatPartnerUid
+    ? `${user.teamCode}_${chatPartnerUid}`
+    : null;
+
+  useEffect(() => {
+    if (!chatId) return;
+    const q = query(
+      collection(db, "chats", chatId, "messages"),
+      orderBy("timestamp", "asc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const msgs = snap.docs.map(d => ({
+        from:      d.data().from,
+        text:      d.data().text,
+        time:      d.data().time,
+        timestamp: d.data().timestamp,
+      }));
+      setChat(msgs);
+    });
+    return unsub;
+  }, [chatId]);
+
+  async function sendChat(){
+    if(!chatInput.trim()) return;
+    const time = new Date().toLocaleTimeString("de",{hour:"2-digit",minute:"2-digit"});
+    const msg = {
+      from:      isTrainer ? "trainer" : "player",
+      text:      chatInput,
+      time,
+      timestamp: Date.now(),
+    };
     setChatInput("");
+    if (chatId) {
+      try {
+        await setDoc(
+          doc(collection(db, "chats", chatId, "messages")),
+          msg
+        );
+      } catch(e) {
+        // Fallback lokaler Chat
+        setChat(prev=>[...prev, msg]);
+      }
+    } else {
+      setChat(prev=>[...prev, msg]);
+    }
   }
   function saveNumber(pid){
     const n=parseInt(numInput);
