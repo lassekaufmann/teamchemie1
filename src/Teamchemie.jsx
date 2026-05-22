@@ -981,7 +981,6 @@ export default function Teamchemie({ user, onLogout }) {
       setChat(prev=>[...prev, msg]);
     }
   }
-  async function sendAiMessage() {
   function saveNumber(pid){
     const n=parseInt(numInput);
     if(!isNaN(n)&&n>0&&n<=99){setPlayers(prev=>prev.map(p=>p.id===pid?{...p,number:n}:p));showNotif("Rückennummer gespeichert");}
