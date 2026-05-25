@@ -14,7 +14,7 @@ const C = {
   green:      "#1e3a4a",
   greenLight: "#2a5a6a",
   greenText:  "#4ac8c8",
-  white:      "#ffffff", 
+  white:      "#ffffff",
   gray:       "#7878aa",
   grayDark:   "#44446a",
   grayLight:  "#c0c0e0",
@@ -2169,6 +2169,9 @@ export default function Teamchemie({ user, onLogout }) {
                 })}
               </Card>
             )}
+
+            <Card style={{marginBottom:10}}>
+              <Label>Anwesenheit</Label>
               <div style={{color:C.gray,fontSize:12,marginBottom:10}}>Kommst du zum nächsten Spiel?</div>
               <div style={{display:"flex",gap:8}}>
                 {[
@@ -2434,4 +2437,3 @@ export default function Teamchemie({ user, onLogout }) {
       </div>
     </div>
   );
-}
