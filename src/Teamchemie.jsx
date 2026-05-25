@@ -133,9 +133,39 @@ function TabBtn({label,active,onClick}) {
 }
 
 // ── SPIELFELD ────────────────────────────────────────────
-function Field({positions,order,players,interactive,swapFirst,onTap}) {
+function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label}) {
+  const fieldRef = useRef(null);
+  const [dragging,setDragging] = useState(null);
+
+  function getCoords(e) {
+    const r = fieldRef.current?.getBoundingClientRect();
+    if (!r) return null;
+    const cx = (e.touches?.[0]||e).clientX;
+    const cy = (e.touches?.[0]||e).clientY;
+    return {
+      x: Math.max(3,Math.min(97,((cx-r.left)/r.width)*100)),
+      y: Math.max(3,Math.min(97,((cy-r.top)/r.height)*100)),
+    };
+  }
+
+  function onDown(e,idx) {
+    if (!editMode || !setPositions) return;
+    e.preventDefault(); e.stopPropagation();
+    setDragging(idx);
+  }
+  function onMove(e) {
+    if (dragging===null || !setPositions) return;
+    const c = getCoords(e);
+    if (c) setPositions(prev=>prev.map((p,i)=>i===dragging?{...p,...c}:p));
+  }
+  function onUp() { setDragging(null); }
+
   return (
-    <div style={{position:"relative",width:"100%",paddingBottom:"140%",borderRadius:8,overflow:"hidden",background:"#0e0e28",border:"1px solid rgba(200,74,255,0.2)",marginBottom:10}}>
+    <div ref={fieldRef}
+      style={{position:"relative",width:"100%",paddingBottom:"140%",borderRadius:8,overflow:"hidden",background:"#0e0e28",border:"1px solid rgba(200,74,255,0.2)",marginBottom:10,touchAction:"none"}}
+      onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+      onTouchMove={e=>{e.preventDefault();onMove(e);}} onTouchEnd={onUp}
+    >
       <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 100 140" preserveAspectRatio="none">
         <rect x="0" y="0" width="100" height="140" fill="#0e0e28"/>
         <rect x="2" y="2" width="96" height="136" fill="none" stroke="rgba(200,74,255,0.5)" strokeWidth="0.8"/>
@@ -151,41 +181,120 @@ function Field({positions,order,players,interactive,swapFirst,onTap}) {
         <circle cx="50" cy="14" r="1" fill="rgba(200,74,255,0.4)"/>
         <circle cx="50" cy="126" r="1" fill="rgba(200,74,255,0.4)"/>
       </svg>
-      {interactive && swapFirst!==null && (
-        <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(0,0,0,0.7)",borderRadius:8,padding:"3px 8px",fontSize:9,color:C.accent}}>
-          Zweiten Spieler antippen
-        </div>
-      )}
-      {interactive && swapFirst===null && (
-        <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(0,0,0,0.7)",borderRadius:8,padding:"3px 8px",fontSize:9,color:"rgba(255,255,255,0.4)"}}>
-          Antippen zum Tauschen
+      {label && <div style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.6)",borderRadius:8,padding:"2px 10px",fontSize:9,color:"rgba(200,74,255,0.7)",zIndex:5}}>{label}</div>}
+      {editMode && (
+        <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(200,74,255,0.2)",borderRadius:8,padding:"3px 8px",fontSize:9,color:C.accent,border:`1px solid ${C.accentBorder}`}}>
+          {dragging!==null?"Ziehen...":swapFirst!==null?"Zweiten antippen":"Halten = ziehen · Tippen = tauschen"}
         </div>
       )}
       {positions.map((pos,idx)=>{
-        const pid = order[idx];
-        const player = players.find(p=>p.id===pid);
-        const isPlaceholder = !player || player.isPlaceholder;
-        const isSelected = interactive && swapFirst===idx;
+        const pid = order?order[idx]:idx+1;
+        const player = players?players.find(p=>p.id===pid):null;
+        const isPlaceholder = !player||player.isPlaceholder;
+        const isSelected = editMode && swapFirst===idx;
+        const isDragging = dragging===idx;
         return (
           <div key={idx}
-            onClick={()=>interactive && onTap && onTap(idx)}
-            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:3,cursor:interactive?"pointer":"default"}}>
+            onMouseDown={e=>onDown(e,idx)}
+            onTouchStart={e=>onDown(e,idx)}
+            onClick={()=>{ if (dragging===null && onTap && editMode) onTap(idx); }}
+            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:isDragging?10:3,
+              cursor:editMode?"grab":"default",transition:isDragging?"none":"left 0.3s ease,top 0.3s ease"}}>
             <div style={{
               width:30,height:30,borderRadius:"50%",
-              background:isSelected?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
-              border:`2px solid ${isSelected?C.accent:isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
+              background:isSelected||isDragging?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
+              border:`2px solid ${isSelected||isDragging?C.accent:isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              boxShadow:isSelected?`0 0 16px ${C.accent}`:isPlaceholder?"none":`0 0 6px rgba(200,74,255,0.4)`,
-              transition:"all 0.2s",
+              boxShadow:isDragging?`0 0 20px ${C.accent}`:isSelected?`0 0 12px ${C.accent}`:isPlaceholder?"none":`0 0 6px rgba(200,74,255,0.4)`,
             }}>
-              <span style={{color:isSelected?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800,lineHeight:1}}>
+              <span style={{color:isSelected||isDragging?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800,lineHeight:1}}>
                 {player?.number||idx+1}
               </span>
               {!isPlaceholder && (
-                <span style={{color:isSelected?C.bg:"rgba(255,255,255,0.55)",fontSize:6,lineHeight:1.2,fontWeight:600}}>
+                <span style={{color:isSelected||isDragging?C.bg:"rgba(255,255,255,0.55)",fontSize:6,lineHeight:1.2,fontWeight:600}}>
                   {player.name.split(" ")[0].slice(0,5)}
                 </span>
               )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── ECKEN EDITOR ─────────────────────────────────────────
+const DEFAULT_CORNER_POSITIONS = [
+  {x:5,y:5},   // Ecke
+  {x:30,y:15},{x:50,y:10},{x:70,y:15},{x:85,y:20}, // Angreifer
+  {x:20,y:30},{x:50,y:25},{x:80,y:30},              // Mittelfeld
+  {x:30,y:45},{x:50,y:45},{x:70,y:45},              // Absicherung
+];
+
+function CornerField({positions,setPositions,players,order,side,type}) {
+  const fieldRef = useRef(null);
+  const [dragging,setDragging] = useState(null);
+
+  function getCoords(e) {
+    const r = fieldRef.current?.getBoundingClientRect();
+    if (!r) return null;
+    const cx=(e.touches?.[0]||e).clientX;
+    const cy=(e.touches?.[0]||e).clientY;
+    return {x:Math.max(3,Math.min(97,((cx-r.left)/r.width)*100)),y:Math.max(3,Math.min(97,((cy-r.top)/r.height)*100))};
+  }
+
+  function onDown(e,idx){e.preventDefault();e.stopPropagation();setDragging(idx);}
+  function onMove(e){if(dragging===null)return;const c=getCoords(e);if(c)setPositions(prev=>prev.map((p,i)=>i===dragging?{...p,...c}:p));}
+  function onUp(){setDragging(null);}
+
+  const cornerX = side==="links"?2:98;
+  const cornerY = type==="angriff"?2:98;
+
+  return (
+    <div ref={fieldRef}
+      style={{position:"relative",width:"100%",paddingBottom:"140%",borderRadius:8,overflow:"hidden",background:"#0e0e28",border:"1px solid rgba(200,74,255,0.2)",marginBottom:10,touchAction:"none"}}
+      onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+      onTouchMove={e=>{e.preventDefault();onMove(e);}} onTouchEnd={onUp}
+    >
+      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 100 140" preserveAspectRatio="none">
+        <rect x="0" y="0" width="100" height="140" fill="#0e0e28"/>
+        <rect x="2" y="2" width="96" height="136" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.8"/>
+        <line x1="2" y1="70" x2="98" y2="70" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
+        {type==="angriff" ? (
+          <>
+            <rect x="22" y="2" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
+            <rect x="32" y="2" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
+          </>
+        ) : (
+          <>
+            <rect x="22" y="118" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
+            <rect x="32" y="128" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
+          </>
+        )}
+        {/* Eckfahne */}
+        <circle cx={cornerX} cy={cornerY} r="2" fill={C.accent} opacity="0.8"/>
+      </svg>
+      <div style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.6)",borderRadius:8,padding:"2px 10px",fontSize:9,color:"rgba(200,74,255,0.7)",zIndex:5,whiteSpace:"nowrap"}}>
+        Halten zum Verschieben
+      </div>
+      {positions.map((pos,idx)=>{
+        const pid=order?order[idx]:idx+1;
+        const player=players?players.find(p=>p.id===pid):null;
+        const isPlaceholder=!player||player.isPlaceholder;
+        const isDragging=dragging===idx;
+        return (
+          <div key={idx}
+            onMouseDown={e=>onDown(e,idx)} onTouchStart={e=>onDown(e,idx)}
+            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:isDragging?10:3,cursor:"grab",transition:isDragging?"none":"all 0.2s"}}>
+            <div style={{
+              width:28,height:28,borderRadius:"50%",
+              background:isDragging?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
+              border:`2px solid ${isDragging?C.accent:isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
+              display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+              boxShadow:isDragging?`0 0 16px ${C.accent}`:`0 0 6px rgba(200,74,255,0.3)`,
+            }}>
+              <span style={{color:isDragging?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800}}>{player?.number||idx+1}</span>
+              {!isPlaceholder&&<span style={{color:isDragging?C.bg:"rgba(255,255,255,0.55)",fontSize:6,fontWeight:600}}>{player.name.split(" ")[0].slice(0,4)}</span>}
             </div>
           </div>
         );
@@ -381,6 +490,14 @@ export default function Teamchemie({user,onLogout}) {
   const [myPartners,setMyPartners] = useState([]);
   const [playerFieldView,setPlayerFieldView] = useState(null);
   const [trainerFieldView,setTrainerFieldView] = useState(null);
+  const [fieldEditMode,setFieldEditMode]       = useState(false);
+  const [posOffensiv,setPosOffensiv]           = useState(null);
+  const [posDefensiv,setPosDefensiv]           = useState(null);
+  const [cornerSide,setCornerSide]             = useState("links");
+  const [cornerOffL,setCornerOffL]             = useState(null);
+  const [cornerOffR,setCornerOffR]             = useState(null);
+  const [cornerDefL,setCornerDefL]             = useState(null);
+  const [cornerDefR,setCornerDefR]             = useState(null);
   const [customTactics,setCustomTactics]   = useState([]);
   const [showCustomTacticEditor,setShowCustomTacticEditor] = useState(false);
   const [customTacticName,setCustomTacticName] = useState("");
@@ -440,6 +557,19 @@ export default function Teamchemie({user,onLogout}) {
   },[chatId]);
 
   function showNotif(msg){setNotif(msg);setTimeout(()=>setNotif(null),2200);}
+
+  // Init Offensiv/Defensiv/Ecken Positionen wenn Taktik wechselt
+  useEffect(()=>{    setPosOffensiv(positions.map(p=>({...p,y:Math.max(4,p.y-8)})));
+    setPosDefensiv(positions.map(p=>({...p,y:Math.min(96,p.y+8)})));
+    const defaultCorner = [
+      {x:8,y:8},{x:30,y:20},{x:50,y:25},{x:70,y:20},{x:85,y:15},
+      {x:20,y:35},{x:40,y:35},{x:60,y:35},{x:75,y:35},{x:45,y:50},{x:50,y:90},
+    ];
+    setCornerOffL(defaultCorner.map(p=>({...p})));
+    setCornerOffR(defaultCorner.map(p=>({...p,x:100-p.x})));
+    setCornerDefL(defaultCorner.map(p=>({...p,y:100-p.y})));
+    setCornerDefR(defaultCorner.map(p=>({...p,x:100-p.x,y:100-p.y})));
+  },[tactic.id]);
 
   async function sendChat(){
     if (!chatInput.trim()) return;
@@ -795,24 +925,58 @@ export default function Teamchemie({user,onLogout}) {
                         <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid rgba(200,74,255,${0.06+i*0.04})`,transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
                       ))}
                       {[
-                        {id:"grund",    label:"Grundaufstellung", sub:"Bearbeiten",   color:C.accent,   x:0,   y:0,   size:90},
-                        {id:"offensiv", label:"Offensiv",         sub:"Angriff",      color:C.offColor, x:0,   y:-115,size:68},
-                        {id:"defensiv", label:"Defensiv",         sub:"Abwehr",       color:C.defColor, x:0,   y:115, size:68},
-                        {id:"eckeAngriff",label:"Ecke Angriff",  sub:"",             color:"#e0c040",  x:-115,y:-60, size:64},
-                        {id:"eckeAbwehr", label:"Ecke Abwehr",   sub:"",             color:C.greenText,x:115, y:-60, size:64},
+                        {id:"grund",      label:"Grundaufstellung",color:C.accent,   x:0,   y:0,   size:90},
+                        {id:"offensiv",   label:"Offensiv",        color:C.offColor, x:0,   y:-115,size:68},
+                        {id:"defensiv",   label:"Defensiv",        color:C.defColor, x:0,   y:115, size:68},
+                        {id:"eckeAngriff",label:"Ecke Angriff",   color:"#e0c040",  x:-115,y:-60, size:64},
+                        {id:"eckeAbwehr", label:"Ecke Abwehr",    color:C.greenText,x:115, y:-60, size:64},
                       ].map(item=>(
-                        <button key={item.id} onClick={()=>setTrainerFieldView(item.id)}
+                        <button key={item.id} onClick={()=>{setTrainerFieldView(item.id);setFieldEditMode(false);setSwapFirst(null);}}
                           style={{position:"absolute",top:"50%",left:"50%",width:item.size,height:item.size,borderRadius:"50%",
                             background:`${item.color}15`,border:`2px solid ${item.color}88`,
                             transform:`translate(calc(-50% + ${item.x}px),calc(-50% + ${item.y}px))`,
-                            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
-                            boxShadow:`0 0 14px ${item.color}22`}}>
+                            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
                           <span style={{color:item.color,fontSize:item.id==="grund"?11:9,fontWeight:700,textAlign:"center",padding:"0 4px"}}>{item.label}</span>
-                          {item.sub && <span style={{color:`${item.color}88`,fontSize:8}}>{item.sub}</span>}
                         </button>
                       ))}
                     </div>
-                    <div style={{marginTop:14}}>
+
+                    {/* Standards */}
+                    <Card style={{marginTop:14}}>
+                      <Label>Standardschuetzen</Label>
+                      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                        {[
+                          {key:"elfmeter",  label:"Elfmeter"},
+                          {key:"freistoss", label:"Freistoss"},
+                          {key:"eckeLinks", label:"Ecke Links"},
+                          {key:"eckeRechts",label:"Ecke Rechts"},
+                        ].map(({key,label})=>{
+                          const pid = standards[key];
+                          const p = players.find(pl=>pl.id===pid&&!pl.isPlaceholder);
+                          return (
+                            <div key={key} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                              <span style={{color:C.gray,fontSize:12,width:90}}>{label}</span>
+                              <div style={{flex:1,display:"flex",flexWrap:"wrap",gap:4}}>
+                                {players.filter(pl=>!pl.isPlaceholder).map(pl=>(
+                                  <button key={pl.id} onClick={()=>setStandards(prev=>({...prev,[key]:pl.id}))}
+                                    style={{padding:"3px 8px",borderRadius:20,cursor:"pointer",fontSize:10,fontFamily:"inherit",
+                                      border:`1px solid ${standards[key]===pl.id?C.accentBorder:C.border}`,
+                                      background:standards[key]===pl.id?C.accentDim:"transparent",
+                                      color:standards[key]===pl.id?C.accent:C.gray}}>
+                                    {pl.name.split(" ")[0]}
+                                  </button>
+                                ))}
+                                {players.filter(pl=>!pl.isPlaceholder).length===0 && <span style={{color:C.grayDark,fontSize:11}}>Keine Spieler</span>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Card>
+
+                    {/* Mentalitaet */}
+                    <Card>
+                      <Label>Mentalitaet</Label>
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
                         <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
                         <span style={{color:C.gray,fontSize:11}}>{mentalitaet<=30?"Sehr defensiv":mentalitaet<=50?"Ausgewogen":mentalitaet<=70?"Offensiv":"Sehr offensiv"}</span>
@@ -820,34 +984,97 @@ export default function Teamchemie({user,onLogout}) {
                       </div>
                       <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
                         style={{width:"100%",accentColor:C.accent}}/>
-                    </div>
+                    </Card>
                   </>
                 ) : (
                   <>
+                    {/* Header der Detail-Ansicht */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                      <button onClick={()=>{setTrainerFieldView(null);setSwapFirst(null);}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                      <button onClick={()=>{setTrainerFieldView(null);setSwapFirst(null);setFieldEditMode(false);}}
+                        style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
                         zurueck
                       </button>
                       <div style={{color:C.white,fontSize:13,fontWeight:600}}>
-                        {trainerFieldView==="grund"?"Grundaufstellung":trainerFieldView==="offensiv"?"Offensiv-Ausrichtung":trainerFieldView==="defensiv"?"Defensiv-Ausrichtung":trainerFieldView==="eckeAngriff"?"Ecke Angriff":"Ecke Abwehr"}
+                        {trainerFieldView==="grund"?"Grundaufstellung":
+                         trainerFieldView==="offensiv"?"Offensiv":
+                         trainerFieldView==="defensiv"?"Defensiv":
+                         trainerFieldView==="eckeAngriff"?"Ecke Angriff":"Ecke Abwehr"}
                       </div>
-                      <button onClick={()=>setSwapFirst(null)} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:swapFirst!==null?C.accent:C.gray,padding:"5px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>
-                        {swapFirst!==null?"Abbrechen":"Tauschen"}
-                      </button>
+                      {(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
+                        <button onClick={()=>{setFieldEditMode(p=>!p);setSwapFirst(null);}}
+                          style={{background:fieldEditMode?C.accentDim:"transparent",border:`1px solid ${fieldEditMode?C.accentBorder:C.border}`,borderRadius:8,color:fieldEditMode?C.accent:C.gray,padding:"5px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>
+                          {fieldEditMode?"Fertig":"Bearbeiten"}
+                        </button>
+                      )}
+                      {(trainerFieldView==="eckeAngriff"||trainerFieldView==="eckeAbwehr") && (
+                        <div style={{width:70}}/>
+                      )}
                     </div>
+
+                    {/* Aufstellung Felder */}
                     {(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
-                      <Field
-                        positions={trainerFieldView==="offensiv"?positions.map(p=>({...p,y:Math.max(4,p.y-8)})):trainerFieldView==="defensiv"?positions.map(p=>({...p,y:Math.min(96,p.y+8)})):positions}
-                        order={order} players={players} interactive={true} swapFirst={swapFirst} onTap={handleFieldTap}
-                      />
+                      <>
+                        {fieldEditMode && (
+                          <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,padding:"8px 12px",marginBottom:8,fontSize:11,color:C.accent}}>
+                            Spieler halten und ziehen zum Verschieben · Antippen zum Tauschen
+                          </div>
+                        )}
+                        <Field
+                          positions={
+                            trainerFieldView==="offensiv"?posOffensiv:
+                            trainerFieldView==="defensiv"?posDefensiv:
+                            positions
+                          }
+                          setPositions={
+                            fieldEditMode?(
+                              trainerFieldView==="offensiv"?setPosOffensiv:
+                              trainerFieldView==="defensiv"?setPosDefensiv:
+                              null
+                            ):null
+                          }
+                          order={order} players={players}
+                          editMode={fieldEditMode}
+                          swapFirst={fieldEditMode?swapFirst:null}
+                          onTap={fieldEditMode?handleFieldTap:null}
+                        />
+                        {!fieldEditMode && <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginTop:-6,marginBottom:8}}>Auf "Bearbeiten" tippen um Spieler zu verschieben</div>}
+                      </>
                     )}
+
+                    {/* Ecken Editor */}
                     {(trainerFieldView==="eckeAngriff"||trainerFieldView==="eckeAbwehr") && (
-                      <div style={{color:C.gray,fontSize:13,textAlign:"center",padding:"40px 0",background:C.surface,borderRadius:12,border:`1px solid ${C.border}`}}>
-                        <div style={{marginBottom:8,color:C.white,fontWeight:600}}>Eckball-Editor</div>
-                        <div>Bald verfuegbar – Spieler auf dem Feld positionieren</div>
-                      </div>
+                      <>
+                        <div style={{display:"flex",gap:8,marginBottom:10}}>
+                          {["links","rechts"].map(s=>(
+                            <button key={s} onClick={()=>setCornerSide(s)}
+                              style={{flex:1,padding:"8px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
+                                border:`1px solid ${cornerSide===s?C.accentBorder:C.border}`,
+                                background:cornerSide===s?C.accentDim:"transparent",
+                                color:cornerSide===s?C.accent:C.gray}}>
+                              {s==="links"?"Linke Ecke":"Rechte Ecke"}
+                            </button>
+                          ))}
+                        </div>
+                        <Field
+                          positions={
+                            trainerFieldView==="eckeAngriff"
+                              ?(cornerSide==="links"?cornerOffL:cornerOffR)
+                              :(cornerSide==="links"?cornerDefL:cornerDefR)
+                          }
+                          setPositions={
+                            trainerFieldView==="eckeAngriff"
+                              ?(cornerSide==="links"?setCornerOffL:setCornerOffR)
+                              :(cornerSide==="links"?setCornerDefL:setCornerDefR)
+                          }
+                          order={order} players={players}
+                          editMode={true} swapFirst={null} onTap={null}
+                          label={`${trainerFieldView==="eckeAngriff"?"Angriff":"Abwehr"} · ${cornerSide==="links"?"Links":"Rechts"}`}
+                        />
+                        <div style={{background:C.surface,borderRadius:8,padding:"8px 12px",marginTop:-6,fontSize:11,color:C.gray}}>
+                          Spieler halten und ziehen zum Positionieren
+                        </div>
+                      </>
                     )}
-                    {swapFirst!==null && <div style={{color:C.accent,fontSize:12,textAlign:"center",marginTop:8}}>Spieler ausgewaehlt – zweiten antippen zum Tauschen</div>}
                   </>
                 )}
               </>
@@ -1029,7 +1256,7 @@ export default function Teamchemie({user,onLogout}) {
               <>
                 {!detailId ? (
                   <>
-                    <Label>Direktchat - Spieler auswaehlen</Label>
+                    <Label>Direktchat – Spieler auswaehlen</Label>
                     <div style={{display:"flex",flexDirection:"column",gap:8}}>
                       {players.filter(p=>!p.isPlaceholder).map(p=>(
                         <div key={p.id} onClick={()=>setDetailId(p.id)}
@@ -1037,7 +1264,7 @@ export default function Teamchemie({user,onLogout}) {
                           <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14,color:C.accent,flexShrink:0}}>{p.number}</div>
                           <div style={{flex:1}}>
                             <div style={{color:C.white,fontWeight:600,fontSize:13}}>{p.name}</div>
-                            <div style={{color:C.gray,fontSize:11}}>{p.wishRole||"–"}</div>
+                            <div style={{color:C.gray,fontSize:11}}>{p.wishRole||ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
                           </div>
                           <span style={{color:C.accent,fontSize:18}}>›</span>
                         </div>
@@ -1049,10 +1276,14 @@ export default function Teamchemie({user,onLogout}) {
                   </>
                 ) : (
                   <>
-                    <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:14,padding:0}}>
-                      Alle Spieler
-                    </button>
-                    <div style={{color:C.white,fontWeight:700,fontSize:15,marginBottom:12}}>Chat mit {players.find(p=>p.id===detailId)?.name}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+                      <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                        zurueck
+                      </button>
+                      <div style={{color:C.white,fontWeight:700,fontSize:15}}>
+                        Chat mit {players.find(p=>p.id===detailId)?.name}
+                      </div>
+                    </div>
                     {renderChat()}
                   </>
                 )}
