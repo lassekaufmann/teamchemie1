@@ -391,7 +391,6 @@ export default function Teamchemie({user,onLogout}) {
   const [showOnboarding,setShowOnboarding] = useState(isTrainer && !user?.hasSeenOnboarding);
   const [confirmRemove,setConfirmRemove] = useState(null);
   const [playerMenu,setPlayerMenu] = useState(null);
-  const [customTactics,setCustomTactics] = useState([]);
   const [standards,setStandards]   = useState({elfmeter:null,freistoss:null,eckeLinks:null,eckeRechts:null});
 
   const formKey   = TACTIC_FORMATION[tactic.id]||"4-4-2";
