@@ -12,30 +12,45 @@ const C = {
 };
 
 const FORMATIONS = {
-  "4-4-2":   [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:15,y:50},{x:36,y:52},{x:64,y:52},{x:85,y:50},{x:36,y:22},{x:64,y:22}],
-  "4-3-3":   [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:25,y:53},{x:50,y:55},{x:75,y:53},{x:15,y:28},{x:50,y:18},{x:85,y:28}],
-  "4-2-3-1": [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:36,y:60},{x:64,y:60},{x:18,y:40},{x:50,y:38},{x:82,y:40},{x:50,y:18}],
-  "3-5-2":   [{x:50,y:91},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:12,y:55},{x:30,y:55},{x:50,y:53},{x:70,y:55},{x:88,y:55},{x:36,y:22},{x:64,y:22}],
-  "5-3-2":   [{x:50,y:91},{x:10,y:72},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:90,y:72},{x:28,y:52},{x:50,y:54},{x:72,y:52},{x:36,y:22},{x:64,y:22}],
-  "4-1-4-1": [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:50,y:62},{x:14,y:46},{x:36,y:48},{x:64,y:48},{x:86,y:46},{x:50,y:18}],
-  "4-5-1":   [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:12,y:50},{x:30,y:52},{x:50,y:54},{x:70,y:52},{x:88,y:50},{x:50,y:18}],
-  "3-4-3":   [{x:50,y:91},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:14,y:52},{x:36,y:54},{x:64,y:54},{x:86,y:52},{x:18,y:24},{x:50,y:18},{x:82,y:24}],
+  "4-4-2":    [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:15,y:50},{x:36,y:52},{x:64,y:52},{x:85,y:50},{x:36,y:22},{x:64,y:22}],
+  "4-3-3":    [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:25,y:53},{x:50,y:55},{x:75,y:53},{x:15,y:28},{x:50,y:18},{x:85,y:28}],
+  "4-2-3-1":  [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:36,y:60},{x:64,y:60},{x:18,y:40},{x:50,y:38},{x:82,y:40},{x:50,y:18}],
+  "3-5-2":    [{x:50,y:91},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:12,y:55},{x:30,y:55},{x:50,y:53},{x:70,y:55},{x:88,y:55},{x:36,y:22},{x:64,y:22}],
+  "5-3-2":    [{x:50,y:91},{x:10,y:72},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:90,y:72},{x:28,y:52},{x:50,y:54},{x:72,y:52},{x:36,y:22},{x:64,y:22}],
+  "4-1-4-1":  [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:50,y:62},{x:14,y:46},{x:36,y:48},{x:64,y:48},{x:86,y:46},{x:50,y:18}],
+  "4-5-1":    [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:12,y:50},{x:30,y:52},{x:50,y:54},{x:70,y:52},{x:88,y:50},{x:50,y:18}],
+  "3-4-3":    [{x:50,y:91},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:14,y:52},{x:36,y:54},{x:64,y:54},{x:86,y:52},{x:18,y:24},{x:50,y:18},{x:82,y:24}],
+  "4-3-1-2":  [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:25,y:56},{x:50,y:58},{x:75,y:56},{x:50,y:40},{x:36,y:22},{x:64,y:22}],
+  "4-2-2-2":  [{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:36,y:60},{x:64,y:60},{x:30,y:44},{x:70,y:44},{x:36,y:22},{x:64,y:22}],
+  "3-4-2-1":  [{x:50,y:91},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:14,y:55},{x:36,y:57},{x:64,y:57},{x:86,y:55},{x:36,y:38},{x:64,y:38},{x:50,y:18}],
+  "5-4-1":    [{x:50,y:91},{x:10,y:72},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:90,y:72},{x:15,y:52},{x:38,y:54},{x:62,y:54},{x:85,y:52},{x:50,y:18}],
+  "4-1-2-1-2":[{x:50,y:91},{x:15,y:73},{x:34,y:76},{x:66,y:76},{x:85,y:73},{x:50,y:62},{x:30,y:50},{x:70,y:50},{x:50,y:38},{x:36,y:22},{x:64,y:22}],
+  "3-1-4-2":  [{x:50,y:91},{x:28,y:76},{x:50,y:78},{x:72,y:76},{x:50,y:64},{x:14,y:50},{x:36,y:52},{x:64,y:52},{x:86,y:50},{x:36,y:22},{x:64,y:22}],
 };
 
 const ALL_TACTICS = [
-  {id:1,name:"4-4-2",    note:"Klassisch, ausgewogen. Zwei Stürmer, starke Mitte."},
-  {id:2,name:"4-3-3",    note:"Offensiv mit drei Angreifern. Viel Breite."},
-  {id:3,name:"4-2-3-1",  note:"Solide defensiv, kreativer Zehner dahinter."},
-  {id:4,name:"3-5-2",    note:"Drei Innenverteidiger, Kontrolle im Mittelfeld."},
-  {id:5,name:"5-3-2",    note:"Defensiv kompakt, schnelle Konter."},
-  {id:6,name:"4-1-4-1",  note:"Sicherheit durch defensiven Sechser."},
-  {id:7,name:"4-5-1",    note:"Kontrolle im Mittelfeld, ein Stürmer."},
-  {id:8,name:"3-4-3",    note:"Viel Offensivpower, riskant hinten."},
+  {id:1, name:"4-4-2",      note:"Klassisch, ausgewogen. Zwei Stürmer, kompaktes Mittelfeld."},
+  {id:2, name:"4-3-3",      note:"Offensiv mit drei Angreifern. Viel Breite im Spiel."},
+  {id:3, name:"4-2-3-1",    note:"Solide defensiv, kreativer Zehner hinter dem Stürmer."},
+  {id:4, name:"3-5-2",      note:"Drei Innenverteidiger, Kontrolle im Mittelfeld."},
+  {id:5, name:"5-3-2",      note:"Defensiv kompakt, schnelle Konter über die Flügel."},
+  {id:6, name:"4-1-4-1",    note:"Sicherheit durch defensiven Sechser vor der Abwehr."},
+  {id:7, name:"4-5-1",      note:"Kontrolle im Mittelfeld, ein Stürmer im Zentrum."},
+  {id:8, name:"3-4-3",      note:"Viel Offensivpower, braucht disziplinierte Flügel."},
+  {id:9, name:"4-3-1-2",    note:"Zehner zwischen Mittelfeld und Sturm. Kreativ."},
+  {id:10,name:"4-2-2-2",    note:"Doppelte Absicherung, zwei Stürmer und zwei Zehner."},
+  {id:11,name:"3-4-2-1",    note:"Drei Verteidiger, zwei offensive Außenbahnspieler."},
+  {id:12,name:"5-4-1",      note:"Sehr defensiv, Fokus auf Sicherheit und Konter."},
+  {id:13,name:"4-1-2-1-2",  note:"Raute im Mittelfeld. Viel Zentralität."},
+  {id:14,name:"3-1-4-2",    note:"Ein defensiver Sechser vor drei Verteidigern."},
 ];
 
-const TACTIC_FORMATION = {1:"4-4-2",2:"4-3-3",3:"4-2-3-1",4:"3-5-2",5:"5-3-2",6:"4-1-4-1",7:"4-5-1",8:"3-4-3"};
+const TACTIC_FORMATION = {
+  1:"4-4-2",2:"4-3-3",3:"4-2-3-1",4:"3-5-2",5:"5-3-2",6:"4-1-4-1",7:"4-5-1",
+  8:"3-4-3",9:"4-3-1-2",10:"4-2-2-2",11:"3-4-2-1",12:"5-4-1",13:"4-1-2-1-2",14:"3-1-4-2",
+};
 
-const ROLE_LABELS = ["TW","LV","IV L","IV R","RV","LM","ZM","ZM","RM","ST L","ST R"];
+const ROLE_LABELS = ["TW","LV","IV L","IV R","RV","LM","ZM","ZM R","RM","ST L","ST R"];
 
 const STRENGTHS_LIST = [
   {id:"abschluss",    label:"Abschluss"},
@@ -65,12 +80,20 @@ const INIT_PLAYERS = Array.from({length:11},(_,i)=>({
   wishRole:"", strengths:[], strongFoot:"", isPlaceholder:true,
 }));
 
-// ── KLEINE HILFSKOMPONENTEN ───────────────────────────────
-function Card({children, style}) {
-  return <div style={{background:C.surface,borderRadius:12,padding:14,border:`1px solid ${C.border}`,marginBottom:10,...style}}>{children}</div>;
+// ── HILFSKOMPONENTEN ─────────────────────────────────────
+function Card({children,style}) {
+  return (
+    <div style={{background:C.surface,borderRadius:12,padding:14,border:`1px solid ${C.border}`,marginBottom:10,...style}}>
+      {children}
+    </div>
+  );
 }
 function Label({children}) {
-  return <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>{children}</div>;
+  return (
+    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>
+      {children}
+    </div>
+  );
 }
 function Pill({children,active,onClick}) {
   return (
@@ -79,11 +102,13 @@ function Pill({children,active,onClick}) {
       border:`1px solid ${active?C.accentBorder:C.border}`,
       background:active?C.accentDim:"transparent",
       color:active?C.accent:C.gray,
-    }}>{children}</button>
+    }}>
+      {children}
+    </button>
   );
 }
 function FitnessBar({value}) {
-  const color=value>=80?C.greenText:value>=60?C.yellowText:C.error;
+  const color = value>=80?C.greenText:value>=60?C.yellowText:C.error;
   return (
     <div style={{display:"flex",alignItems:"center",gap:8}}>
       <div style={{flex:1,height:3,background:"rgba(255,255,255,0.07)",borderRadius:2,overflow:"hidden"}}>
@@ -93,31 +118,24 @@ function FitnessBar({value}) {
     </div>
   );
 }
-function GhostBtn({children,onClick}) {
+function TabBtn({label,active,onClick}) {
   return (
-    <button onClick={onClick} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.grayLight,padding:"5px 12px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>
-      {children}
+    <button onClick={onClick} style={{
+      flex:1,padding:"9px 4px",borderRadius:8,cursor:"pointer",fontSize:11,
+      fontFamily:"inherit",fontWeight:active?700:500,
+      border:`1px solid ${active?C.accentBorder:C.border}`,
+      background:active?C.accentDim:"transparent",
+      color:active?C.accent:C.gray,
+    }}>
+      {label}
     </button>
   );
 }
 
-// ── SPIELFELD KOMPONENTE ──────────────────────────────────
-function Field({positions,order,players,interactive,swapFirst,setSwapFirst,fieldSelected,setFieldSelected,mentalitaet,isTrainer}) {
-  const FMTS = FORMATIONS["4-4-2"];
-  const pos = positions || FMTS;
-
-  function handleTap(idx) {
-    if (!interactive) return;
-    if (swapFirst === null) { setSwapFirst(idx); setFieldSelected(idx); return; }
-    if (swapFirst === idx) { setSwapFirst(null); setFieldSelected(null); return; }
-    const o = [...order];
-    [o[swapFirst], o[idx]] = [o[idx], o[swapFirst]];
-    // handled by parent
-    setSwapFirst(null); setFieldSelected(null);
-  }
-
+// ── SPIELFELD ────────────────────────────────────────────
+function Field({positions,order,players,interactive,swapFirst,onTap}) {
   return (
-    <div style={{position:"relative",width:"100%",paddingBottom:"140%",borderRadius:8,overflow:"hidden",background:"#0e0e28",border:"1px solid rgba(200,74,255,0.2)"}}>
+    <div style={{position:"relative",width:"100%",paddingBottom:"140%",borderRadius:8,overflow:"hidden",background:"#0e0e28",border:"1px solid rgba(200,74,255,0.2)",marginBottom:10}}>
       <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 100 140" preserveAspectRatio="none">
         <rect x="0" y="0" width="100" height="140" fill="#0e0e28"/>
         <rect x="2" y="2" width="96" height="136" fill="none" stroke="rgba(200,74,255,0.5)" strokeWidth="0.8"/>
@@ -125,34 +143,46 @@ function Field({positions,order,players,interactive,swapFirst,setSwapFirst,field
         <circle cx="50" cy="70" r="12" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
         <circle cx="50" cy="70" r="1" fill="rgba(200,74,255,0.5)"/>
         <rect x="22" y="2"  width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        <rect x="32" y="2"  width="36" height="10" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.6"/>
+        <rect x="32" y="2"  width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
         <rect x="22" y="118" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        <rect x="32" y="128" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.6"/>
+        <rect x="32" y="128" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
         <path d="M28 22 A16 16 0 0 0 72 22" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
         <path d="M28 118 A16 16 0 0 1 72 118" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
         <circle cx="50" cy="14" r="1" fill="rgba(200,74,255,0.4)"/>
         <circle cx="50" cy="126" r="1" fill="rgba(200,74,255,0.4)"/>
       </svg>
-      {pos.map((p, idx) => {
-        const pid = order ? order[idx] : idx+1;
-        const player = players ? players.find(pl=>pl.id===pid) : null;
+      {interactive && swapFirst!==null && (
+        <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(0,0,0,0.7)",borderRadius:8,padding:"3px 8px",fontSize:9,color:C.accent}}>
+          Zweiten Spieler antippen
+        </div>
+      )}
+      {interactive && swapFirst===null && (
+        <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(0,0,0,0.7)",borderRadius:8,padding:"3px 8px",fontSize:9,color:"rgba(255,255,255,0.4)"}}>
+          Antippen zum Tauschen
+        </div>
+      )}
+      {positions.map((pos,idx)=>{
+        const pid = order[idx];
+        const player = players.find(p=>p.id===pid);
         const isPlaceholder = !player || player.isPlaceholder;
-        const isSel = interactive && (swapFirst===idx || fieldSelected===idx);
+        const isSelected = interactive && swapFirst===idx;
         return (
-          <div key={idx} onClick={()=>handleTap(idx)}
-            style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,transform:"translate(-50%,-50%)",zIndex:3,cursor:interactive?"pointer":"default"}}>
+          <div key={idx}
+            onClick={()=>interactive && onTap && onTap(idx)}
+            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:3,cursor:interactive?"pointer":"default"}}>
             <div style={{
-              width:28,height:28,borderRadius:"50%",
-              background:isSel?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
-              border:`2px solid ${isSel?C.accent:isPlaceholder?"rgba(200,74,255,0.15)":"rgba(200,74,255,0.7)"}`,
+              width:30,height:30,borderRadius:"50%",
+              background:isSelected?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
+              border:`2px solid ${isSelected?C.accent:isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              boxShadow:isPlaceholder?"none":isSel?`0 0 12px ${C.accent}`:`0 0 6px rgba(200,74,255,0.4)`,
+              boxShadow:isSelected?`0 0 16px ${C.accent}`:isPlaceholder?"none":`0 0 6px rgba(200,74,255,0.4)`,
+              transition:"all 0.2s",
             }}>
-              <span style={{color:isPlaceholder?"rgba(200,74,255,0.25)":isSel?C.bg:C.white,fontSize:8,fontWeight:800,lineHeight:1}}>
+              <span style={{color:isSelected?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800,lineHeight:1}}>
                 {player?.number||idx+1}
               </span>
               {!isPlaceholder && (
-                <span style={{color:isSel?C.bg:"rgba(255,255,255,0.6)",fontSize:6,lineHeight:1.2,fontWeight:600}}>
+                <span style={{color:isSelected?C.bg:"rgba(255,255,255,0.55)",fontSize:6,lineHeight:1.2,fontWeight:600}}>
                   {player.name.split(" ")[0].slice(0,5)}
                 </span>
               )}
@@ -164,7 +194,7 @@ function Field({positions,order,players,interactive,swapFirst,setSwapFirst,field
   );
 }
 
-// ── SPIELTAG TAB KOMPONENTE ───────────────────────────────
+// ── SPIELTAG TAB ─────────────────────────────────────────
 function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,newSpieltagForm,setNewSpieltagForm,activeSpieltagId,setActiveSpieltagId,setTactic,setReleasedTactic,setTacticReleased,players,user,showNotif}) {
   const sorted = [...spieltage].sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"00:00"))-new Date(b.datum+"T"+(b.zeit||"00:00")));
   return (
@@ -173,39 +203,35 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={()=>{setShowNewSpieltag("spiel");setNewSpieltagForm({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1});}}
             style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
-            ⚽ Spiel eintragen
+            Spiel eintragen
           </button>
           <button onClick={()=>{setShowNewSpieltag("training");setNewSpieltagForm({datum:"",zeit:"",ort:"",notiz:""});}}
             style={{flex:1,background:"rgba(74,200,200,0.1)",border:"1px solid rgba(74,200,200,0.3)",borderRadius:10,color:C.greenText,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
-            🏃 Training eintragen
+            Training eintragen
           </button>
         </div>
       )}
-
       {showNewSpieltag && (
         <div style={{background:C.surface,borderRadius:12,padding:16,border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.3)"}`,marginBottom:14}}>
           <div style={{color:showNewSpieltag==="spiel"?C.accent:C.greenText,fontWeight:700,fontSize:13,marginBottom:14}}>
-            {showNewSpieltag==="spiel"?"⚽ Neues Spiel":"🏃 Neues Training"}
+            {showNewSpieltag==="spiel"?"Neues Spiel":"Neues Training"}
           </div>
           <div style={{display:"flex",gap:8,marginBottom:12}}>
             <div style={{flex:2}}>
               <Label>Datum</Label>
-              <input type="date" value={newSpieltagForm.datum||""}
-                onChange={e=>setNewSpieltagForm(p=>({...p,datum:e.target.value}))}
+              <input type="date" value={newSpieltagForm.datum||""} onChange={e=>setNewSpieltagForm(p=>({...p,datum:e.target.value}))}
                 style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
             </div>
             <div style={{flex:1}}>
               <Label>Uhrzeit</Label>
-              <input type="time" value={newSpieltagForm.zeit||""}
-                onChange={e=>setNewSpieltagForm(p=>({...p,zeit:e.target.value}))}
+              <input type="time" value={newSpieltagForm.zeit||""} onChange={e=>setNewSpieltagForm(p=>({...p,zeit:e.target.value}))}
                 style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
             </div>
           </div>
           {showNewSpieltag==="spiel" && (
             <>
               <Label>Gegner</Label>
-              <input placeholder="z.B. FC Musterstadt" value={newSpieltagForm.gegner||""}
-                onChange={e=>setNewSpieltagForm(p=>({...p,gegner:e.target.value}))}
+              <input placeholder="z.B. FC Musterstadt" value={newSpieltagForm.gegner||""} onChange={e=>setNewSpieltagForm(p=>({...p,gegner:e.target.value}))}
                 style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
               <div style={{display:"flex",gap:8,marginBottom:12}}>
                 {["heim","auswärts"].map(v=>(
@@ -214,17 +240,16 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
                       border:`1px solid ${newSpieltagForm.heimAuswärts===v?C.accentBorder:C.border}`,
                       background:newSpieltagForm.heimAuswärts===v?C.accentDim:"transparent",
                       color:newSpieltagForm.heimAuswärts===v?C.accent:C.gray}}>
-                    {v==="heim"?"🏠 Heim":"✈ Auswärts"}
+                    {v==="heim"?"Heimspiel":"Auswärts"}
                   </button>
                 ))}
               </div>
             </>
           )}
-          <Label>Ort / Adresse</Label>
-          <input placeholder="z.B. Sportplatz Hauptstraße 1" value={newSpieltagForm.ort||""}
-            onChange={e=>setNewSpieltagForm(p=>({...p,ort:e.target.value}))}
+          <Label>Ort</Label>
+          <input placeholder="z.B. Sportplatz Hauptstraße 1" value={newSpieltagForm.ort||""} onChange={e=>setNewSpieltagForm(p=>({...p,ort:e.target.value}))}
             style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
-          <Label>{showNewSpieltag==="training"?"Beschreibung":"Notizen"}</Label>
+          <Label>Notizen</Label>
           <textarea value={newSpieltagForm.notiz||""} onChange={e=>setNewSpieltagForm(p=>({...p,notiz:e.target.value}))}
             style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",resize:"none",height:70,outline:"none",boxSizing:"border-box",marginBottom:14}}/>
           {showNewSpieltag==="spiel" && (
@@ -251,7 +276,7 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
             <button onClick={()=>{
               if (!newSpieltagForm.datum) return showNotif("Bitte Datum eingeben");
               if (showNewSpieltag==="spiel" && !newSpieltagForm.gegner?.trim()) return showNotif("Bitte Gegner eingeben");
-              const ev = {id:Date.now(),type:showNewSpieltag,datum:newSpieltagForm.datum,zeit:newSpieltagForm.zeit,ort:newSpieltagForm.ort,notiz:newSpieltagForm.notiz,gegner:newSpieltagForm.gegner,heimAuswärts:newSpieltagForm.heimAuswärts,tacticId:newSpieltagForm.tacticId||1,released:false,attendance:{}};
+              const ev={id:Date.now(),type:showNewSpieltag,datum:newSpieltagForm.datum,zeit:newSpieltagForm.zeit,ort:newSpieltagForm.ort,notiz:newSpieltagForm.notiz,gegner:newSpieltagForm.gegner,heimAuswärts:newSpieltagForm.heimAuswärts,tacticId:newSpieltagForm.tacticId||1,released:false,attendance:{}};
               setSpieltage(prev=>[...prev,ev]);
               setShowNewSpieltag(false);
               showNotif(showNewSpieltag==="spiel"?`Spiel vs. ${ev.gegner} eingetragen`:"Training eingetragen");
@@ -261,15 +286,12 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
           </div>
         </div>
       )}
-
       {spieltage.length===0 && !showNewSpieltag && (
         <div style={{background:C.surface,borderRadius:12,padding:24,border:`1px solid ${C.border}`,textAlign:"center"}}>
-          <div style={{fontSize:32,marginBottom:8}}>📅</div>
           <div style={{color:C.gray,fontSize:13,marginBottom:4}}>Noch keine Einträge</div>
           <div style={{color:C.grayDark,fontSize:11}}>Trage dein nächstes Spiel oder Training ein</div>
         </div>
       )}
-
       {sorted.map(ev=>{
         const isSpiel = ev.type==="spiel";
         const color = isSpiel?C.accent:C.greenText;
@@ -283,7 +305,7 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
                   <span style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:700,color}}>
-                    {isSpiel?"⚽ Spiel":"🏃 Training"}
+                    {isSpiel?"Spiel":"Training"}
                   </span>
                   {isSpiel && ev.heimAuswärts && <span style={{color:C.grayDark,fontSize:10}}>{ev.heimAuswärts==="heim"?"Heim":"Auswärts"}</span>}
                   {isActive && <span style={{color:C.accent,fontSize:10,fontWeight:600}}>Aktiv</span>}
@@ -292,12 +314,11 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
                 <div style={{color:C.white,fontWeight:700,fontSize:14}}>{isSpiel?`vs. ${ev.gegner||"–"}`:(ev.notiz||"Training")}</div>
                 <div style={{color:C.gray,fontSize:11,marginTop:3}}>
                   {ev.datum?new Date(ev.datum+"T12:00:00").toLocaleDateString("de",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"}):""}
-                  {ev.zeit?` · ${ev.zeit} Uhr`:""}
-                  {ev.ort?` · ${ev.ort}`:""}
+                  {ev.zeit?` · ${ev.zeit} Uhr`:""}{ev.ort?` · ${ev.ort}`:""}
                 </div>
               </div>
               <button onClick={()=>setSpieltage(prev=>prev.filter(s=>s.id!==ev.id))}
-                style={{background:"transparent",border:"none",color:C.grayDark,fontSize:16,cursor:"pointer",padding:"0 4px"}}>✕</button>
+                style={{background:"transparent",border:"none",color:C.grayDark,fontSize:16,cursor:"pointer",padding:"0 4px"}}>x</button>
             </div>
             <div style={{display:"flex",gap:14,marginBottom:10,paddingTop:8,borderTop:`1px solid ${C.border}`}}>
               <div style={{textAlign:"center"}}><div style={{color:C.greenText,fontSize:18,fontWeight:800}}>{attendCount}</div><div style={{color:C.grayDark,fontSize:9}}>Dabei</div></div>
@@ -307,22 +328,14 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
             </div>
             <div style={{display:"flex",gap:8}}>
               {isSpiel && (
-                <button onClick={()=>{
-                  setActiveSpieltagId(ev.id);
-                  const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];
-                  setTactic(t);
-                  showNotif(`Spiel vs. ${ev.gegner} aktiviert`);
-                }} style={{flex:1,background:isActive?"transparent":C.surface2,border:`1px solid ${isActive?C.accentBorder:C.border}`,borderRadius:8,color:isActive?C.accent:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
+                <button onClick={()=>{setActiveSpieltagId(ev.id);const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];setTactic(t);showNotif(`Spiel vs. ${ev.gegner} aktiviert`);}}
+                  style={{flex:1,background:isActive?"transparent":C.surface2,border:`1px solid ${isActive?C.accentBorder:C.border}`,borderRadius:8,color:isActive?C.accent:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
                   {isActive?"Aktiv":"Aktivieren"}
                 </button>
               )}
               {isSpiel && (
-                <button onClick={()=>{
-                  setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));
-                  const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];
-                  if (!ev.released) { setReleasedTactic(t); setTacticReleased(true); }
-                  showNotif(ev.released?"Freigabe zurückgezogen":"Taktik freigegeben");
-                }} style={{flex:1,background:ev.released?"rgba(74,200,200,0.1)":"transparent",border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
+                <button onClick={()=>{setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];if(!ev.released){setReleasedTactic(t);setTacticReleased(true);}showNotif(ev.released?"Freigabe zurückgezogen":"Taktik freigegeben");}}
+                  style={{flex:1,background:ev.released?"rgba(74,200,200,0.1)":"transparent",border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
                   {ev.released?"Freigabe aufheben":"Freigeben"}
                 </button>
               )}
@@ -334,59 +347,61 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
   );
 }
 
-// ── HAUPTKOMPONENTE ───────────────────────────────────────
-export default function Teamchemie({ user, onLogout }) {
-  const isTrainer = user?.role === "trainer";
-  const [tab, setTab]       = useState(isTrainer ? "feld" : "status");
-  const [players, setPlayers] = useState(INIT_PLAYERS);
-  const [order, setOrder]   = useState(INIT_PLAYERS.map(p=>p.id));
-  const [tactic, setTactic] = useState(ALL_TACTICS[0]);
-  const [releasedTactic, setReleasedTactic] = useState(ALL_TACTICS[0]);
-  const [tacticReleased, setTacticReleased] = useState(false);
-  const [mentalitaet, setMentalitaet] = useState(50);
-  const [swapFirst, setSwapFirst]   = useState(null);
-  const [fieldSelected, setFieldSelected] = useState(null);
-  const [detailId, setDetailId]     = useState(null);
-  const [chat, setChat]     = useState([]);
-  const [chatInput, setChatInput] = useState("");
-  const [notif, setNotif]   = useState(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showImpressum, setShowImpressum] = useState(false);
-  const [spieltage, setSpieltage] = useState([]);
-  const [activeSpieltagId, setActiveSpieltagId] = useState(null);
-  const [showNewSpieltag, setShowNewSpieltag] = useState(false);
-  const [newSpieltagForm, setNewSpieltagForm] = useState({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1});
-  const [attendance, setAttendance] = useState({});
-  const [myAttendance, setMyAttendance] = useState(null);
-  const [myFitness, setMyFitness] = useState(85);
-  const [myFokus, setMyFokus] = useState(50);
-  const [myWish, setMyWish] = useState("");
-  const [myNote, setMyNote] = useState("");
-  const [myStrengths, setMyStrengths] = useState([]);
-  const [myFoot, setMyFoot] = useState("");
-  const [myFormation, setMyFormation] = useState("");
-  const [myPartners, setMyPartners] = useState([]);
-  const [playerFieldView, setPlayerFieldView] = useState(null);
-  const [trainerAttributes, setTrainerAttributes] = useState({});
-  const [trainerStrengths, setTrainerStrengths] = useState({});
-  const [swipeStartX, setSwipeStartX] = useState(null);
-  const [showOnboarding, setShowOnboarding] = useState(isTrainer && !user?.hasSeenOnboarding);
-  const [confirmRemove, setConfirmRemove] = useState(null);
-  const [playerMenu, setPlayerMenu] = useState(null);
+// ── HAUPTKOMPONENTE ──────────────────────────────────────
+export default function Teamchemie({user,onLogout}) {
+  const isTrainer = user?.role==="trainer";
 
-  const formKey = TACTIC_FORMATION[tactic.id] || "4-4-2";
-  const positions = FORMATIONS[formKey] || FORMATIONS["4-4-2"];
+  // State
+  const [tab,setTab]               = useState(isTrainer?"feld":"status");
+  const [players,setPlayers]       = useState(INIT_PLAYERS);
+  const [order,setOrder]           = useState(INIT_PLAYERS.map(p=>p.id));
+  const [tactic,setTactic]         = useState(ALL_TACTICS[0]);
+  const [releasedTactic,setReleasedTactic] = useState(ALL_TACTICS[0]);
+  const [tacticReleased,setTacticReleased] = useState(false);
+  const [mentalitaet,setMentalitaet] = useState(50);
+  const [swapFirst,setSwapFirst]   = useState(null);
+  const [detailId,setDetailId]     = useState(null);
+  const [chat,setChat]             = useState([]);
+  const [chatInput,setChatInput]   = useState("");
+  const [notif,setNotif]           = useState(null);
+  const [showSettings,setShowSettings] = useState(false);
+  const [showImpressum,setShowImpressum] = useState(false);
+  const [spieltage,setSpieltage]   = useState([]);
+  const [activeSpieltagId,setActiveSpieltagId] = useState(null);
+  const [showNewSpieltag,setShowNewSpieltag] = useState(false);
+  const [newSpieltagForm,setNewSpieltagForm] = useState({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1});
+  const [attendance,setAttendance] = useState({});
+  const [myAttendance,setMyAttendance] = useState(null);
+  const [myFitness,setMyFitness]   = useState(85);
+  const [myFokus,setMyFokus]       = useState(50);
+  const [myWish,setMyWish]         = useState("");
+  const [myNote,setMyNote]         = useState("");
+  const [myStrengths,setMyStrengths] = useState([]);
+  const [myFoot,setMyFoot]         = useState("");
+  const [myPartners,setMyPartners] = useState([]);
+  const [playerFieldView,setPlayerFieldView] = useState(null);
+  const [trainerAttributes,setTrainerAttributes] = useState({});
+  const [trainerStrengths,setTrainerStrengths] = useState({});
+  const [swipeStartX,setSwipeStartX] = useState(null);
+  const [showOnboarding,setShowOnboarding] = useState(isTrainer && !user?.hasSeenOnboarding);
+  const [confirmRemove,setConfirmRemove] = useState(null);
+  const [playerMenu,setPlayerMenu] = useState(null);
+  const [customTactics,setCustomTactics] = useState([]);
+  const [standards,setStandards]   = useState({elfmeter:null,freistoss:null,eckeLinks:null,eckeRechts:null});
+
+  const formKey   = TACTIC_FORMATION[tactic.id]||"4-4-2";
+  const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
 
   // Firebase: Spieler laden
-  useEffect(() => {
+  useEffect(()=>{
     if (!user?.teamCode) return;
     const q = query(collection(db,"users"),where("teamCode","==",user.teamCode),where("role","==","player"));
-    return onSnapshot(q, snap=>{
+    return onSnapshot(q,snap=>{
       const real = snap.docs.map((d,i)=>({
-        id:i+1, uid:d.id, name:d.data().name||`Spieler ${i+1}`, number:d.data().number||i+1,
-        fitness:d.data().fitness||85, ruhe:d.data().ruhe||false, partners:d.data().partners||[],
-        note:d.data().note||"", wishRole:d.data().wishRole||"", strengths:d.data().strengths||[],
-        strongFoot:d.data().strongFoot||"", attendance:d.data().attendance||null, isPlaceholder:false,
+        id:i+1,uid:d.id,name:d.data().name||`Spieler ${i+1}`,number:d.data().number||i+1,
+        fitness:d.data().fitness||85,ruhe:d.data().ruhe||false,partners:d.data().partners||[],
+        note:d.data().note||"",wishRole:d.data().wishRole||"",strengths:d.data().strengths||[],
+        strongFoot:d.data().strongFoot||"",attendance:d.data().attendance||null,isPlaceholder:false,
       }));
       const slots = Array.from({length:11},(_,i)=>real[i]||{
         id:i+1,uid:null,name:`Spieler ${i+1}`,number:i+1,
@@ -395,12 +410,12 @@ export default function Teamchemie({ user, onLogout }) {
       setPlayers(slots);
       setOrder(slots.map(p=>p.id));
     });
-  }, [user?.teamCode]);
+  },[user?.teamCode]);
 
   // Firebase: Taktik sync
-  useEffect(() => {
+  useEffect(()=>{
     if (!user?.teamCode) return;
-    return onSnapshot(doc(db,"teams",user.teamCode), snap=>{
+    return onSnapshot(doc(db,"teams",user.teamCode),snap=>{
       if (!snap.exists()) return;
       const d = snap.data();
       if (d.releasedTacticId) {
@@ -408,21 +423,21 @@ export default function Teamchemie({ user, onLogout }) {
         if (found) { setReleasedTactic(found); if (!isTrainer) setTactic(found); }
       }
     });
-  }, [user?.teamCode]);
+  },[user?.teamCode]);
 
   // Firebase: Chat
   const chatId = user?.teamCode && user?.uid ? `${user.teamCode}_${user.uid}` : null;
-  useEffect(() => {
+  useEffect(()=>{
     if (!chatId) return;
     const q = query(collection(db,"chats",chatId,"messages"),orderBy("timestamp","asc"));
-    return onSnapshot(q, snap=>{
-      setChat(snap.docs.map(d=>({from:d.data().from,text:d.data().text,time:d.data().time,timestamp:d.data().timestamp})));
+    return onSnapshot(q,snap=>{
+      setChat(snap.docs.map(d=>({from:d.data().from,text:d.data().text,time:d.data().time})));
     });
-  }, [chatId]);
+  },[chatId]);
 
-  function showNotif(msg) { setNotif(msg); setTimeout(()=>setNotif(null),2200); }
+  function showNotif(msg){setNotif(msg);setTimeout(()=>setNotif(null),2200);}
 
-  async function sendChat() {
+  async function sendChat(){
     if (!chatInput.trim()) return;
     const time = new Date().toLocaleTimeString("de",{hour:"2-digit",minute:"2-digit"});
     const msg = {from:isTrainer?"trainer":"player",text:chatInput,time,timestamp:Date.now()};
@@ -435,7 +450,7 @@ export default function Teamchemie({ user, onLogout }) {
     }
   }
 
-  function releaseTactic() {
+  function releaseTactic(){
     setReleasedTactic(tactic);
     setTacticReleased(true);
     if (user?.teamCode) {
@@ -444,45 +459,40 @@ export default function Teamchemie({ user, onLogout }) {
     showNotif(`"${tactic.name}" freigegeben`);
   }
 
-  function syncStatus() {
+  function syncStatus(){
     if (user?.uid) {
       updateDoc(doc(db,"users",user.uid),{
         fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,
-        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,
-        wishFormation:myFormation,attendance:myAttendance,
+        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,
       }).catch(console.error);
     }
     if (myAttendance) setAttendance(prev=>({...prev,[user?.uid]:myAttendance}));
     showNotif("Status an Trainer übermittelt");
   }
 
-  function handleFieldTap(idx) {
-    if (swapFirst===null) { setSwapFirst(idx); setFieldSelected(idx); return; }
-    if (swapFirst===idx) { setSwapFirst(null); setFieldSelected(null); return; }
-    const o=[...order]; [o[swapFirst],o[idx]]=[o[idx],o[swapFirst]];
-    setOrder(o); setSwapFirst(null); setFieldSelected(null); showNotif("Spieler getauscht");
+  function handleFieldTap(idx){
+    if (swapFirst===null) { setSwapFirst(idx); return; }
+    if (swapFirst===idx)  { setSwapFirst(null); return; }
+    const o=[...order];[o[swapFirst],o[idx]]=[o[idx],o[swapFirst]];
+    setOrder(o);setSwapFirst(null);showNotif("Spieler getauscht");
   }
 
-  function handleSwipe(endX) {
+  function handleSwipe(endX){
     if (swipeStartX===null) return;
-    const dx = endX - swipeStartX;
-    if (Math.abs(dx) < 50) return;
-    const tabs = isTrainer ? ["feld","taktik","spieltage","spieler","chat"] : ["status","feld","chat"];
+    const dx = endX-swipeStartX;
+    if (Math.abs(dx)<50) return;
+    const tabs = isTrainer?["feld","taktik","kalender","spieler","chat"]:["status","feld","chat"];
     const idx = tabs.indexOf(tab);
-    if (dx < 0 && idx < tabs.length-1) setTab(tabs[idx+1]);
-    if (dx > 0 && idx > 0) setTab(tabs[idx-1]);
+    if (dx<0 && idx<tabs.length-1) setTab(tabs[idx+1]);
+    if (dx>0 && idx>0) setTab(tabs[idx-1]);
     setSwipeStartX(null);
   }
 
-  const navItems = isTrainer
-    ? [{key:"feld",label:"Feld",icon:"⚽"},{key:"taktik",label:"Taktik",icon:"📋"},{key:"spieltage",label:"Kalender",icon:"📅"},{key:"spieler",label:"Spieler",icon:"👥"},{key:"chat",label:"Chat",icon:"💬"}]
-    : [{key:"status",label:"Status",icon:"📊"},{key:"feld",label:"Feld",icon:"⚽"},{key:"chat",label:"Chat",icon:"💬"}];
-
-  // ChatUI
-  function ChatUI({small}) {
+  // ChatUI als inline Funktion
+  function renderChat(){
     return (
       <div>
-        <div style={{background:C.surface2,borderRadius:10,padding:10,maxHeight:small?200:320,overflowY:"auto",display:"flex",flexDirection:"column",gap:8,marginBottom:8,border:`1px solid ${C.border}`}}>
+        <div style={{background:C.surface2,borderRadius:10,padding:10,maxHeight:300,overflowY:"auto",display:"flex",flexDirection:"column",gap:8,marginBottom:8,border:`1px solid ${C.border}`}}>
           {chat.length===0 && <div style={{color:C.grayDark,fontSize:12,textAlign:"center",padding:"20px 0"}}>Noch keine Nachrichten</div>}
           {chat.map((m,i)=>(
             <div key={i} style={{display:"flex",justifyContent:m.from===(isTrainer?"trainer":"player")?"flex-end":"flex-start"}}>
@@ -496,7 +506,131 @@ export default function Teamchemie({ user, onLogout }) {
         <div style={{display:"flex",gap:8}}>
           <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendChat()}
             placeholder="Nachricht..." style={{flex:1,background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none"}}/>
-          <button onClick={sendChat} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"0 14px",cursor:"pointer",fontSize:13,fontWeight:700}}>Senden</button>
+          <button onClick={sendChat} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"0 14px",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>Senden</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Spieler Detail Ansicht (Trainer)
+  if (isTrainer && detailId) {
+    const dp = players.find(p=>p.id===detailId);
+    if (!dp || dp.isPlaceholder) { setDetailId(null); return null; }
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",color:C.white}}>
+        <div style={{maxWidth:440,margin:"0 auto",padding:"20px 20px 60px"}}>
+          <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:20,padding:0}}>
+            zurueck
+          </button>
+          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
+            <div style={{width:50,height:50,borderRadius:"50%",background:C.white,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:18,color:C.bg,flexShrink:0}}>
+              {dp.number}
+            </div>
+            <div>
+              <div style={{fontSize:20,fontWeight:700}}>{dp.name}</div>
+              <div style={{color:C.gray,fontSize:12,marginTop:2}}>{dp.wishRole||ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
+            </div>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            <Card><Label>Fitness</Label><FitnessBar value={dp.fitness}/></Card>
+            <Card>
+              <Label>Vor dem Spiel</Label>
+              <div style={{color:dp.ruhe?C.yellowText:C.greenText,fontSize:13,fontWeight:600}}>{dp.ruhe?"Braucht Stille":"Fokussiert"}</div>
+            </Card>
+          </div>
+
+          {dp.wishRole && (
+            <Card style={{marginBottom:10}}>
+              <Label>Wunschposition</Label>
+              <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div>
+            </Card>
+          )}
+
+          {dp.strengths && dp.strengths.length>0 && (
+            <Card style={{marginBottom:10}}>
+              <Label>Staerken (Spieler)</Label>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {dp.strengths.map(s=>{
+                  const sl = STRENGTHS_LIST.find(x=>x.id===s);
+                  return <span key={s} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:20,padding:"3px 10px",color:C.accent,fontSize:11}}>{sl?.label||s}</span>;
+                })}
+              </div>
+            </Card>
+          )}
+
+          {dp.note && (
+            <Card style={{marginBottom:10}}>
+              <Label>Nachricht</Label>
+              <div style={{color:C.grayLight,fontSize:13,fontStyle:"italic"}}>"{dp.note}"</div>
+            </Card>
+          )}
+
+          {/* Trainer Bewertung */}
+          <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+            <Label>Trainer-Bewertung (privat)</Label>
+            {TRAINER_ATTRIBUTES.map(attr=>{
+              const val = (trainerAttributes[dp.uid]||{})[attr.id]||0;
+              return (
+                <div key={attr.id} style={{marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{color:C.gray,fontSize:11}}>{attr.label}</span>
+                    <span style={{color:C.accent,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                  </div>
+                  <div style={{display:"flex",gap:3}}>
+                    {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                      <button key={n} onClick={()=>setTrainerAttributes(prev=>({...prev,[dp.uid]:{...(prev[dp.uid]||{}),[attr.id]:n}}))}
+                        style={{flex:1,height:20,borderRadius:2,border:"none",cursor:"pointer",background:n<=val?C.accent:"rgba(200,74,255,0.12)"}}/>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+
+          {/* Trainer Staerken */}
+          <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+            <Label>Trainer-Staerken (privat)</Label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {STRENGTHS_LIST.map(s=>{
+                const active = (trainerStrengths[dp.uid]||[]).includes(s.id);
+                return (
+                  <button key={s.id} onClick={()=>setTrainerStrengths(prev=>{const cur=prev[dp.uid]||[];return {...prev,[dp.uid]:active?cur.filter(x=>x!==s.id):[...cur,s.id]};})}
+                    style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
+                      border:`1px solid ${active?C.accentBorder:C.border}`,
+                      background:active?C.accentDim:"transparent",
+                      color:active?C.accent:C.gray}}>
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Position aendern */}
+          <Card style={{marginBottom:10}}>
+            <Label>Position im Team aendern</Label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {ROLE_LABELS.map((label,i)=>{
+                const isCurrent = order[i]===dp.id;
+                return (
+                  <button key={i} onClick={()=>{if(!isCurrent){const o=[...order];const from=o.indexOf(dp.id);const dis=o[i];if(from!==-1)o[from]=dis;o[i]=dp.id;setOrder(o);showNotif(`${dp.name.split(" ")[0]} - ${label}`);}}}
+                    style={{padding:"5px 10px",borderRadius:20,cursor:isCurrent?"default":"pointer",fontSize:11,fontFamily:"inherit",
+                      border:`1px solid ${isCurrent?C.greenText:C.border}`,
+                      background:isCurrent?"rgba(74,200,200,0.15)":"transparent",
+                      color:isCurrent?C.greenText:C.gray}}>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Direktchat */}
+          <Card>
+            <Label>Direktchat</Label>
+            {renderChat()}
+          </Card>
         </div>
       </div>
     );
@@ -514,8 +648,8 @@ export default function Teamchemie({ user, onLogout }) {
         </div>
         {[
           {step:"1",title:"Team-Code teilen",desc:"Dein Code steht oben im Header. Schicke ihn per WhatsApp an deine Spieler."},
-          {step:"2",title:"Spieler registrieren lassen",desc:"Spieler öffnen die App, wählen Spieler-Rolle und geben deinen Code ein."},
-          {step:"3",title:"Taktik auswählen",desc:"Wähle eine Formation, passe die Aufstellung an und gib sie frei."},
+          {step:"2",title:"Spieler registrieren lassen",desc:"Spieler oeffnen die App, waehlen Spieler-Rolle und geben deinen Code ein."},
+          {step:"3",title:"Taktik auswaehlen",desc:"Waehle eine Formation, passe die Aufstellung an und gib sie frei."},
           {step:"4",title:"Status abfragen",desc:"Spieler geben vor dem Spiel ihre Fitness und Wunschposition ein."},
         ].map(item=>(
           <div key={item.step} style={{display:"flex",gap:14,marginBottom:16,background:C.surface,borderRadius:12,padding:"12px 14px",border:`1px solid ${C.border}`}}>
@@ -528,12 +662,16 @@ export default function Teamchemie({ user, onLogout }) {
             </div>
           </div>
         ))}
-        <button onClick={()=>setShowOnboarding(false)} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:8}}>
+        <button onClick={()=>setShowOnboarding(false)} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
           Los geht's!
         </button>
       </div>
     </div>
   );
+
+  const navItems = isTrainer
+    ? [{key:"feld",label:"Feld"},{key:"taktik",label:"Taktik"},{key:"kalender",label:"Kalender"},{key:"spieler",label:"Spieler"},{key:"chat",label:"Chat"}]
+    : [{key:"status",label:"Status"},{key:"feld",label:"Feld"},{key:"chat",label:"Chat"}];
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",color:C.white}}
@@ -566,39 +704,38 @@ export default function Teamchemie({ user, onLogout }) {
               {isTrainer && user?.teamCode && <div style={{color:C.accent,fontSize:10,marginTop:1,fontWeight:600}}>Code: {user.teamCode}</div>}
             </div>
           </div>
-          <button onClick={()=>setShowSettings(true)} style={{width:36,height:36,borderRadius:"50%",background:C.surface,border:`1px solid ${C.border}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.gray,fontSize:17,flexShrink:0}}>⚙</button>
+          <button onClick={()=>setShowSettings(true)} style={{width:36,height:36,borderRadius:"50%",background:C.surface,border:`1px solid ${C.border}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.gray,fontSize:17,flexShrink:0}}>
+            &#9881;
+          </button>
         </div>
 
-        {/* Settings Overlay */}
+        {/* Settings */}
         {showSettings && (
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={()=>setShowSettings(false)}>
             <div style={{width:"100%",maxWidth:440,margin:"0 auto",background:C.surface,borderRadius:"20px 20px 0 0",padding:"20px 20px 40px",maxHeight:"85vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
               <div style={{width:36,height:4,borderRadius:2,background:C.border,margin:"0 auto 20px"}}/>
               <div style={{fontSize:17,fontWeight:700,marginBottom:20}}>Einstellungen</div>
-
               <Label>Account</Label>
               <div style={{background:C.surface2,borderRadius:12,padding:14,marginBottom:14,border:`1px solid ${C.border}`}}>
                 <div style={{color:C.white,fontWeight:700}}>{user?.name}</div>
                 <div style={{color:C.gray,fontSize:12,marginTop:2}}>{user?.email}</div>
                 <div style={{color:C.accent,fontSize:11,marginTop:4}}>{isTrainer?"Trainer":"Spieler"} · {user?.teamName}</div>
               </div>
-
               {isTrainer && user?.teamCode && (
                 <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:14,marginBottom:14}}>
-                  <Label>Team-Code für Spieler</Label>
+                  <Label>Team-Code fuer Spieler</Label>
                   <div style={{color:C.accent,fontSize:28,fontWeight:900,letterSpacing:4,textAlign:"center",marginBottom:10}}>{user.teamCode}</div>
-                  <a href={`https://wa.me/?text=${encodeURIComponent(`Tritt unserem Team auf Teamchemie bei!\n\n1. teamchemie1.vercel.app öffnen\n2. Als Spieler registrieren\n3. Code eingeben: ${user.teamCode}`)}`}
+                  <a href={`https://wa.me/?text=${encodeURIComponent(`Tritt unserem Team auf Teamchemie bei!\n\n1. teamchemie1.vercel.app oeffnen\n2. Als Spieler registrieren\n3. Code eingeben: ${user.teamCode}`)}`}
                     target="_blank" rel="noopener noreferrer"
                     style={{display:"block",background:"#25D366",borderRadius:10,color:"#fff",padding:"12px",fontSize:13,fontWeight:700,textAlign:"center",textDecoration:"none"}}>
                     Per WhatsApp einladen
                   </a>
                 </div>
               )}
-
               <Label>Sonstiges</Label>
               <div onClick={()=>setShowImpressum(p=>!p)} style={{display:"flex",alignItems:"center",padding:"13px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
                 <span style={{color:C.grayLight,fontSize:13,flex:1}}>Impressum</span>
-                <span style={{color:C.grayDark}}>{showImpressum?"∨":"›"}</span>
+                <span style={{color:C.grayDark}}>{showImpressum?"v":">"}</span>
               </div>
               {showImpressum && (
                 <div style={{background:C.surface2,borderRadius:10,padding:14,margin:"8px 0",border:`1px solid ${C.border}`}}>
@@ -606,14 +743,13 @@ export default function Teamchemie({ user, onLogout }) {
                     <div style={{fontWeight:600,color:C.grayLight,marginBottom:4}}>Teamchemie</div>
                     <div>Lasse Kaufmann · Frankfurt am Main</div>
                     <div>lassekaufmann01@gmail.com</div>
-                    <div style={{marginTop:8,color:C.grayDark,fontSize:11}}>Version 1.0.0 · © 2025 Teamchemie</div>
+                    <div style={{marginTop:8,color:C.grayDark,fontSize:11}}>Version 1.0.0 · 2025 Teamchemie</div>
                   </div>
                 </div>
               )}
               <div style={{padding:"13px 0",borderBottom:`1px solid ${C.border}`}}>
                 <span style={{color:C.grayLight,fontSize:13}}>App-Version 1.0.0</span>
               </div>
-
               <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:20}}>
                 Abmelden
               </button>
@@ -621,15 +757,20 @@ export default function Teamchemie({ user, onLogout }) {
           </div>
         )}
 
-        {/* Bestätigungs-Popup Spieler entfernen */}
+        {/* Spieler entfernen Popup */}
         {confirmRemove && (
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
             <div style={{background:C.surface2,borderRadius:16,padding:24,maxWidth:340,width:"100%",border:`1px solid ${C.borderHi}`}}>
               <div style={{color:C.white,fontSize:16,fontWeight:700,marginBottom:8}}>Spieler entfernen?</div>
-              <div style={{color:C.gray,fontSize:13,lineHeight:1.6,marginBottom:20}}>Möchtest du <span style={{color:C.white,fontWeight:600}}>{confirmRemove.name}</span> wirklich entfernen?</div>
+              <div style={{color:C.gray,fontSize:13,lineHeight:1.6,marginBottom:20}}>
+                Moechtest du <span style={{color:C.white,fontWeight:600}}>{confirmRemove.name}</span> wirklich entfernen?
+              </div>
               <div style={{display:"flex",gap:10}}>
                 <button onClick={()=>setConfirmRemove(null)} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>Abbrechen</button>
-                <button onClick={()=>{setPlayers(prev=>prev.filter(p=>p.id!==confirmRemove.id));setOrder(prev=>prev.filter(id=>id!==confirmRemove.id));setConfirmRemove(null);showNotif("Spieler entfernt");}} style={{flex:1,background:"rgba(187,51,51,0.15)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>Entfernen</button>
+                <button onClick={()=>{setPlayers(prev=>prev.filter(p=>p.id!==confirmRemove.id));setOrder(prev=>prev.filter(id=>id!==confirmRemove.id));setConfirmRemove(null);showNotif("Spieler entfernt");}}
+                  style={{flex:1,background:"rgba(187,51,51,0.15)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
+                  Entfernen
+                </button>
               </div>
             </div>
           </div>
@@ -638,34 +779,32 @@ export default function Teamchemie({ user, onLogout }) {
         {/* ── TRAINER ── */}
         {isTrainer && (
           <>
-            {/* Feld Tab */}
+            {/* Feld */}
             {tab==="feld" && (
               <>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                   <div style={{fontSize:12,color:C.grayLight}}>Taktik: <span style={{color:C.white,fontWeight:600}}>{tactic.name}</span></div>
-                  <GhostBtn onClick={()=>setTab("taktik")}>Taktik wählen</GhostBtn>
+                  <button onClick={()=>setSwapFirst(null)} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"5px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>
+                    {swapFirst!==null?"Abbrechen":"Aufstellung"}
+                  </button>
                 </div>
-                <Field positions={positions} order={order} players={players} interactive={true}
-                  swapFirst={swapFirst} setSwapFirst={setSwapFirst}
-                  fieldSelected={fieldSelected} setFieldSelected={setFieldSelected}
-                  mentalitaet={mentalitaet} isTrainer={true}/>
-                {swapFirst!==null && <div style={{color:C.accent,fontSize:12,textAlign:"center",marginTop:8}}>Zweiten Spieler antippen zum Tauschen</div>}
-                <div style={{marginTop:14}}>
-                  <Label>Mentalität</Label>
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <Field positions={positions} order={order} players={players} interactive={true} swapFirst={swapFirst} onTap={handleFieldTap}/>
+                <div style={{marginTop:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
                     <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
-                    <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
-                      style={{flex:1,accentColor:C.accent}}/>
+                    <span style={{color:C.gray,fontSize:11}}>{mentalitaet<=30?"Sehr defensiv":mentalitaet<=50?"Ausgewogen":mentalitaet<=70?"Offensiv":"Sehr offensiv"}</span>
                     <span style={{color:C.offColor,fontSize:11}}>Offensiv</span>
                   </div>
+                  <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
+                    style={{width:"100%",accentColor:C.accent}}/>
                 </div>
               </>
             )}
 
-            {/* Taktik Tab */}
+            {/* Taktik */}
             {tab==="taktik" && (
               <>
-                <Label>Formation wählen</Label>
+                <Label>Formation waehlen</Label>
                 <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
                   {ALL_TACTICS.map(t=>(
                     <div key={t.id} onClick={()=>setTactic(t)}
@@ -675,7 +814,7 @@ export default function Teamchemie({ user, onLogout }) {
                           <div style={{color:tactic.id===t.id?C.accent:C.white,fontWeight:700,fontSize:14}}>{t.name}</div>
                           <div style={{color:C.gray,fontSize:11,marginTop:2}}>{t.note}</div>
                         </div>
-                        {tactic.id===t.id && <span style={{color:C.accent,fontSize:18}}>✓</span>}
+                        {tactic.id===t.id && <span style={{color:C.accent,fontSize:16,fontWeight:700}}>v</span>}
                       </div>
                     </div>
                   ))}
@@ -683,12 +822,12 @@ export default function Teamchemie({ user, onLogout }) {
                 <button onClick={releaseTactic} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>
                   "{tactic.name}" an Spieler freigeben
                 </button>
-                {tacticReleased && <div style={{color:C.greenText,fontSize:12,textAlign:"center",marginTop:8}}>✓ Taktik freigegeben – Spieler sehen sie jetzt</div>}
+                {tacticReleased && <div style={{color:C.greenText,fontSize:12,textAlign:"center",marginTop:8}}>Taktik freigegeben - Spieler sehen sie jetzt</div>}
               </>
             )}
 
-            {/* Kalender Tab */}
-            {tab==="spieltage" && (
+            {/* Kalender */}
+            {tab==="kalender" && (
               <SpieltagTab
                 spieltage={spieltage} setSpieltage={setSpieltage}
                 showNewSpieltag={showNewSpieltag} setShowNewSpieltag={setShowNewSpieltag}
@@ -699,10 +838,9 @@ export default function Teamchemie({ user, onLogout }) {
               />
             )}
 
-            {/* Spieler Tab */}
+            {/* Spieler */}
             {tab==="spieler" && (
               <>
-                {/* Anwesenheit Übersicht */}
                 <Card style={{marginBottom:14}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                     <Label>Anwesenheit</Label>
@@ -711,7 +849,9 @@ export default function Teamchemie({ user, onLogout }) {
                   <div style={{display:"flex",gap:20}}>
                     {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error},{k:null,l:"Offen",c:C.grayDark}].map(({k,l,c})=>(
                       <div key={l} style={{textAlign:"center"}}>
-                        <div style={{color:c,fontSize:22,fontWeight:800}}>{k===null?players.filter(p=>!attendance[p.uid||p.id]).length:players.filter(p=>attendance[p.uid||p.id]===k).length}</div>
+                        <div style={{color:c,fontSize:22,fontWeight:800}}>
+                          {k===null?players.filter(p=>!p.isPlaceholder&&!attendance[p.uid||p.id]).length:players.filter(p=>!p.isPlaceholder&&attendance[p.uid||p.id]===k).length}
+                        </div>
                         <div style={{color:C.grayDark,fontSize:9}}>{l}</div>
                       </div>
                     ))}
@@ -722,7 +862,7 @@ export default function Teamchemie({ user, onLogout }) {
                 {players.filter(p=>!p.isPlaceholder).length===0 && (
                   <div style={{background:C.surface,borderRadius:12,padding:20,border:`1px solid ${C.border}`,textAlign:"center",marginBottom:10}}>
                     <div style={{color:C.gray,fontSize:13}}>Noch keine Spieler beigetreten</div>
-                    <div style={{color:C.grayDark,fontSize:11,marginTop:4}}>Teile deinen Team-Code: {user?.teamCode}</div>
+                    <div style={{color:C.grayDark,fontSize:11,marginTop:4}}>Team-Code: {user?.teamCode}</div>
                   </div>
                 )}
                 {players.filter(p=>!p.isPlaceholder).map(p=>{
@@ -730,7 +870,7 @@ export default function Teamchemie({ user, onLogout }) {
                   const att = attendance[p.uid||p.id];
                   const attCfg = {ja:{l:"Dabei",c:C.greenText},vielleicht:{l:"Unsicher",c:C.yellowText},nein:{l:"Fehlt",c:C.error}};
                   return (
-                    <div key={p.id} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
+                    <div key={p.id} onClick={()=>setDetailId(p.id)} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
                       <div style={{width:40,height:40,borderRadius:"50%",background:C.white,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:C.bg,flexShrink:0}}>
                         {p.number}
                       </div>
@@ -743,9 +883,11 @@ export default function Teamchemie({ user, onLogout }) {
                         {att && attCfg[att] && (
                           <span style={{background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}55`,borderRadius:20,padding:"2px 8px",color:attCfg[att].c,fontSize:10,fontWeight:600}}>{attCfg[att].l}</span>
                         )}
-                        <div style={{position:"relative"}}>
-                          <button onClick={e=>{e.stopPropagation();setPlayerMenu(menuOpen?null:p.id);}}
-                            style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,color:C.gray,padding:"4px 8px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>⋯</button>
+                        <div style={{position:"relative"}} onClick={e=>e.stopPropagation()}>
+                          <button onClick={()=>setPlayerMenu(menuOpen?null:p.id)}
+                            style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,color:C.gray,padding:"4px 8px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>
+                            ...
+                          </button>
                           {menuOpen && (
                             <div style={{position:"absolute",right:0,top:"100%",marginTop:4,background:C.surface2,borderRadius:10,border:`1px solid ${C.borderHi}`,overflow:"hidden",zIndex:50,minWidth:200,boxShadow:"0 4px 20px rgba(0,0,0,0.5)"}}>
                               <div style={{padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
@@ -760,13 +902,9 @@ export default function Teamchemie({ user, onLogout }) {
                                   ))}
                                 </div>
                               </div>
-                              <button onClick={()=>{setPlayerMenu(null);setTab("chat");setDetailId(p.id);}}
-                                style={{width:"100%",background:"transparent",border:"none",borderBottom:`1px solid ${C.border}`,color:C.white,padding:"11px 16px",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"left"}}>
-                                💬 Mit Spieler chatten
-                              </button>
                               <button onClick={()=>{setPlayerMenu(null);setConfirmRemove(p);}}
                                 style={{width:"100%",background:"transparent",border:"none",color:C.error,padding:"11px 16px",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"left"}}>
-                                ✕ Aus Team entfernen
+                                Aus Team entfernen
                               </button>
                             </div>
                           )}
@@ -775,39 +913,15 @@ export default function Teamchemie({ user, onLogout }) {
                     </div>
                   );
                 })}
-
-                {/* Trainer-Attribute */}
-                {detailId && players.find(p=>p.id===detailId) && (
-                  <Card style={{marginTop:14}}>
-                    <Label>Trainer-Bewertung für {players.find(p=>p.id===detailId)?.name} (privat)</Label>
-                    {TRAINER_ATTRIBUTES.map(attr=>{
-                      const val = (trainerAttributes[players.find(p=>p.id===detailId)?.uid]||{})[attr.id]||0;
-                      return (
-                        <div key={attr.id} style={{marginBottom:10}}>
-                          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                            <span style={{color:C.gray,fontSize:11}}>{attr.label}</span>
-                            <span style={{color:C.accent,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
-                          </div>
-                          <div style={{display:"flex",gap:3}}>
-                            {[1,2,3,4,5,6,7,8,9,10].map(n=>(
-                              <button key={n} onClick={()=>{const uid=players.find(p=>p.id===detailId)?.uid;if(uid)setTrainerAttributes(prev=>({...prev,[uid]:{...(prev[uid]||{}),[attr.id]:n}}));}}
-                                style={{flex:1,height:18,borderRadius:2,border:"none",cursor:"pointer",background:n<=val?C.accent:"rgba(200,74,255,0.15)"}}/>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </Card>
-                )}
               </>
             )}
 
-            {/* Chat Tab */}
+            {/* Chat */}
             {tab==="chat" && (
               <>
                 {!detailId ? (
                   <>
-                    <Label>Direktchat – Spieler auswählen</Label>
+                    <Label>Direktchat - Spieler auswaehlen</Label>
                     <div style={{display:"flex",flexDirection:"column",gap:8}}>
                       {players.filter(p=>!p.isPlaceholder).map(p=>(
                         <div key={p.id} onClick={()=>setDetailId(p.id)}
@@ -827,9 +941,11 @@ export default function Teamchemie({ user, onLogout }) {
                   </>
                 ) : (
                   <>
-                    <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:14,padding:0}}>← Alle Spieler</button>
+                    <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:14,padding:0}}>
+                      Alle Spieler
+                    </button>
                     <div style={{color:C.white,fontWeight:700,fontSize:15,marginBottom:12}}>Chat mit {players.find(p=>p.id===detailId)?.name}</div>
-                    <ChatUI/>
+                    {renderChat()}
                   </>
                 )}
               </>
@@ -840,19 +956,18 @@ export default function Teamchemie({ user, onLogout }) {
         {/* ── SPIELER ── */}
         {!isTrainer && (
           <>
-            {/* Status Tab */}
+            {/* Status */}
             {tab==="status" && (
               <>
-                {/* Nächste Termine */}
                 {spieltage.length>0 && (
                   <Card style={{marginBottom:10}}>
-                    <Label>Nächste Termine</Label>
+                    <Label>Naechste Termine</Label>
                     {[...spieltage].sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"12:00"))-new Date(b.datum+"T"+(b.zeit||"12:00"))).slice(0,3).map(ev=>{
                       const isSpiel = ev.type==="spiel";
                       const myAtt = (ev.attendance||{})[user?.uid];
                       return (
                         <div key={ev.id} style={{background:C.surface2,borderRadius:10,padding:"11px 12px",marginBottom:8,border:`1px solid ${C.border}`}}>
-                          <div style={{color:C.white,fontWeight:600,fontSize:13,marginBottom:2}}>{isSpiel?`⚽ vs. ${ev.gegner}`:`🏃 ${ev.notiz||"Training"}`}</div>
+                          <div style={{color:C.white,fontWeight:600,fontSize:13,marginBottom:2}}>{isSpiel?`vs. ${ev.gegner}`:(ev.notiz||"Training")}</div>
                           <div style={{color:C.gray,fontSize:11,marginBottom:8}}>
                             {ev.datum?new Date(ev.datum+"T12:00:00").toLocaleDateString("de",{weekday:"short",day:"2-digit",month:"short"}):""}
                             {ev.zeit?` · ${ev.zeit} Uhr`:""}{ev.ort?` · ${ev.ort}`:""}
@@ -872,9 +987,8 @@ export default function Teamchemie({ user, onLogout }) {
                   </Card>
                 )}
 
-                {/* Anwesenheit */}
                 <Card style={{marginBottom:10}}>
-                  <Label>Zum nächsten Spiel</Label>
+                  <Label>Zum naechsten Spiel</Label>
                   <div style={{display:"flex",gap:8}}>
                     {[{k:"ja",l:"Ich bin dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Kann nicht",c:C.error}].map(opt=>(
                       <button key={opt.k} onClick={()=>setMyAttendance(opt.k)}
@@ -886,7 +1000,6 @@ export default function Teamchemie({ user, onLogout }) {
                   </div>
                 </Card>
 
-                {/* Freigegebene Taktik */}
                 {tacticReleased && (
                   <Card style={{marginBottom:10,borderColor:C.accentBorder}}>
                     <Label>Taktik vom Trainer</Label>
@@ -895,7 +1008,6 @@ export default function Teamchemie({ user, onLogout }) {
                   </Card>
                 )}
 
-                {/* Fitness */}
                 <Card style={{marginBottom:10}}>
                   <Label>Fitnesszustand</Label>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
@@ -904,27 +1016,26 @@ export default function Teamchemie({ user, onLogout }) {
                   <FitnessBar value={myFitness}/>
                 </Card>
 
-                {/* Wunschposition */}
                 <Card style={{marginBottom:10}}>
                   <Label>Wunschposition</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {["Torwart","Innenverteidiger","Außenverteidiger","Defensives MF","Zentrales MF","Offensives MF","Außenbahn","Stürmer"].map(pos=>(
+                    {["Torwart","Innenverteidiger","Aussenverteidiger","Defensives MF","Zentrales MF","Offensives MF","Aussenband","Stuermer"].map(pos=>(
                       <Pill key={pos} active={myWish===pos} onClick={()=>setMyWish(pos)}>{pos}</Pill>
                     ))}
                   </div>
                 </Card>
 
-                {/* Stärken */}
                 <Card style={{marginBottom:10}}>
-                  <Label>Meine Stärken</Label>
+                  <Label>Meine Staerken</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {STRENGTHS_LIST.map(s=>(
-                      <Pill key={s.id} active={myStrengths.includes(s.id)} onClick={()=>setMyStrengths(prev=>prev.includes(s.id)?prev.filter(x=>x!==s.id):[...prev,s.id])}>{s.label}</Pill>
+                      <Pill key={s.id} active={myStrengths.includes(s.id)} onClick={()=>setMyStrengths(prev=>prev.includes(s.id)?prev.filter(x=>x!==s.id):[...prev,s.id])}>
+                        {s.label}
+                      </Pill>
                     ))}
                   </div>
                 </Card>
 
-                {/* Nachricht */}
                 <Card style={{marginBottom:10}}>
                   <Label>Nachricht an Trainer</Label>
                   <textarea value={myNote} onChange={e=>setMyNote(e.target.value)} placeholder="Verletzung, besondere Situation..."
@@ -937,7 +1048,7 @@ export default function Teamchemie({ user, onLogout }) {
               </>
             )}
 
-            {/* Feld Tab – Atom Navigation */}
+            {/* Feld - Atom Navigation */}
             {tab==="feld" && (
               <>
                 {playerFieldView===null ? (
@@ -948,7 +1059,7 @@ export default function Teamchemie({ user, onLogout }) {
                         <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid rgba(200,74,255,${0.06+i*0.04})`,transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
                       ))}
                       {[
-                        {id:0,label:"Aufstellung",sub:releasedTactic.name,color:C.accent,x:0,y:0,size:90,center:true},
+                        {id:0,label:"Aufstellung",sub:releasedTactic.name,color:C.accent,x:0,y:0,size:90},
                         {id:1,label:"Offensiv",sub:"Angriff",color:C.offColor,x:0,y:-115,size:68},
                         {id:2,label:"Defensiv",sub:"Abwehr",color:C.defColor,x:0,y:115,size:68},
                         {id:3,label:"Ecke Links",sub:"",color:"#e0c040",x:-115,y:-60,size:64},
@@ -958,9 +1069,8 @@ export default function Teamchemie({ user, onLogout }) {
                           style={{position:"absolute",top:"50%",left:"50%",width:item.size,height:item.size,borderRadius:"50%",
                             background:`${item.color}15`,border:`2px solid ${item.color}88`,
                             transform:`translate(calc(-50% + ${item.x}px),calc(-50% + ${item.y}px))`,
-                            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
-                            boxShadow:`0 0 14px ${item.color}33`}}>
-                          <span style={{color:item.color,fontSize:item.center?10:9,fontWeight:700,textAlign:"center",padding:"0 4px"}}>{item.label}</span>
+                            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
+                          <span style={{color:item.color,fontSize:9,fontWeight:700,textAlign:"center",padding:"0 4px"}}>{item.label}</span>
                           {item.sub && <span style={{color:`${item.color}99`,fontSize:8}}>{item.sub}</span>}
                         </button>
                       ))}
@@ -968,23 +1078,25 @@ export default function Teamchemie({ user, onLogout }) {
                   </>
                 ) : (
                   <>
-                    <button onClick={()=>setPlayerFieldView(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:12,padding:0}}>← Zurück</button>
-                    {playerFieldView===0 && <Field positions={positions} order={order} players={players} interactive={false} mentalitaet={mentalitaet}/>}
+                    <button onClick={()=>setPlayerFieldView(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:12,padding:0}}>
+                      zurueck zur Uebersicht
+                    </button>
+                    {playerFieldView===0 && <Field positions={positions} order={order} players={players} interactive={false}/>}
                     {playerFieldView===1 && <Field positions={positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} interactive={false}/>}
                     {playerFieldView===2 && <Field positions={positions.map(p=>({...p,y:Math.min(96,p.y+8)}))} order={order} players={players} interactive={false}/>}
                     {(playerFieldView===3||playerFieldView===4) && (
-                      <div style={{color:C.gray,fontSize:13,textAlign:"center",padding:"40px 0"}}>Eckball-Aufstellung wird konfiguriert</div>
+                      <div style={{color:C.gray,fontSize:13,textAlign:"center",padding:"40px 0"}}>Eckball-Aufstellung wird vom Trainer konfiguriert</div>
                     )}
                   </>
                 )}
               </>
             )}
 
-            {/* Chat Tab */}
+            {/* Chat */}
             {tab==="chat" && (
               <>
                 <Label>Chat mit Trainer</Label>
-                <ChatUI/>
+                {renderChat()}
               </>
             )}
           </>
@@ -1004,11 +1116,9 @@ export default function Teamchemie({ user, onLogout }) {
           {navItems.map(item=>{
             const active = tab===item.key;
             return (
-              <button key={item.key} onClick={()=>setTab(item.key)}
-                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"10px 4px 8px",background:"transparent",border:"none",cursor:"pointer",gap:3}}>
-                <span style={{fontSize:20,lineHeight:1}}>{item.icon}</span>
-                <span style={{fontSize:9,fontWeight:active?700:500,color:active?C.accent:"rgba(120,120,170,0.7)",letterSpacing:"0.3px"}}>{item.label}</span>
-                {active && <div style={{width:16,height:2,borderRadius:1,background:C.accent,marginTop:1}}/>}
+              <button key={item.key} onClick={()=>{setTab(item.key);setSwapFirst(null);}}
+                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 4px 10px",background:"transparent",border:"none",cursor:"pointer",gap:0,borderTop:`2px solid ${active?C.accent:"transparent"}`}}>
+                <span style={{fontSize:11,fontWeight:active?700:500,color:active?C.accent:"rgba(120,120,170,0.7)",letterSpacing:"0.3px"}}>{item.label}</span>
               </button>
             );
           })}
