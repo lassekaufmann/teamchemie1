@@ -133,7 +133,7 @@ function TabBtn({label,active,onClick}) {
 }
 
 // ── SPIELFELD ────────────────────────────────────────────
-function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label}) {
+function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label,mentalitaet}) {
   const fieldRef = useRef(null);
   const [dragging,setDragging] = useState(null);
   const dragMoved = useRef(false);
@@ -191,6 +191,21 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         <path d="M28 118 A16 16 0 0 1 72 118" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
         <circle cx="50" cy="14" r="1" fill="rgba(200,74,255,0.4)"/>
         <circle cx="50" cy="126" r="1" fill="rgba(200,74,255,0.4)"/>
+        {/* Mentalität Pfeile */}
+        {mentalitaet!==undefined && mentalitaet>55 && (
+          <>
+            <path d="M50 35 L50 15 M44 22 L50 15 L56 22" fill="none" stroke={`rgba(255,112,64,${Math.min(0.6,(mentalitaet-55)/45)})`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M35 45 L35 25 M29 32 L35 25 L41 32" fill="none" stroke={`rgba(255,112,64,${Math.min(0.4,(mentalitaet-55)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M65 45 L65 25 M59 32 L65 25 L71 32" fill="none" stroke={`rgba(255,112,64,${Math.min(0.4,(mentalitaet-55)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </>
+        )}
+        {mentalitaet!==undefined && mentalitaet<45 && (
+          <>
+            <path d="M50 105 L50 125 M44 118 L50 125 L56 118" fill="none" stroke={`rgba(64,144,224,${Math.min(0.6,(45-mentalitaet)/45)})`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M35 95 L35 115 M29 108 L35 115 L41 108" fill="none" stroke={`rgba(64,144,224,${Math.min(0.4,(45-mentalitaet)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M65 95 L65 115 M59 108 L65 115 L71 108" fill="none" stroke={`rgba(64,144,224,${Math.min(0.4,(45-mentalitaet)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </>
+        )}
       </svg>
       {label && <div style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.6)",borderRadius:8,padding:"2px 10px",fontSize:9,color:"rgba(200,74,255,0.7)",zIndex:5}}>{label}</div>}
       {editMode && (
@@ -279,36 +294,15 @@ function CornerField({positions,setPositions,players,order,side,type}) {
         <circle cx="50" cy="14" r="1" fill="rgba(200,74,255,0.35)"/>
         <circle cx="50" cy="126" r="1" fill="rgba(200,74,255,0.35)"/>
 
-        {/* Eckfahne – Offensiv links oben, Defensiv rechts oben gespiegelt */}
-        {type==="angriff" && side==="links" && (
-          <>
-            <line x1="2" y1="5" x2="7" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-            <line x1="2" y1="2" x2="7" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-          </>
-        )}
-        {type==="angriff" && side==="rechts" && (
-          <>
-            <line x1="98" y1="5" x2="93" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-            <line x1="98" y1="2" x2="93" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-          </>
-        )}
-        {type==="abwehr" && side==="links" && (
-          <>
-            <line x1="98" y1="5" x2="93" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-            <line x1="98" y1="2" x2="93" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-          </>
-        )}
-        {type==="abwehr" && side==="rechts" && (
-          <>
-            <line x1="2" y1="5" x2="7" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-            <line x1="2" y1="2" x2="7" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-          </>
-        )}
+        {/* Eckfahne – dezenter Punkt in der richtigen Ecke */}
+        {type==="angriff" && side==="links"  && <circle cx="2"  cy="2"   r="2" fill="#c84aff" opacity="0.65"/>}
+        {type==="angriff" && side==="rechts" && <circle cx="98" cy="2"   r="2" fill="#c84aff" opacity="0.65"/>}
+        {type==="abwehr"  && side==="links"  && <circle cx="98" cy="138" r="2" fill="#c84aff" opacity="0.65"/>}
+        {type==="abwehr"  && side==="rechts" && <circle cx="2"  cy="138" r="2" fill="#c84aff" opacity="0.65"/>}
       </svg>
-      <div style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.6)",borderRadius:8,padding:"2px 10px",fontSize:9,color:"rgba(200,74,255,0.7)",zIndex:5,whiteSpace:"nowrap"}}>
-        Halten und Ziehen zum Positionieren
-      </div>
-      {positions.map((pos,idx)=>{
+      <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(0,0,0,0.7)",borderRadius:8,padding:"3px 8px",fontSize:9,color:C.accent}}>
+        Halten = Ziehen
+      </div>((pos,idx)=>{
         const pid=order?order[idx]:idx+1;
         const player=players?players.find(p=>p.id===pid):null;
         const isPlaceholder=!player||player.isPlaceholder;
@@ -498,7 +492,7 @@ export default function Teamchemie({user,onLogout}) {
   const [tactic,setTactic]         = useState(ALL_TACTICS[0]);
   const [releasedTactic,setReleasedTactic] = useState(ALL_TACTICS[0]);
   const [tacticReleased,setTacticReleased] = useState(false);
-  const [mentalitaet,setMentalitaet] = useState(50);
+  const [mentalität,setMentalität] = useState(50);
   const [swapFirst,setSwapFirst]   = useState(null);
   const [detailId,setDetailId]     = useState(null);
   const [chat,setChat]             = useState([]);
@@ -518,6 +512,7 @@ export default function Teamchemie({user,onLogout}) {
   const [myNote,setMyNote]         = useState("");
   const [myStrengths,setMyStrengths] = useState([]);
   const [myFoot,setMyFoot]         = useState("");
+  const [myFormation,setMyFormation] = useState("");
   const [myPartners,setMyPartners] = useState([]);
   const [playerFieldView,setPlayerFieldView] = useState(null);
   const [trainerFieldView,setTrainerFieldView] = useState(null);
@@ -630,7 +625,7 @@ export default function Teamchemie({user,onLogout}) {
     if (user?.uid) {
       updateDoc(doc(db,"users",user.uid),{
         fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,
-        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,
+        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,wishFormation:myFormation,
       }).catch(console.error);
     }
     if (myAttendance) setAttendance(prev=>({...prev,[user?.uid]:myAttendance}));
@@ -766,10 +761,10 @@ export default function Teamchemie({user,onLogout}) {
             </Card>
           )}
 
-          {/* Staerken kombiniert */}
+          {/* Stärken kombiniert */}
           {allStrengths.length>0 && (
             <Card style={{marginBottom:10}}>
-              <Label>Staerken</Label>
+              <Label>Stärken</Label>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {allStrengths.map(s=>{
                   const sl = STRENGTHS_LIST.find(x=>x.id===s);
@@ -789,10 +784,10 @@ export default function Teamchemie({user,onLogout}) {
             </Card>
           )}
 
-          {/* Starker Fuss */}
+          {/* Starker Fuß */}
           {dp.strongFoot && (
             <Card style={{marginBottom:10}}>
-              <Label>Starker Fuss</Label>
+              <Label>Starker Fuß</Label>
               <div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.strongFoot}</div>
             </Card>
           )}
@@ -847,9 +842,9 @@ export default function Teamchemie({user,onLogout}) {
             })}
           </Card>
 
-          {/* Trainer Staerken vergeben */}
+          {/* Trainer Stärken vergeben */}
           <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
-            <Label>Staerken vom Trainer vergeben</Label>
+            <Label>Stärken vom Trainer vergeben</Label>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
               {STRENGTHS_LIST.map(s=>{
                 const active = (trainerStrengths[dp.uid]||[]).includes(s.id);
@@ -866,9 +861,9 @@ export default function Teamchemie({user,onLogout}) {
             </div>
           </Card>
 
-          {/* Position aendern */}
+          {/* Position ändern */}
           <Card style={{marginBottom:14}}>
-            <Label>Position im Team aendern</Label>
+            <Label>Position im Team ändern</Label>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
               {ROLE_LABELS.map((label,i)=>{
                 const isCurrent = order[i]===dp.id;
@@ -907,8 +902,8 @@ export default function Teamchemie({user,onLogout}) {
         </div>
         {[
           {step:"1",title:"Team-Code teilen",desc:"Dein Code steht oben im Header. Schicke ihn per WhatsApp an deine Spieler."},
-          {step:"2",title:"Spieler registrieren lassen",desc:"Spieler oeffnen die App, waehlen Spieler-Rolle und geben deinen Code ein."},
-          {step:"3",title:"Taktik auswaehlen",desc:"Waehle eine Formation, passe die Aufstellung an und gib sie frei."},
+          {step:"2",title:"Spieler registrieren lassen",desc:"Spieler oeffnen die App, wählen Spieler-Rolle und geben deinen Code ein."},
+          {step:"3",title:"Taktik auswählen",desc:"Wähle eine Formation, passe die Aufstellung an und gib sie frei."},
           {step:"4",title:"Status abfragen",desc:"Spieler geben vor dem Spiel ihre Fitness und Wunschposition ein."},
         ].map(item=>(
           <div key={item.step} style={{display:"flex",gap:14,marginBottom:16,background:C.surface,borderRadius:12,padding:"12px 14px",border:`1px solid ${C.border}`}}>
@@ -982,7 +977,7 @@ export default function Teamchemie({user,onLogout}) {
               </div>
               {isTrainer && user?.teamCode && (
                 <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:14,marginBottom:14}}>
-                  <Label>Team-Code fuer Spieler</Label>
+                  <Label>Team-Code für Spieler</Label>
                   <div style={{color:C.accent,fontSize:28,fontWeight:900,letterSpacing:4,textAlign:"center",marginBottom:10}}>{user.teamCode}</div>
                   <a href={`https://wa.me/?text=${encodeURIComponent(`Tritt unserem Team auf Teamchemie bei!\n\n1. teamchemie1.vercel.app oeffnen\n2. Als Spieler registrieren\n3. Code eingeben: ${user.teamCode}`)}`}
                     target="_blank" rel="noopener noreferrer"
@@ -1074,7 +1069,7 @@ export default function Teamchemie({user,onLogout}) {
 
                     {/* Standards */}
                     <Card style={{marginTop:14}}>
-                      <Label>Standardschuetzen</Label>
+                      <Label>Standardschützen</Label>
                       <div style={{display:"flex",flexDirection:"column",gap:8}}>
                         {[
                           {key:"elfmeter",  label:"Elfmeter"},
@@ -1105,15 +1100,15 @@ export default function Teamchemie({user,onLogout}) {
                       </div>
                     </Card>
 
-                    {/* Mentalitaet */}
+                    {/* Mentalität */}
                     <Card>
-                      <Label>Mentalitaet</Label>
+                      <Label>Mentalität</Label>
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
                         <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
-                        <span style={{color:C.gray,fontSize:11}}>{mentalitaet<=30?"Sehr defensiv":mentalitaet<=50?"Ausgewogen":mentalitaet<=70?"Offensiv":"Sehr offensiv"}</span>
+                        <span style={{color:C.gray,fontSize:11}}>{mentalität<=30?"Sehr defensiv":mentalität<=50?"Ausgewogen":mentalität<=70?"Offensiv":"Sehr offensiv"}</span>
                         <span style={{color:C.offColor,fontSize:11}}>Offensiv</span>
                       </div>
-                      <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
+                      <input type="range" min={0} max={100} value={mentalität} onChange={e=>setMentalität(Number(e.target.value))}
                         style={{width:"100%",accentColor:C.accent}}/>
                     </Card>
                   </>
@@ -1123,7 +1118,7 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                       <button onClick={()=>{setTrainerFieldView(null);setSwapFirst(null);setFieldEditMode(false);}}
                         style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
-                        zurueck
+                        zurück
                       </button>
                       <div style={{color:C.white,fontSize:13,fontWeight:600}}>
                         {trainerFieldView==="grund"?"Grundaufstellung":
@@ -1167,7 +1162,19 @@ export default function Teamchemie({user,onLogout}) {
                           editMode={fieldEditMode}
                           swapFirst={fieldEditMode?swapFirst:null}
                           onTap={fieldEditMode?handleFieldTap:null}
+                          mentalitaet={trainerFieldView==="grund"?mentalitaet:undefined}
                         />
+                        {trainerFieldView==="grund" && (
+                          <Card style={{marginTop:6}}>
+                            <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                              <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
+                              <span style={{color:C.gray,fontSize:11}}>{mentalitaet<=30?"Sehr defensiv":mentalitaet<=50?"Ausgewogen":mentalitaet<=70?"Offensiv":"Sehr offensiv"}</span>
+                              <span style={{color:C.offColor,fontSize:11}}>Offensiv</span>
+                            </div>
+                            <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
+                              style={{width:"100%",accentColor:C.accent}}/>
+                          </Card>
+                        )}
                         {!fieldEditMode && <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginTop:-6,marginBottom:8}}>Auf "Bearbeiten" tippen um Spieler zu verschieben</div>}
                       </>
                     )}
@@ -1211,7 +1218,7 @@ export default function Teamchemie({user,onLogout}) {
             {/* Taktik */}
             {tab==="taktik" && (
               <>
-                <Label>Formation waehlen</Label>
+                <Label>Formation wählen</Label>
                 <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
                   {[...ALL_TACTICS,...customTactics].map(t=>(
                     <div key={t.id} onClick={()=>setTactic(t)}
@@ -1384,7 +1391,7 @@ export default function Teamchemie({user,onLogout}) {
               <>
                 {!detailId ? (
                   <>
-                    <Label>Direktchat – Spieler auswaehlen</Label>
+                    <Label>Direktchat – Spieler auswählen</Label>
                     <div style={{display:"flex",flexDirection:"column",gap:8}}>
                       {players.filter(p=>!p.isPlaceholder).map(p=>(
                         <div key={p.id} onClick={()=>setDetailId(p.id)}
@@ -1406,7 +1413,7 @@ export default function Teamchemie({user,onLogout}) {
                   <>
                     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
                       <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
-                        zurueck
+                        zurück
                       </button>
                       <div style={{color:C.white,fontWeight:700,fontSize:15}}>
                         Chat mit {players.find(p=>p.id===detailId)?.name}
@@ -1428,7 +1435,7 @@ export default function Teamchemie({user,onLogout}) {
               <>
                 {spieltage.length>0 && (
                   <Card style={{marginBottom:10}}>
-                    <Label>Naechste Termine</Label>
+                    <Label>Nächste Termine</Label>
                     {[...spieltage].sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"12:00"))-new Date(b.datum+"T"+(b.zeit||"12:00"))).slice(0,3).map(ev=>{
                       const isSpiel = ev.type==="spiel";
                       const myAtt = (ev.attendance||{})[user?.uid];
@@ -1455,7 +1462,7 @@ export default function Teamchemie({user,onLogout}) {
                 )}
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Zum naechsten Spiel</Label>
+                  <Label>Zum nächsten Spiel</Label>
                   <div style={{display:"flex",gap:8}}>
                     {[{k:"ja",l:"Ich bin dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Kann nicht",c:C.error}].map(opt=>(
                       <button key={opt.k} onClick={()=>setMyAttendance(opt.k)}
@@ -1486,19 +1493,28 @@ export default function Teamchemie({user,onLogout}) {
                 <Card style={{marginBottom:10}}>
                   <Label>Wunschposition</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {["Torwart","Innenverteidiger","Aussenverteidiger","Defensives MF","Zentrales MF","Offensives MF","Aussenband","Stuermer"].map(pos=>(
+                    {["Torwart","Innenverteidiger","Außenverteidiger","Defensives MF","Zentrales MF","Offensives MF","Außenbahn","Stürmer"].map(pos=>(
                       <Pill key={pos} active={myWish===pos} onClick={()=>setMyWish(pos)}>{pos}</Pill>
                     ))}
                   </div>
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Meine Staerken</Label>
+                  <Label>Meine Stärken</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {STRENGTHS_LIST.map(s=>(
                       <Pill key={s.id} active={myStrengths.includes(s.id)} onClick={()=>setMyStrengths(prev=>prev.includes(s.id)?prev.filter(x=>x!==s.id):[...prev,s.id])}>
                         {s.label}
                       </Pill>
+                    ))}
+                  </div>
+                </Card>
+
+                <Card style={{marginBottom:10}}>
+                  <Label>Lieblingsformation</Label>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                    {ALL_TACTICS.map(t=>(
+                      <Pill key={t.id} active={myFormation===t.name} onClick={()=>setMyFormation(t.name)}>{t.name}</Pill>
                     ))}
                   </div>
                 </Card>
@@ -1552,7 +1568,7 @@ export default function Teamchemie({user,onLogout}) {
                 ) : (
                   <>
                     <button onClick={()=>setPlayerFieldView(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:12,padding:0}}>
-                      zurueck zur Uebersicht
+                      zurück zur Übersicht
                     </button>
                     {playerFieldView===0 && <Field positions={positions} order={order} players={players} interactive={false}/>}
                     {playerFieldView===1 && <Field positions={positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} interactive={false}/>}
