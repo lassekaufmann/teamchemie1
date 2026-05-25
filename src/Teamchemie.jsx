@@ -14,7 +14,7 @@ const C = {
   green:      "#1e3a4a",
   greenLight: "#2a5a6a",
   greenText:  "#4ac8c8",
-  white:      "#ffffff",
+  white:      "#ffffff", 
   gray:       "#7878aa",
   grayDark:   "#44446a",
   grayLight:  "#c0c0e0",
