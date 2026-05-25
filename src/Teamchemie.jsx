@@ -821,6 +821,161 @@ function TacticEditor({players, onSave, onClose}) {
   );
 }
 
+// ── SPIELTAG TAB KOMPONENTE ───────────────────────────────
+function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,newSpieltagForm,setNewSpieltagForm,activeSpieltagId,setActiveSpieltagId,setTactic,setReleasedTactic,setTacticReleased,players,user,showNotif}) {
+  const sorted = [...spieltage].sort((a,b)=>new Date(a.datum+'T'+(a.zeit||'00:00'))-new Date(b.datum+'T'+(b.zeit||'00:00')));
+  return <>
+    {!showNewSpieltag&&(
+      <div style={{display:"flex",gap:8,marginBottom:14}}>
+        <button onClick={()=>{setShowNewSpieltag("spiel");setNewSpieltagForm({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1,type:"spiel"});}}
+          style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
+          ⚽ Spiel eintragen
+        </button>
+        <button onClick={()=>{setShowNewSpieltag("training");setNewSpieltagForm({datum:"",zeit:"",ort:"",notiz:"",type:"training"});}}
+          style={{flex:1,background:"rgba(74,200,200,0.1)",border:`1px solid rgba(74,200,200,0.3)`,borderRadius:10,color:C.greenText,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
+          🏃 Training eintragen
+        </button>
+      </div>
+    )}
+
+    {showNewSpieltag&&(
+      <div style={{background:C.surface,borderRadius:12,padding:16,border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.3)"}`,marginBottom:14}}>
+        <div style={{color:showNewSpieltag==="spiel"?C.accent:C.greenText,fontWeight:700,fontSize:13,marginBottom:14}}>
+          {showNewSpieltag==="spiel"?"⚽ Neues Spiel":"🏃 Neues Training"}
+        </div>
+        <div style={{display:"flex",gap:8,marginBottom:12}}>
+          <div style={{flex:2}}>
+            <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Datum</div>
+            <input type="date" value={newSpieltagForm.datum}
+              onChange={e=>setNewSpieltagForm(p=>({...p,datum:e.target.value}))}
+              style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Uhrzeit</div>
+            <input type="time" value={newSpieltagForm.zeit||""}
+              onChange={e=>setNewSpieltagForm(p=>({...p,zeit:e.target.value}))}
+              style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
+          </div>
+        </div>
+        {showNewSpieltag==="spiel"&&<>
+          <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Gegner</div>
+          <input placeholder="z.B. FC Musterstadt" value={newSpieltagForm.gegner||""}
+            onChange={e=>setNewSpieltagForm(p=>({...p,gegner:e.target.value}))}
+            style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+          <div style={{display:"flex",gap:8,marginBottom:12}}>
+            {["heim","auswärts"].map(v=>(
+              <button key={v} onClick={()=>setNewSpieltagForm(p=>({...p,heimAuswärts:v}))}
+                style={{flex:1,padding:"9px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
+                  border:`1px solid ${newSpieltagForm.heimAuswärts===v?C.accentBorder:C.border}`,
+                  background:newSpieltagForm.heimAuswärts===v?C.accentDim:"transparent",
+                  color:newSpieltagForm.heimAuswärts===v?C.accent:C.gray}}>
+                {v==="heim"?"🏠 Heim":"✈ Auswärts"}
+              </button>
+            ))}
+          </div>
+        </>}
+        <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Ort / Adresse</div>
+        <input placeholder="z.B. Sportplatz Hauptstraße 1" value={newSpieltagForm.ort||""}
+          onChange={e=>setNewSpieltagForm(p=>({...p,ort:e.target.value}))}
+          style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+        <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>
+          {showNewSpieltag==="training"?"Beschreibung":"Notizen"}
+        </div>
+        <textarea value={newSpieltagForm.notiz||""} onChange={e=>setNewSpieltagForm(p=>({...p,notiz:e.target.value}))}
+          placeholder={showNewSpieltag==="training"?"z.B. Schwerpunkt Standards...":"z.B. Früh erscheinen..."}
+          style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",resize:"none",height:70,outline:"none",boxSizing:"border-box",marginBottom:14}}/>
+        {showNewSpieltag==="spiel"&&<>
+          <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Taktik</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
+            {ALL_TACTICS.slice(0,6).map(t=>(
+              <button key={t.id} onClick={()=>setNewSpieltagForm(p=>({...p,tacticId:t.id}))}
+                style={{padding:"5px 12px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
+                  border:`1px solid ${newSpieltagForm.tacticId===t.id?C.accentBorder:C.border}`,
+                  background:newSpieltagForm.tacticId===t.id?C.accentDim:"transparent",
+                  color:newSpieltagForm.tacticId===t.id?C.accent:C.gray}}>
+                {t.name}
+              </button>
+            ))}
+          </div>
+        </>}
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>setShowNewSpieltag(false)}
+            style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>
+            Abbrechen
+          </button>
+          <button onClick={()=>{
+            if(!newSpieltagForm.datum) return showNotif("Bitte Datum eingeben");
+            if(showNewSpieltag==="spiel"&&!newSpieltagForm.gegner?.trim()) return showNotif("Bitte Gegner eingeben");
+            const newEv={id:Date.now(),type:showNewSpieltag,datum:newSpieltagForm.datum,zeit:newSpieltagForm.zeit,ort:newSpieltagForm.ort,notiz:newSpieltagForm.notiz,gegner:newSpieltagForm.gegner,heimAuswärts:newSpieltagForm.heimAuswärts,tacticId:newSpieltagForm.tacticId||1,released:false,attendance:{}};
+            setSpieltage(prev=>[...prev,newEv]);
+            setShowNewSpieltag(false);
+            showNotif(showNewSpieltag==="spiel"?`Spiel vs. ${newEv.gegner} eingetragen`:"Training eingetragen");
+          }} style={{flex:1,background:showNewSpieltag==="spiel"?C.accentDim:"rgba(74,200,200,0.15)",border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.4)"}`,borderRadius:10,color:showNewSpieltag==="spiel"?C.accent:C.greenText,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
+            Speichern
+          </button>
+        </div>
+      </div>
+    )}
+
+    {spieltage.length===0&&!showNewSpieltag&&(
+      <div style={{background:C.surface,borderRadius:12,padding:24,border:`1px solid ${C.border}`,textAlign:"center"}}>
+        <div style={{fontSize:32,marginBottom:8}}>📅</div>
+        <div style={{color:C.gray,fontSize:13,marginBottom:4}}>Noch keine Einträge</div>
+        <div style={{color:C.grayDark,fontSize:11}}>Trage dein nächstes Spiel oder Training ein</div>
+      </div>
+    )}
+
+    {sorted.map(ev=>{
+      const isSpiel=ev.type==="spiel";
+      const color=isSpiel?C.accent:C.greenText;
+      const isActive=activeSpieltagId===ev.id;
+      const attendCount=Object.values(ev.attendance||{}).filter(v=>v==="ja").length;
+      const maybeCount=Object.values(ev.attendance||{}).filter(v=>v==="vielleicht").length;
+      const absentCount=Object.values(ev.attendance||{}).filter(v=>v==="nein").length;
+      return (
+        <div key={ev.id} style={{background:isActive?C.accentDim:C.surface,borderRadius:12,padding:14,border:`1px solid ${isActive?C.accentBorder:C.border}`,marginBottom:10}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                <span style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:700,color}}>
+                  {isSpiel?"⚽ Spiel":"🏃 Training"}
+                </span>
+                {isSpiel&&ev.heimAuswärts&&<span style={{color:C.grayDark,fontSize:10}}>{ev.heimAuswärts==="heim"?"Heim":"Auswärts"}</span>}
+                {isActive&&<span style={{color:C.accent,fontSize:10,fontWeight:600}}>Aktiv</span>}
+                {isSpiel&&ev.released&&<span style={{color:C.greenText,fontSize:10,fontWeight:600}}>Freigegeben</span>}
+              </div>
+              <div style={{color:C.white,fontWeight:700,fontSize:14}}>{isSpiel?`vs. ${ev.gegner||"–"}`:(ev.notiz||"Training")}</div>
+              <div style={{color:C.gray,fontSize:11,marginTop:3}}>
+                {ev.datum?new Date(ev.datum+'T12:00:00').toLocaleDateString("de",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"}):""}
+                {ev.zeit?` · ${ev.zeit} Uhr`:""}
+                {ev.ort?` · ${ev.ort}`:""}
+              </div>
+            </div>
+            <button onClick={()=>setSpieltage(prev=>prev.filter(s=>s.id!==ev.id))}
+              style={{background:"transparent",border:"none",color:C.grayDark,fontSize:16,cursor:"pointer",padding:"0 4px"}}>✕</button>
+          </div>
+          <div style={{display:"flex",gap:14,marginBottom:10,paddingTop:8,borderTop:`1px solid ${C.border}`}}>
+            <div style={{textAlign:"center"}}><div style={{color:C.greenText,fontSize:18,fontWeight:800}}>{attendCount}</div><div style={{color:C.grayDark,fontSize:9}}>Dabei</div></div>
+            <div style={{textAlign:"center"}}><div style={{color:C.yellowText,fontSize:18,fontWeight:800}}>{maybeCount}</div><div style={{color:C.grayDark,fontSize:9}}>Vielleicht</div></div>
+            <div style={{textAlign:"center"}}><div style={{color:C.error,fontSize:18,fontWeight:800}}>{absentCount}</div><div style={{color:C.grayDark,fontSize:9}}>Fehlt</div></div>
+            <div style={{textAlign:"center"}}><div style={{color:C.grayDark,fontSize:18,fontWeight:800}}>{players.length-attendCount-maybeCount-absentCount}</div><div style={{color:C.grayDark,fontSize:9}}>Offen</div></div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {isSpiel&&<button onClick={()=>{setActiveSpieltagId(ev.id);const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];setTactic(t);showNotif(`Spiel vs. ${ev.gegner} aktiviert`);}}
+              style={{flex:1,background:isActive?"transparent":C.surface2,border:`1px solid ${isActive?C.accentBorder:C.border}`,borderRadius:8,color:isActive?C.accent:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
+              {isActive?"Aktiv":"Aktivieren"}
+            </button>}
+            {isSpiel&&<button onClick={()=>{setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];if(!ev.released){setReleasedTactic(t);setTacticReleased(true);}showNotif(ev.released?"Freigabe zurückgezogen":"Taktik freigegeben");}}
+              style={{flex:1,background:ev.released?"rgba(74,200,200,0.1)":"transparent",border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
+              {ev.released?"Freigabe aufheben":"Freigeben"}
+            </button>}
+          </div>
+        </div>
+      );
+    })}
+  </>;
+}
+
 // ── HAUPTKOMPONENTE ───────────────────────────────────────
 export default function Teamchemie({ user, onLogout }) {
   const isTrainer = user?.role === "trainer";
@@ -1908,222 +2063,23 @@ export default function Teamchemie({ user, onLogout }) {
             )}
           </>}
 
-          {tab==="spieltage"&&(()=>{
-            // Kalender State (lokal hier definiert via closure)
-            const allEvents = spieltage;
-            const upcoming = [...allEvents].sort((a,b)=>new Date(a.datum+' '+(a.zeit||'00:00'))-new Date(b.datum+' '+(b.zeit||'00:00')));
-
-            const EventCard = ({ev})=>{
-              const isSpiel = ev.type==="spiel";
-              const isActive = activeSpieltagId===ev.id;
-              const color = isSpiel ? C.accent : C.greenText;
-              const attended = (ev.attendance||{})[user?.uid];
-              const attendCount = Object.values(ev.attendance||{}).filter(v=>v==="ja").length;
-              const maybeCount = Object.values(ev.attendance||{}).filter(v=>v==="vielleicht").length;
-              const absentCount = Object.values(ev.attendance||{}).filter(v=>v==="nein").length;
-
-              return (
-                <div style={{background:isActive?C.accentDim:C.surface,borderRadius:12,padding:14,border:`1px solid ${isActive?C.accentBorder:C.border}`,marginBottom:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                    <div style={{flex:1}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                        <span style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:700,color}}>
-                          {isSpiel?"⚽ Spiel":"🏃 Training"}
-                        </span>
-                        {isSpiel&&ev.heimAuswärts&&<span style={{color:C.grayDark,fontSize:10}}>{ev.heimAuswärts==="heim"?"Heim":"Auswärts"}</span>}
-                        {isActive&&<span style={{color:C.accent,fontSize:10,fontWeight:600}}>Aktiv</span>}
-                        {isSpiel&&ev.released&&<span style={{color:C.greenText,fontSize:10,fontWeight:600}}>Freigegeben</span>}
-                      </div>
-                      <div style={{color:C.white,fontWeight:700,fontSize:14}}>
-                        {isSpiel ? `vs. ${ev.gegner||"–"}` : (ev.notiz||"Training")}
-                      </div>
-                      <div style={{color:C.gray,fontSize:11,marginTop:3}}>
-                        {ev.datum ? new Date(ev.datum+'T12:00:00').toLocaleDateString("de",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"}) : "Kein Datum"}
-                        {ev.zeit ? ` · ${ev.zeit} Uhr` : ""}
-                        {ev.ort ? ` · ${ev.ort}` : ""}
-                      </div>
-                      {isSpiel&&ev.tacticId&&<div style={{color:C.accent,fontSize:10,marginTop:2}}>{(ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0]).name}</div>}
-                    </div>
-                    <button onClick={()=>setSpieltage(prev=>prev.filter(s=>s.id!==ev.id))}
-                      style={{background:"transparent",border:"none",color:C.grayDark,fontSize:16,cursor:"pointer",padding:"0 4px",flexShrink:0}}>✕</button>
-                  </div>
-
-                  {/* Anwesenheits-Counter */}
-                  <div style={{display:"flex",gap:14,marginBottom:10,paddingTop:8,borderTop:`1px solid ${C.border}`}}>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{color:C.greenText,fontSize:18,fontWeight:800}}>{attendCount}</div>
-                      <div style={{color:C.grayDark,fontSize:9}}>Dabei</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{color:C.yellowText,fontSize:18,fontWeight:800}}>{maybeCount}</div>
-                      <div style={{color:C.grayDark,fontSize:9}}>Vielleicht</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{color:C.error,fontSize:18,fontWeight:800}}>{absentCount}</div>
-                      <div style={{color:C.grayDark,fontSize:9}}>Fehlt</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{color:C.grayDark,fontSize:18,fontWeight:800}}>{players.length-attendCount-maybeCount-absentCount}</div>
-                      <div style={{color:C.grayDark,fontSize:9}}>Offen</div>
-                    </div>
-                  </div>
-
-                  {/* Buttons */}
-                  <div style={{display:"flex",gap:8}}>
-                    {isSpiel&&<button onClick={()=>{
-                      setActiveSpieltagId(ev.id);
-                      const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];
-                      setTactic(t);
-                      showNotif(`Spiel vs. ${ev.gegner} aktiviert`);
-                    }} style={{flex:1,background:isActive?"transparent":C.surface2,border:`1px solid ${isActive?C.accentBorder:C.border}`,borderRadius:8,color:isActive?C.accent:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
-                      {isActive?"Aktiv":"Aktivieren"}
-                    </button>}
-                    {isSpiel&&<button onClick={()=>{
-                      setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));
-                      const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];
-                      if(!ev.released){setReleasedTactic(t);setTacticReleased(true);}
-                      showNotif(ev.released?`Freigabe zurückgezogen`:`Taktik freigegeben`);
-                    }} style={{flex:1,background:ev.released?"rgba(74,200,200,0.1)":"transparent",border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
-                      {ev.released?"Freigabe aufheben":"Freigeben"}
-                    </button>}
-                  </div>
-                </div>
-              );
-            };
-
-            return <>
-              {/* Neuer Eintrag Button */}
-              {!showNewSpieltag&&(
-                <div style={{display:"flex",gap:8,marginBottom:14}}>
-                  <button onClick={()=>{setShowNewSpieltag("spiel");setNewSpieltagForm({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1,type:"spiel"});}}
-                    style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
-                    ⚽ Spiel eintragen
-                  </button>
-                  <button onClick={()=>{setShowNewSpieltag("training");setNewSpieltagForm({datum:"",zeit:"",ort:"",notiz:"",type:"training"});}}
-                    style={{flex:1,background:"rgba(74,200,200,0.1)",border:`1px solid rgba(74,200,200,0.3)`,borderRadius:10,color:C.greenText,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
-                    🏃 Training eintragen
-                  </button>
-                </div>
-              )}
-
-              {/* Formular */}
-              {showNewSpieltag&&(
-                <div style={{background:C.surface,borderRadius:12,padding:16,border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.3)"}`,marginBottom:14}}>
-                  <div style={{color:showNewSpieltag==="spiel"?C.accent:C.greenText,fontWeight:700,fontSize:13,marginBottom:14}}>
-                    {showNewSpieltag==="spiel"?"⚽ Neues Spiel":"🏃 Neues Training"}
-                  </div>
-
-                  {/* Datum + Zeit */}
-                  <div style={{display:"flex",gap:8,marginBottom:12}}>
-                    <div style={{flex:2}}>
-                      <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Datum</div>
-                      <input type="date" value={newSpieltagForm.datum}
-                        onChange={e=>setNewSpieltagForm(p=>({...p,datum:e.target.value}))}
-                        style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
-                    </div>
-                    <div style={{flex:1}}>
-                      <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Uhrzeit</div>
-                      <input type="time" value={newSpieltagForm.zeit||""}
-                        onChange={e=>setNewSpieltagForm(p=>({...p,zeit:e.target.value}))}
-                        style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
-                    </div>
-                  </div>
-
-                  {/* Spiel-spezifisch */}
-                  {showNewSpieltag==="spiel"&&<>
-                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Gegner</div>
-                    <input placeholder="z.B. FC Musterstadt" value={newSpieltagForm.gegner||""}
-                      onChange={e=>setNewSpieltagForm(p=>({...p,gegner:e.target.value}))}
-                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
-
-                    <div style={{display:"flex",gap:8,marginBottom:12}}>
-                      {["heim","auswärts"].map(v=>(
-                        <button key={v} onClick={()=>setNewSpieltagForm(p=>({...p,heimAuswärts:v}))}
-                          style={{flex:1,padding:"9px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
-                            border:`1px solid ${newSpieltagForm.heimAuswärts===v?C.accentBorder:C.border}`,
-                            background:newSpieltagForm.heimAuswärts===v?C.accentDim:"transparent",
-                            color:newSpieltagForm.heimAuswärts===v?C.accent:C.gray}}>
-                          {v==="heim"?"🏠 Heim":"✈ Auswärts"}
-                        </button>
-                      ))}
-                    </div>
-                  </>}
-
-                  {/* Ort */}
-                  <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Ort / Adresse</div>
-                  <input placeholder="z.B. Sportplatz Hauptstraße 1" value={newSpieltagForm.ort||""}
-                    onChange={e=>setNewSpieltagForm(p=>({...p,ort:e.target.value}))}
-                    style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
-
-                  {/* Notiz */}
-                  <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>
-                    {showNewSpieltag==="training"?"Beschreibung (optional)":"Notizen (optional)"}
-                  </div>
-                  <textarea placeholder={showNewSpieltag==="training"?"z.B. Schwerpunkt Standardsituationen...":"z.B. Wichtig: früh erscheinen..."}
-                    value={newSpieltagForm.notiz||""}
-                    onChange={e=>setNewSpieltagForm(p=>({...p,notiz:e.target.value}))}
-                    style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",resize:"none",height:70,outline:"none",boxSizing:"border-box",marginBottom:14}}/>
-
-                  {/* Taktik nur für Spiele */}
-                  {showNewSpieltag==="spiel"&&<>
-                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Taktik</div>
-                    <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-                      {ALL_TACTICS.slice(0,6).map(t=>(
-                        <button key={t.id} onClick={()=>setNewSpieltagForm(p=>({...p,tacticId:t.id}))}
-                          style={{padding:"5px 12px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
-                            border:`1px solid ${newSpieltagForm.tacticId===t.id?C.accentBorder:C.border}`,
-                            background:newSpieltagForm.tacticId===t.id?C.accentDim:"transparent",
-                            color:newSpieltagForm.tacticId===t.id?C.accent:C.gray}}>
-                          {t.name}
-                        </button>
-                      ))}
-                    </div>
-                  </>}
-
-                  <div style={{display:"flex",gap:8}}>
-                    <button onClick={()=>setShowNewSpieltag(false)}
-                      style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>
-                      Abbrechen
-                    </button>
-                    <button onClick={()=>{
-                      if (!newSpieltagForm.datum) return showNotif("Bitte Datum eingeben");
-                      if (showNewSpieltag==="spiel" && !newSpieltagForm.gegner?.trim()) return showNotif("Bitte Gegner eingeben");
-                      const newEv = {
-                        id: Date.now(),
-                        type: showNewSpieltag,
-                        datum: newSpieltagForm.datum,
-                        zeit: newSpieltagForm.zeit,
-                        ort: newSpieltagForm.ort,
-                        notiz: newSpieltagForm.notiz,
-                        gegner: newSpieltagForm.gegner,
-                        heimAuswärts: newSpieltagForm.heimAuswärts,
-                        tacticId: newSpieltagForm.tacticId||1,
-                        released: false,
-                        attendance: {},
-                      };
-                      setSpieltage(prev=>[...prev, newEv]);
-                      setShowNewSpieltag(false);
-                      showNotif(showNewSpieltag==="spiel"?`Spiel vs. ${newEv.gegner} eingetragen`:"Training eingetragen");
-                    }} style={{flex:1,background:showNewSpieltag==="spiel"?C.accentDim:"rgba(74,200,200,0.15)",border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.4)"}`,borderRadius:10,color:showNewSpieltag==="spiel"?C.accent:C.greenText,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
-                      Speichern
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Leerer Zustand */}
-              {upcoming.length===0&&!showNewSpieltag&&(
-                <div style={{background:C.surface,borderRadius:12,padding:24,border:`1px solid ${C.border}`,textAlign:"center"}}>
-                  <div style={{fontSize:32,marginBottom:8}}>📅</div>
-                  <div style={{color:C.gray,fontSize:13,marginBottom:4}}>Noch keine Einträge</div>
-                  <div style={{color:C.grayDark,fontSize:11}}>Trage dein nächstes Spiel oder Training ein</div>
-                </div>
-              )}
-
-              {/* Liste */}
-              {upcoming.map(ev=><EventCard key={ev.id} ev={ev}/>)}
-            </>;
-          })()}
+          {tab==="spieltage"&&<SpieltagTab
+            spieltage={spieltage}
+            setSpieltage={setSpieltage}
+            showNewSpieltag={showNewSpieltag}
+            setShowNewSpieltag={setShowNewSpieltag}
+            newSpieltagForm={newSpieltagForm}
+            setNewSpieltagForm={setNewSpieltagForm}
+            activeSpieltagId={activeSpieltagId}
+            setActiveSpieltagId={setActiveSpieltagId}
+            setTactic={setTactic}
+            setReleasedTactic={setReleasedTactic}
+            setTacticReleased={setTacticReleased}
+            players={players}
+            user={user}
+            showNotif={showNotif}
+          />}
+          </>}
         </>}
 
         {/* ── SPIELER ── */}
