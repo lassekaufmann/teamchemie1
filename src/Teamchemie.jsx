@@ -302,7 +302,8 @@ function CornerField({positions,setPositions,players,order,side,type}) {
       </svg>
       <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(0,0,0,0.7)",borderRadius:8,padding:"3px 8px",fontSize:9,color:C.accent}}>
         Halten = Ziehen
-      </div>((pos,idx)=>{
+      </div>
+      {positions.map((pos,idx)=>{
         const pid=order?order[idx]:idx+1;
         const player=players?players.find(p=>p.id===pid):null;
         const isPlaceholder=!player||player.isPlaceholder;
