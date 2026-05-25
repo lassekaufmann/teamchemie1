@@ -380,7 +380,12 @@ export default function Teamchemie({user,onLogout}) {
   const [myFoot,setMyFoot]         = useState("");
   const [myPartners,setMyPartners] = useState([]);
   const [playerFieldView,setPlayerFieldView] = useState(null);
-  const [trainerAttributes,setTrainerAttributes] = useState({});
+  const [trainerFieldView,setTrainerFieldView] = useState(null);
+  const [customTactics,setCustomTactics]   = useState([]);
+  const [showCustomTacticEditor,setShowCustomTacticEditor] = useState(false);
+  const [customTacticName,setCustomTacticName] = useState("");
+  const [customTacticNote,setCustomTacticNote] = useState("");
+  const [customTacticBase,setCustomTacticBase] = useState(1);
   const [trainerStrengths,setTrainerStrengths] = useState({});
   const [swipeStartX,setSwipeStartX] = useState(null);
   const [showOnboarding,setShowOnboarding] = useState(isTrainer && !user?.hasSeenOnboarding);
@@ -779,25 +784,73 @@ export default function Teamchemie({user,onLogout}) {
         {/* ── TRAINER ── */}
         {isTrainer && (
           <>
-            {/* Feld */}
+            {/* Feld - Atom Navigation */}
             {tab==="feld" && (
               <>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                  <div style={{fontSize:12,color:C.grayLight}}>Taktik: <span style={{color:C.white,fontWeight:600}}>{tactic.name}</span></div>
-                  <button onClick={()=>setSwapFirst(null)} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"5px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>
-                    {swapFirst!==null?"Abbrechen":"Aufstellung"}
-                  </button>
-                </div>
-                <Field positions={positions} order={order} players={players} interactive={true} swapFirst={swapFirst} onTap={handleFieldTap}/>
-                <div style={{marginTop:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                    <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
-                    <span style={{color:C.gray,fontSize:11}}>{mentalitaet<=30?"Sehr defensiv":mentalitaet<=50?"Ausgewogen":mentalitaet<=70?"Offensiv":"Sehr offensiv"}</span>
-                    <span style={{color:C.offColor,fontSize:11}}>Offensiv</span>
-                  </div>
-                  <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
-                    style={{width:"100%",accentColor:C.accent}}/>
-                </div>
+                {trainerFieldView===null ? (
+                  <>
+                    <div style={{color:C.accent,fontSize:12,textAlign:"center",marginBottom:4}}>Taktik: <span style={{color:C.white,fontWeight:600}}>{tactic.name}</span></div>
+                    <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginBottom:8}}>Bereich antippen zum Bearbeiten</div>
+                    <div style={{position:"relative",height:300,margin:"0 auto"}}>
+                      {[130,90,50].map((r,i)=>(
+                        <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid rgba(200,74,255,${0.06+i*0.04})`,transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
+                      ))}
+                      {[
+                        {id:"grund",    label:"Grundaufstellung", sub:"Bearbeiten",   color:C.accent,   x:0,   y:0,   size:90},
+                        {id:"offensiv", label:"Offensiv",         sub:"Angriff",      color:C.offColor, x:0,   y:-115,size:68},
+                        {id:"defensiv", label:"Defensiv",         sub:"Abwehr",       color:C.defColor, x:0,   y:115, size:68},
+                        {id:"eckeAngriff",label:"Ecke Angriff",  sub:"",             color:"#e0c040",  x:-115,y:-60, size:64},
+                        {id:"eckeAbwehr", label:"Ecke Abwehr",   sub:"",             color:C.greenText,x:115, y:-60, size:64},
+                      ].map(item=>(
+                        <button key={item.id} onClick={()=>setTrainerFieldView(item.id)}
+                          style={{position:"absolute",top:"50%",left:"50%",width:item.size,height:item.size,borderRadius:"50%",
+                            background:`${item.color}15`,border:`2px solid ${item.color}88`,
+                            transform:`translate(calc(-50% + ${item.x}px),calc(-50% + ${item.y}px))`,
+                            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+                            boxShadow:`0 0 14px ${item.color}22`}}>
+                          <span style={{color:item.color,fontSize:item.id==="grund"?11:9,fontWeight:700,textAlign:"center",padding:"0 4px"}}>{item.label}</span>
+                          {item.sub && <span style={{color:`${item.color}88`,fontSize:8}}>{item.sub}</span>}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{marginTop:14}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                        <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
+                        <span style={{color:C.gray,fontSize:11}}>{mentalitaet<=30?"Sehr defensiv":mentalitaet<=50?"Ausgewogen":mentalitaet<=70?"Offensiv":"Sehr offensiv"}</span>
+                        <span style={{color:C.offColor,fontSize:11}}>Offensiv</span>
+                      </div>
+                      <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
+                        style={{width:"100%",accentColor:C.accent}}/>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                      <button onClick={()=>{setTrainerFieldView(null);setSwapFirst(null);}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                        zurueck
+                      </button>
+                      <div style={{color:C.white,fontSize:13,fontWeight:600}}>
+                        {trainerFieldView==="grund"?"Grundaufstellung":trainerFieldView==="offensiv"?"Offensiv-Ausrichtung":trainerFieldView==="defensiv"?"Defensiv-Ausrichtung":trainerFieldView==="eckeAngriff"?"Ecke Angriff":"Ecke Abwehr"}
+                      </div>
+                      <button onClick={()=>setSwapFirst(null)} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:swapFirst!==null?C.accent:C.gray,padding:"5px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>
+                        {swapFirst!==null?"Abbrechen":"Tauschen"}
+                      </button>
+                    </div>
+                    {(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
+                      <Field
+                        positions={trainerFieldView==="offensiv"?positions.map(p=>({...p,y:Math.max(4,p.y-8)})):trainerFieldView==="defensiv"?positions.map(p=>({...p,y:Math.min(96,p.y+8)})):positions}
+                        order={order} players={players} interactive={true} swapFirst={swapFirst} onTap={handleFieldTap}
+                      />
+                    )}
+                    {(trainerFieldView==="eckeAngriff"||trainerFieldView==="eckeAbwehr") && (
+                      <div style={{color:C.gray,fontSize:13,textAlign:"center",padding:"40px 0",background:C.surface,borderRadius:12,border:`1px solid ${C.border}`}}>
+                        <div style={{marginBottom:8,color:C.white,fontWeight:600}}>Eckball-Editor</div>
+                        <div>Bald verfuegbar – Spieler auf dem Feld positionieren</div>
+                      </div>
+                    )}
+                    {swapFirst!==null && <div style={{color:C.accent,fontSize:12,textAlign:"center",marginTop:8}}>Spieler ausgewaehlt – zweiten antippen zum Tauschen</div>}
+                  </>
+                )}
               </>
             )}
 
@@ -805,24 +858,80 @@ export default function Teamchemie({user,onLogout}) {
             {tab==="taktik" && (
               <>
                 <Label>Formation waehlen</Label>
-                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-                  {ALL_TACTICS.map(t=>(
+                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+                  {[...ALL_TACTICS,...customTactics].map(t=>(
                     <div key={t.id} onClick={()=>setTactic(t)}
                       style={{background:tactic.id===t.id?C.accentDim:C.surface,border:`1px solid ${tactic.id===t.id?C.accentBorder:C.border}`,borderRadius:12,padding:"12px 14px",cursor:"pointer"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                         <div>
-                          <div style={{color:tactic.id===t.id?C.accent:C.white,fontWeight:700,fontSize:14}}>{t.name}</div>
+                          <div style={{color:tactic.id===t.id?C.accent:C.white,fontWeight:700,fontSize:14}}>{t.name} {t.custom&&<span style={{color:C.greenText,fontSize:10,fontWeight:600}}>Eigene</span>}</div>
                           <div style={{color:C.gray,fontSize:11,marginTop:2}}>{t.note}</div>
                         </div>
-                        {tactic.id===t.id && <span style={{color:C.accent,fontSize:16,fontWeight:700}}>v</span>}
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          {t.custom && <button onClick={e=>{e.stopPropagation();setCustomTactics(prev=>prev.filter(x=>x.id!==t.id));if(tactic.id===t.id)setTactic(ALL_TACTICS[0]);}} style={{background:"transparent",border:"none",color:C.error,cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>x</button>}
+                          {tactic.id===t.id && <span style={{color:C.accent,fontSize:16,fontWeight:700}}>v</span>}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* Eigene Formation erstellen */}
+                {!showCustomTacticEditor ? (
+                  <button onClick={()=>setShowCustomTacticEditor(true)}
+                    style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,color:C.grayLight,padding:"12px",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:12}}>
+                    + Eigene Formation erstellen
+                  </button>
+                ) : (
+                  <div style={{background:C.surface,borderRadius:12,padding:16,border:`1px solid ${C.accentBorder}`,marginBottom:12}}>
+                    <div style={{color:C.accent,fontWeight:700,fontSize:13,marginBottom:12}}>Eigene Formation erstellen</div>
+                    <Label>Name der Formation</Label>
+                    <input value={customTacticName} onChange={e=>setCustomTacticName(e.target.value)} placeholder="z.B. Mein 4-3-3"
+                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+                    <Label>Taktikhinweis</Label>
+                    <input value={customTacticNote} onChange={e=>setCustomTacticNote(e.target.value)} placeholder="z.B. Pressig, aggressives Pressing"
+                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+                    <Label>Basierend auf Formation</Label>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+                      {ALL_TACTICS.slice(0,8).map(t=>(
+                        <button key={t.id} onClick={()=>setCustomTacticBase(t.id)}
+                          style={{padding:"5px 12px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
+                            border:`1px solid ${customTacticBase===t.id?C.accentBorder:C.border}`,
+                            background:customTacticBase===t.id?C.accentDim:"transparent",
+                            color:customTacticBase===t.id?C.accent:C.gray}}>
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{display:"flex",gap:8}}>
+                      <button onClick={()=>setShowCustomTacticEditor(false)}
+                        style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>
+                        Abbrechen
+                      </button>
+                      <button onClick={()=>{
+                        if (!customTacticName.trim()) return showNotif("Bitte Namen eingeben");
+                        const newId = Date.now();
+                        const baseFormation = TACTIC_FORMATION[customTacticBase]||"4-4-2";
+                        const newTactic = {
+                          id:newId, name:customTacticName.trim(), note:customTacticNote.trim()||"Eigene Formation",
+                          custom:true, baseFormation,
+                        };
+                        setCustomTactics(prev=>[...prev,newTactic]);
+                        setTactic(newTactic);
+                        setCustomTacticName(""); setCustomTacticNote(""); setCustomTacticBase(1);
+                        setShowCustomTacticEditor(false);
+                        showNotif(`Formation "${newTactic.name}" erstellt`);
+                      }} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
+                        Erstellen
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <button onClick={releaseTactic} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>
                   "{tactic.name}" an Spieler freigeben
                 </button>
-                {tacticReleased && <div style={{color:C.greenText,fontSize:12,textAlign:"center",marginTop:8}}>Taktik freigegeben - Spieler sehen sie jetzt</div>}
+                {tacticReleased && <div style={{color:C.greenText,fontSize:12,textAlign:"center",marginTop:8}}>Taktik freigegeben</div>}
               </>
             )}
 
