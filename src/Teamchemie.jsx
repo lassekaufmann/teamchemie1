@@ -157,19 +157,11 @@ const FIELD_INFOS = {
   mentalitaet: "Lege den grundsätzlichen Ansatz deiner Mannschaft fest. Links bedeutet maximale Defensive und Sicherheit, rechts maximalen Offensivdruck. Die Mitte ist ein ausgewogener Ansatz.",
 };
 
-const INIT_PLAYERS = [
-  {id:1, name:"Max Müller",   number:1,  fitness:90,ruhe:false,partners:[2,3], note:"",                           wishRole:"Torwart",              strengths:["elfmeter"],                   strongFoot:"rechts"},
-  {id:2, name:"Jonas Weber",  number:5,  fitness:70,ruhe:true, partners:[3,5], note:"Knie etwas verspannt",       wishRole:"Zentrales Mittelfeld L",strengths:["passspiel","standards"],       strongFoot:"rechts"},
-  {id:3, name:"Lukas Bauer",  number:4,  fitness:85,ruhe:false,partners:[2,4], note:"",                           wishRole:"Innenverteidiger L",    strengths:["passspiel"],                   strongFoot:"rechts"},
-  {id:4, name:"Tim Fischer",  number:3,  fitness:60,ruhe:true, partners:[3],   note:"Schlecht geschlafen",        wishRole:"Links-Verteidiger",     strengths:[],                             strongFoot:"links"},
-  {id:5, name:"Felix Schulz", number:2,  fitness:95,ruhe:false,partners:[2,6], note:"",                           wishRole:"Rechts-Verteidiger",    strengths:["flanken","dribbling"],         strongFoot:"rechts"},
-  {id:6, name:"Nico Wagner",  number:8,  fitness:80,ruhe:false,partners:[7,8], note:"",                           wishRole:"Zentrales Mittelfeld L",strengths:["passspiel","standards"],       strongFoot:"rechts"},
-  {id:7, name:"Kevin Braun",  number:6,  fitness:75,ruhe:false,partners:[6,8], note:"",                           wishRole:"Zentrales Mittelfeld R",strengths:["passspiel"],                   strongFoot:"beide"},
-  {id:8, name:"Lars Hofmann", number:10, fitness:88,ruhe:true, partners:[6,9], note:"Brauche heute etwas Abstand",wishRole:"Linksaußen",            strengths:["dribbling","flanken","abschluss"],strongFoot:"links"},
-  {id:9, name:"Sven Koch",    number:11, fitness:92,ruhe:false,partners:[10,8],note:"",                           wishRole:"Linksaußen",            strengths:["dribbling","abschluss"],       strongFoot:"rechts"},
-  {id:10,name:"Tobias Klein", number:9,  fitness:65,ruhe:false,partners:[9,11],note:"Leichte Erkältung",          wishRole:"Stürmer",               strengths:["abschluss","elfmeter"],        strongFoot:"rechts"},
-  {id:11,name:"Finn Richter", number:7,  fitness:78,ruhe:false,partners:[10],  note:"",                           wishRole:"Rechtsaußen",           strengths:["flanken","dribbling"],         strongFoot:"beide"},
-];
+const INIT_PLAYERS = Array.from({length:11},(_,i)=>({
+  id:i+1, name:`Spieler ${i+1}`, number:i+1,
+  fitness:85, ruhe:false, partners:[], note:"",
+  wishRole:"", strengths:[], strongFoot:"", isPlaceholder:true,
+}));
 
 const CHAT_INIT = [
   {from:"trainer",text:"Lars, heute bitte auf der linken Seite spielen.",time:"09:12"},
@@ -843,7 +835,7 @@ export default function Teamchemie({ user, onLogout }) {
   const [mentalitaet,setMentalitaet] = useState(50);
   const [customTactics,setCustomTactics] = useState([]);
   const [showTacticEditor,setShowTacticEditor] = useState(false);
-  const [playerFieldSlide,setPlayerFieldSlide] = useState(0);
+  const [playerFieldSlide,setPlayerFieldSlide] = useState(null);
   const [playerSwipeStartX,setPlayerSwipeStartX] = useState(null);
   const [playerCornerSide,setPlayerCornerSide] = useState("links");
   const [chat,setChat]         = useState(CHAT_INIT);
@@ -858,8 +850,15 @@ export default function Teamchemie({ user, onLogout }) {
   const [playerMenu,setPlayerMenu]       = useState(null);
   const [showSettings,setShowSettings]   = useState(false);
   const [showImpressum,setShowImpressum] = useState(false);
+  const [spieltage,setSpieltage]         = useState([]);
+  const [activeSpieltagId,setActiveSpieltagId] = useState(null);
+  const [showNewSpieltag,setShowNewSpieltag]   = useState(false);
+  const [newSpieltagForm,setNewSpieltagForm]   = useState({datum:"",gegner:"",heimAuswärts:"heim",notiz:""});
   const [standards,setStandards] = useState({elfmeter:10, freistoss:6, eckeLinks:9, eckeRechts:5});
   const [swipeStartX, setSwipeStartX]   = useState(null);
+  const [attendance, setAttendance]     = useState({}); // {uid: "ja"|"nein"|"vielleicht"}
+  const [myAttendance, setMyAttendance] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(!user?.hasSeenOnboarding);
 
   const trainerTabs = ["feld","spieler","taktik","chat","ai"];
   const playerTabs  = ["status","feld","chat"];
@@ -894,7 +893,7 @@ export default function Teamchemie({ user, onLogout }) {
     ? tactic.posGrund
     : FORMATIONS[formKey] || FORMATIONS["4-3-3"];
 
-  // Spieler aus Firebase laden
+  // Spieler aus Firebase laden – immer 11 Slots, echte Spieler füllen von oben auf
   useEffect(() => {
     if (!user?.teamCode) return;
     const q = query(
@@ -903,26 +902,37 @@ export default function Teamchemie({ user, onLogout }) {
       where("role", "==", "player")
     );
     const unsub = onSnapshot(q, (snap) => {
-      if (snap.empty) {
-        setLoadingPlayers(false);
-        return;
-      }
-      const firebasePlayers = snap.docs.map((doc, idx) => ({
-        id:         idx + 1,
-        uid:        doc.id,
-        name:       doc.data().name || "Unbekannt",
-        number:     doc.data().number || idx + 1,
-        fitness:    doc.data().fitness || 85,
-        ruhe:       doc.data().ruhe || false,
-        partners:   doc.data().partners || [],
-        note:       doc.data().note || "",
-        wishRole:   doc.data().wishRole || "",
-        wishFormation: doc.data().wishFormation || "",
-        strengths:  doc.data().strengths || [],
-        strongFoot: doc.data().strongFoot || "",
+      const firebasePlayers = snap.docs.map((d, idx) => ({
+        id:          idx + 1,
+        uid:         d.id,
+        name:        d.data().name || `Spieler ${idx+1}`,
+        number:      d.data().number || idx + 1,
+        fitness:     d.data().fitness || 85,
+        ruhe:        d.data().ruhe || false,
+        partners:    d.data().partners || [],
+        note:        d.data().note || "",
+        wishRole:    d.data().wishRole || "",
+        wishFormation: d.data().wishFormation || "",
+        strengths:   d.data().strengths || [],
+        strongFoot:  d.data().strongFoot || "",
+        attendance:  d.data().attendance || null,
+        isPlaceholder: false,
       }));
-      setPlayers(firebasePlayers);
-      setOrder(firebasePlayers.map(p => p.id));
+
+      // Immer 11 Slots – echte Spieler vorne, Platzhalter hinten
+      const slots = Array.from({length:11}, (_,i) => {
+        if (i < firebasePlayers.length) return firebasePlayers[i];
+        return {
+          id: i+1, uid: null,
+          name: `Spieler ${i+1}`, number: i+1,
+          fitness:85, ruhe:false, partners:[], note:"",
+          wishRole:"", strengths:[], strongFoot:"",
+          isPlaceholder: true,
+        };
+      });
+
+      setPlayers(slots);
+      setOrder(slots.map(p=>p.id));
       setLoadingPlayers(false);
     });
     return unsub;
@@ -981,7 +991,6 @@ export default function Teamchemie({ user, onLogout }) {
       setChat(prev=>[...prev, msg]);
     }
   }
-  async function sendAiMessage() {
   function saveNumber(pid){
     const n=parseInt(numInput);
     if(!isNaN(n)&&n>0&&n<=99){setPlayers(prev=>prev.map(p=>p.id===pid?{...p,number:n}:p));showNotif("Rückennummer gespeichert");}
@@ -1049,21 +1058,21 @@ export default function Teamchemie({ user, onLogout }) {
     setOrder(o);showNotif(`${dp.name.split(" ")[0]} — ${ROLE_LABELS[slotIdx]}`);
   }
   function syncStatus(){
-    // Lokaler State
     setPlayers(prev=>prev.map(p=>p.uid===user.uid?{...p,fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,partners:myPartners,strengths:myStrengths,strongFoot:myFoot,wishFormation:myFormation}:p));
-    // Firebase speichern
     if (user?.uid) {
       updateDoc(doc(db, "users", user.uid), {
-        fitness:   myFitness,
-        ruhe:      myFokus > 50,
-        note:      myNote,
-        wishRole:  myWish,
-        partners:  myPartners,
-        strengths: myStrengths,
-        strongFoot:myFoot,
-        wishFormation: myFormation,
+        fitness:      myFitness,
+        ruhe:         myFokus > 50,
+        note:         myNote,
+        wishRole:     myWish,
+        partners:     myPartners,
+        strengths:    myStrengths,
+        strongFoot:   myFoot,
+        wishFormation:myFormation,
+        attendance:   myAttendance,
       }).catch(console.error);
     }
+    if (myAttendance) setAttendance(prev=>({...prev,[user.uid||user.id]:myAttendance}));
     showNotif("Status an Trainer übermittelt");
   }
 
@@ -1131,26 +1140,27 @@ export default function Teamchemie({ user, onLogout }) {
       {order.map((pid,idx)=>{
         const pos=positions[idx];if(!pos)return null;
         const player=players.find(p=>p.id===pid);if(!player)return null;
+        const isPlaceholder = player.isPlaceholder;
         const isMe=!interactive&&player.id===ME_ID;
         const isSwapFirst=interactive&&swapFirst===idx;
         const isSelected=interactive&&fieldSelected===idx;
         return (
-          <div key={pid} onClick={()=>interactive&&handleFieldTap(idx)}
-            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:3,cursor:interactive?"pointer":"default",transition:"left 0.5s ease,top 0.5s ease"}}>
+          <div key={pid} onClick={()=>interactive&&!isPlaceholder&&handleFieldTap(idx)}
+            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:3,cursor:interactive&&!isPlaceholder?"pointer":"default",transition:"left 0.5s ease,top 0.5s ease"}}>
             <div style={{
               width:30,height:30,borderRadius:"50%",
-              background: isSwapFirst||isSelected ? C.accent : "#14143a",
-              border:`2px solid ${isSwapFirst||isSelected ? C.accent : isMe ? C.accent : "rgba(200,74,255,0.7)"}`,
+              background: isPlaceholder ? "rgba(255,255,255,0.04)" : isSwapFirst||isSelected ? C.accent : "#14143a",
+              border:`2px solid ${isPlaceholder ? "rgba(200,74,255,0.2)" : isSwapFirst||isSelected ? C.accent : isMe ? C.accent : "rgba(200,74,255,0.7)"}`,
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              boxShadow: isSwapFirst||isSelected
+              boxShadow: isPlaceholder ? "none" : isSwapFirst||isSelected
                 ? `0 0 14px ${C.accent}, 0 0 28px ${C.accent}55`
                 : isMe
                 ? `0 0 10px ${C.accent}88, 0 0 20px ${C.accent}33`
                 : `0 0 8px rgba(200,74,255,0.5), 0 0 16px rgba(200,74,255,0.2)`,
               transition:"all 0.2s",
             }}>
-              <span style={{color: isSwapFirst||isSelected ? C.bg : C.white, fontSize:8,fontWeight:800,lineHeight:1}}>{player.number}</span>
-              <span style={{color: isSwapFirst||isSelected ? C.bg : "rgba(255,255,255,0.6)", fontSize:6,lineHeight:1.2,fontWeight:600}}>{player.name.split(" ")[0].slice(0,5)}</span>
+              <span style={{color: isPlaceholder ? "rgba(200,74,255,0.3)" : isSwapFirst||isSelected ? C.bg : C.white, fontSize:8,fontWeight:800,lineHeight:1}}>{player.number}</span>
+              {!isPlaceholder&&<span style={{color: isSwapFirst||isSelected ? C.bg : "rgba(255,255,255,0.6)", fontSize:6,lineHeight:1.2,fontWeight:600}}>{player.name.split(" ")[0].slice(0,5)}</span>}
             </div>
           </div>
         );
@@ -1309,44 +1319,102 @@ export default function Teamchemie({ user, onLogout }) {
     />;
   }
 
-  // ── HAUPTANSICHT ──────────────────────────────────────────
+  // ── ONBOARDING ────────────────────────────────────────────
+  if (showOnboarding && isTrainer) return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px"}}>
+      <div style={{maxWidth:400,width:"100%"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{width:64,height:64,borderRadius:18,background:"#1a1a35",border:"2px solid rgba(200,74,255,0.5)",margin:"0 auto 16px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="36" height="36" viewBox="0 0 28 28">
+              <rect x="2" y="2" width="24" height="24" rx="1.5" fill="none" stroke="rgba(200,74,255,0.6)" strokeWidth="0.9"/>
+              <line x1="2" y1="14" x2="26" y2="14" stroke="rgba(200,74,255,0.4)" strokeWidth="0.8"/>
+              <circle cx="14" cy="14" r="4" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.8"/>
+              <circle cx="14" cy="14" r="1.5" fill="#c84aff"/>
+              <ellipse cx="14" cy="14" rx="7" ry="2.8" fill="none" stroke="#c84aff" strokeWidth="1" opacity="0.8"/>
+              <ellipse cx="14" cy="14" rx="7" ry="2.8" fill="none" stroke="#c84aff" strokeWidth="0.7" opacity="0.45" transform="rotate(60,14,14)"/>
+            </svg>
+          </div>
+          <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5}}>
+            <span style={{color:C.white}}>Willkommen bei </span><span style={{color:C.accent}}>Teamchemie</span>
+          </div>
+          <div style={{color:C.gray,fontSize:14,marginTop:8}}>Hallo {user?.name}! So startest du:</div>
+        </div>
+
+        {[
+          {step:"1", title:"Team-Code teilen", desc:"Dein Code steht oben im Header. Schicke ihn per WhatsApp an deine Spieler."},
+          {step:"2", title:"Spieler registrieren lassen", desc:"Spieler öffnen die App, wählen Spieler-Rolle und geben deinen Code ein."},
+          {step:"3", title:"Taktik auswählen", desc:"Wähle eine Formation, passe die Aufstellung an und gib sie frei."},
+          {step:"4", title:"Status abfragen", desc:"Spieler geben vor dem Spiel ihre Fitness und Wunschposition ein."},
+        ].map(item=>(
+          <div key={item.step} style={{display:"flex",gap:14,marginBottom:16,background:C.surface,borderRadius:12,padding:"12px 14px",border:`1px solid ${C.border}`}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <span style={{color:C.accent,fontSize:13,fontWeight:800}}>{item.step}</span>
+            </div>
+            <div>
+              <div style={{color:C.white,fontWeight:600,fontSize:13}}>{item.title}</div>
+              <div style={{color:C.gray,fontSize:12,marginTop:3,lineHeight:1.5}}>{item.desc}</div>
+            </div>
+          </div>
+        ))}
+
+        <button onClick={()=>setShowOnboarding(false)} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:8}}>
+          Los geht's!
+        </button>
+      </div>
+    </div>
+  );
   const ruheCount=players.filter(p=>p.ruhe).length;
+
+  // Bottom Nav config
+  const trainerNavItems = [
+    {key:"feld",      label:"Feld",      icon:"⚽"},
+    {key:"taktik",    label:"Taktik",    icon:"📋"},
+    {key:"spieltage", label:"Kalender",  icon:"📅"},
+    {key:"spieler",   label:"Spieler",   icon:"👥"},
+    {key:"chat",      label:"Chat",      icon:"💬"},
+  ];
+  const playerNavItems = [
+    {key:"status",   label:"Status",    icon:"📊"},
+    {key:"feld",     label:"Feld",      icon:"⚽"},
+    {key:"chat",     label:"Chat",      icon:"💬"},
+  ];
+  const navItems = isTrainer ? trainerNavItems : playerNavItems;
+
   return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",color:C.white}}
       onTouchStart={e=>setSwipeStartX(e.touches[0].clientX)}
       onTouchEnd={e=>handleSwipe(e.changedTouches[0].clientX)}
     >
-      <div style={{maxWidth:440,margin:"0 auto",padding:"20px 20px 48px"}}>
+      <div style={{maxWidth:440,margin:"0 auto",padding:"20px 20px 90px"}}>
 
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
             {/* Logo Icon */}
-            <svg width="32" height="32" viewBox="230 16 220 220" style={{flexShrink:0}}>
-              <rect x="230" y="16" width="220" height="220" rx="22" fill="#1a1a35" stroke="rgba(200,74,255,0.5)" strokeWidth="2"/>
-              <rect x="252" y="36" width="176" height="180" rx="2" fill="none" stroke="rgba(200,74,255,0.55)" strokeWidth="2.5"/>
-              <line x1="252" y1="126" x2="428" y2="126" stroke="rgba(200,74,255,0.55)" strokeWidth="2.5"/>
-              <circle cx="340" cy="126" r="22" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="2"/>
-              <rect x="288" y="36" width="104" height="33" rx="1.5" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="2"/>
-              <rect x="317" y="36" width="46" height="11" rx="1" fill="none" stroke="rgba(200,74,255,0.35)" strokeWidth="1.5"/>
-              <rect x="326" y="29" width="28" height="8" rx="1" fill="none" stroke="rgba(200,74,255,0.65)" strokeWidth="2"/>
-              <path d="M322 69 A18 18 0 0 0 358 69" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="1.5"/>
-              <rect x="288" y="183" width="104" height="33" rx="1.5" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="2"/>
-              <rect x="317" y="205" width="46" height="11" rx="1" fill="none" stroke="rgba(200,74,255,0.35)" strokeWidth="1.5"/>
-              <rect x="326" y="215" width="28" height="8" rx="1" fill="none" stroke="rgba(200,74,255,0.65)" strokeWidth="2"/>
-              <path d="M322 183 A18 18 0 0 1 358 183" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="1.5"/>
-              <ellipse cx="340" cy="126" rx="54" ry="21" fill="none" stroke="#c84aff" strokeWidth="2.5" opacity="0.85"/>
-              <ellipse cx="340" cy="126" rx="54" ry="21" fill="none" stroke="#c84aff" strokeWidth="2" opacity="0.5" transform="rotate(60,340,126)"/>
-              <ellipse cx="340" cy="126" rx="54" ry="21" fill="none" stroke="#c84aff" strokeWidth="1.5" opacity="0.3" transform="rotate(120,340,126)"/>
-              <circle cx="340" cy="126" r="8" fill="#c84aff"/>
-              <circle cx="394" cy="126" r="5" fill="#c84aff" opacity="0.9"/>
-              <circle cx="313" cy="111" r="4" fill="#c84aff" opacity="0.7"/>
-            </svg>
+            <div style={{width:36,height:36,borderRadius:10,background:"#1a1a35",border:"1.5px solid rgba(200,74,255,0.5)",flexShrink:0,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <svg width="28" height="28" viewBox="0 0 28 28">
+                {/* Feld */}
+                <rect x="2" y="2" width="24" height="24" rx="1" fill="none" stroke="rgba(200,74,255,0.5)" strokeWidth="0.8"/>
+                <line x1="2" y1="14" x2="26" y2="14" stroke="rgba(200,74,255,0.5)" strokeWidth="0.8"/>
+                <circle cx="14" cy="14" r="3.5" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.7"/>
+                {/* Strafraum oben */}
+                <rect x="8" y="2" width="12" height="4" rx="0.5" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.7"/>
+                {/* Strafraum unten */}
+                <rect x="8" y="22" width="12" height="4" rx="0.5" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.7"/>
+                {/* Atom Orbits */}
+                <ellipse cx="14" cy="14" rx="7" ry="2.8" fill="none" stroke="#c84aff" strokeWidth="1" opacity="0.9"/>
+                <ellipse cx="14" cy="14" rx="7" ry="2.8" fill="none" stroke="#c84aff" strokeWidth="0.8" opacity="0.55" transform="rotate(60,14,14)"/>
+                <ellipse cx="14" cy="14" rx="7" ry="2.8" fill="none" stroke="#c84aff" strokeWidth="0.7" opacity="0.35" transform="rotate(120,14,14)"/>
+                {/* Kern */}
+                <circle cx="14" cy="14" r="1.5" fill="#c84aff"/>
+                <circle cx="21" cy="14" r="1" fill="#c84aff" opacity="0.8"/>
+              </svg>
+            </div>
             <div>
-              <div style={{fontSize:22,fontWeight:900,letterSpacing:"-0.5px",lineHeight:1}}>
+              <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.5px",lineHeight:1}}>
                 <span style={{color:C.white}}>Team</span><span style={{color:C.accent}}>chemie</span>
               </div>
-              <div style={{color:C.grayDark,fontSize:11,marginTop:2}}>
+              <div style={{color:C.grayDark,fontSize:10,marginTop:2}}>
                 {user?.teamName || "FC Beispiel"} · {isTrainer ? "Trainer" : user?.name || "Spieler"}
               </div>
               {isTrainer && user?.teamCode && (
@@ -1462,11 +1530,6 @@ export default function Teamchemie({ user, onLogout }) {
 
         {/* ── TRAINER ── */}
         {view==="trainer"&&<>
-          <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-            {[["feld","Feld"],["spieler","Spieler"],["taktik","Taktik"],["chat","Chat"]].map(([key,label])=>(
-              <Tab key={key} label={label} active={tab===key} onClick={()=>{setTab(key);setSwapFirst(null);setFieldSelected(null);}}/>
-            ))}
-          </div>
 
           {tab==="feld"&&<>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
@@ -1633,6 +1696,34 @@ export default function Teamchemie({ user, onLogout }) {
             )}
 
             <Label>Mannschaft — {players.length} Spieler</Label>
+
+            {/* Anwesenheit Übersicht */}
+            <div style={{background:C.surface,borderRadius:12,padding:14,marginBottom:14,border:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase"}}>Anwesenheit</div>
+                <button onClick={()=>{setAttendance({});showNotif("Anwesenheit zurückgesetzt");}}
+                  style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"4px 10px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}}>
+                  Zurücksetzen
+                </button>
+              </div>
+              <div style={{display:"flex",gap:20}}>
+                {[
+                  {key:"ja",         label:"Dabei",       color:C.greenText},
+                  {key:"nein",       label:"Fehlt",       color:C.error},
+                  {key:"vielleicht", label:"Unsicher",    color:C.yellowText},
+                  {key:null,         label:"Offen",       color:C.grayDark},
+                ].map(({key,label,color})=>(
+                  <div key={label} style={{textAlign:"center"}}>
+                    <div style={{color,fontSize:22,fontWeight:800}}>
+                      {key===null
+                        ? players.filter(p=>!attendance[p.uid||p.id]).length
+                        : players.filter(p=>attendance[p.uid||p.id]===key).length}
+                    </div>
+                    <div style={{color:C.grayDark,fontSize:9}}>{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {players.map(p=>{
                 const idx    = order.indexOf(p.id);
@@ -1652,6 +1743,21 @@ export default function Teamchemie({ user, onLogout }) {
                       </div>
                       {/* Tags + 3-Punkte */}
                       <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5}}>
+                        {/* Anwesenheits-Badge */}
+                        {(()=>{
+                          const att = attendance[p.uid||p.id];
+                          const attConfig = {
+                            ja:         {label:"Dabei",   color:C.greenText,  bg:"rgba(74,200,200,0.1)"},
+                            nein:       {label:"Fehlt",   color:C.error,      bg:"rgba(204,51,85,0.1)"},
+                            vielleicht: {label:"Unsicher",color:C.yellowText, bg:"rgba(200,176,64,0.1)"},
+                          };
+                          const cfg = attConfig[att];
+                          return cfg ? (
+                            <span style={{background:cfg.bg,borderRadius:20,padding:"2px 8px",color:cfg.color,fontSize:10,fontWeight:600}}>{cfg.label}</span>
+                          ) : (
+                            <span style={{background:C.surface2,borderRadius:20,padding:"2px 8px",color:C.grayDark,fontSize:10}}>Offen</span>
+                          );
+                        })()}
                         {p.ruhe&&<span style={{background:"rgba(160,120,32,0.12)",border:"1px solid rgba(160,120,32,0.25)",borderRadius:20,padding:"2px 8px",color:C.yellowText,fontSize:10}}>Stille</span>}
                         <button
                           onClick={e=>{e.stopPropagation();setPlayerMenu(menuOpen?null:p.id);}}
@@ -1665,6 +1771,27 @@ export default function Teamchemie({ user, onLogout }) {
                       <>
                         <div onClick={()=>setPlayerMenu(null)} style={{position:"fixed",inset:0,zIndex:40}}/>
                         <div style={{position:"absolute",right:0,top:"100%",marginTop:4,background:C.surface2,borderRadius:10,border:`1px solid ${C.borderHi}`,overflow:"hidden",zIndex:50,minWidth:180,boxShadow:"0 4px 20px rgba(0,0,0,0.5)"}}>
+                          <div style={{padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
+                            <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Anwesenheit</div>
+                            <div style={{display:"flex",gap:6}}>
+                              {[
+                                {key:"ja",         label:"Dabei",    color:C.greenText},
+                                {key:"vielleicht", label:"Unsicher", color:C.yellowText},
+                                {key:"nein",       label:"Fehlt",    color:C.error},
+                              ].map(opt=>(
+                                <button key={opt.key} onClick={()=>{
+                                  setAttendance(prev=>({...prev,[p.uid||p.id]:opt.key}));
+                                  setPlayerMenu(null);
+                                  showNotif(`${p.name.split(" ")[0]}: ${opt.label}`);
+                                }} style={{flex:1,padding:"5px 4px",borderRadius:6,cursor:"pointer",fontSize:9,fontFamily:"inherit",fontWeight:600,
+                                  border:`1px solid ${attendance[p.uid||p.id]===opt.key?opt.color:`${opt.color}44`}`,
+                                  background:attendance[p.uid||p.id]===opt.key?`${opt.color}22`:"transparent",
+                                  color:opt.color}}>
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                           <button onClick={()=>{setPlayerMenu(null);setDetailId(p.id);setTab("chat");}} style={{width:"100%",background:"transparent",border:"none",borderBottom:`1px solid ${C.border}`,color:C.white,padding:"12px 16px",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                             <span style={{color:C.accent,fontSize:14}}>💬</span> Mit Spieler chatten
                           </button>
@@ -1748,18 +1875,259 @@ export default function Teamchemie({ user, onLogout }) {
           </>}
 
           {tab==="chat"&&<>
-            <Label>Direktchat — Lars Hofmann</Label>
-            <ChatUI chat={chat} chatInput={chatInput} setChatInput={setChatInput} sendChat={sendChat} isTrainer={true}/>
+            {/* Spieler auswählen */}
+            {!detailId ? (
+              <>
+                <Label>Direktchat – Spieler auswählen</Label>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {players.map(p=>(
+                    <div key={p.id} onClick={()=>setDetailId(p.id)}
+                      style={{background:C.surface,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",gap:12,border:`1px solid ${C.border}`,cursor:"pointer"}}>
+                      <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14,color:C.accent,flexShrink:0}}>
+                        {p.number}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{color:C.white,fontWeight:600,fontSize:13}}>{p.name}</div>
+                        <div style={{color:C.gray,fontSize:11}}>{ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
+                      </div>
+                      <span style={{color:C.accent,fontSize:18}}>›</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:14,padding:0,textAlign:"left"}}>
+                  ← Alle Spieler
+                </button>
+                <div style={{color:C.white,fontWeight:700,fontSize:15,marginBottom:12}}>
+                  Chat mit {players.find(p=>p.id===detailId)?.name}
+                </div>
+                <ChatUI chat={chat} chatInput={chatInput} setChatInput={setChatInput} sendChat={sendChat} isTrainer={true}/>
+              </>
+            )}
           </>}
+
+          {tab==="spieltage"&&(()=>{
+            // Kalender State (lokal hier definiert via closure)
+            const allEvents = spieltage;
+            const upcoming = [...allEvents].sort((a,b)=>new Date(a.datum+' '+(a.zeit||'00:00'))-new Date(b.datum+' '+(b.zeit||'00:00')));
+
+            const EventCard = ({ev})=>{
+              const isSpiel = ev.type==="spiel";
+              const isActive = activeSpieltagId===ev.id;
+              const color = isSpiel ? C.accent : C.greenText;
+              const attended = (ev.attendance||{})[user?.uid];
+              const attendCount = Object.values(ev.attendance||{}).filter(v=>v==="ja").length;
+              const maybeCount = Object.values(ev.attendance||{}).filter(v=>v==="vielleicht").length;
+              const absentCount = Object.values(ev.attendance||{}).filter(v=>v==="nein").length;
+
+              return (
+                <div style={{background:isActive?C.accentDim:C.surface,borderRadius:12,padding:14,border:`1px solid ${isActive?C.accentBorder:C.border}`,marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                        <span style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:700,color}}>
+                          {isSpiel?"⚽ Spiel":"🏃 Training"}
+                        </span>
+                        {isSpiel&&ev.heimAuswärts&&<span style={{color:C.grayDark,fontSize:10}}>{ev.heimAuswärts==="heim"?"Heim":"Auswärts"}</span>}
+                        {isActive&&<span style={{color:C.accent,fontSize:10,fontWeight:600}}>Aktiv</span>}
+                        {isSpiel&&ev.released&&<span style={{color:C.greenText,fontSize:10,fontWeight:600}}>Freigegeben</span>}
+                      </div>
+                      <div style={{color:C.white,fontWeight:700,fontSize:14}}>
+                        {isSpiel ? `vs. ${ev.gegner||"–"}` : (ev.notiz||"Training")}
+                      </div>
+                      <div style={{color:C.gray,fontSize:11,marginTop:3}}>
+                        {ev.datum ? new Date(ev.datum+'T12:00:00').toLocaleDateString("de",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"}) : "Kein Datum"}
+                        {ev.zeit ? ` · ${ev.zeit} Uhr` : ""}
+                        {ev.ort ? ` · ${ev.ort}` : ""}
+                      </div>
+                      {isSpiel&&ev.tacticId&&<div style={{color:C.accent,fontSize:10,marginTop:2}}>{(ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0]).name}</div>}
+                    </div>
+                    <button onClick={()=>setSpieltage(prev=>prev.filter(s=>s.id!==ev.id))}
+                      style={{background:"transparent",border:"none",color:C.grayDark,fontSize:16,cursor:"pointer",padding:"0 4px",flexShrink:0}}>✕</button>
+                  </div>
+
+                  {/* Anwesenheits-Counter */}
+                  <div style={{display:"flex",gap:14,marginBottom:10,paddingTop:8,borderTop:`1px solid ${C.border}`}}>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{color:C.greenText,fontSize:18,fontWeight:800}}>{attendCount}</div>
+                      <div style={{color:C.grayDark,fontSize:9}}>Dabei</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{color:C.yellowText,fontSize:18,fontWeight:800}}>{maybeCount}</div>
+                      <div style={{color:C.grayDark,fontSize:9}}>Vielleicht</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{color:C.error,fontSize:18,fontWeight:800}}>{absentCount}</div>
+                      <div style={{color:C.grayDark,fontSize:9}}>Fehlt</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{color:C.grayDark,fontSize:18,fontWeight:800}}>{players.length-attendCount-maybeCount-absentCount}</div>
+                      <div style={{color:C.grayDark,fontSize:9}}>Offen</div>
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div style={{display:"flex",gap:8}}>
+                    {isSpiel&&<button onClick={()=>{
+                      setActiveSpieltagId(ev.id);
+                      const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];
+                      setTactic(t);
+                      showNotif(`Spiel vs. ${ev.gegner} aktiviert`);
+                    }} style={{flex:1,background:isActive?"transparent":C.surface2,border:`1px solid ${isActive?C.accentBorder:C.border}`,borderRadius:8,color:isActive?C.accent:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
+                      {isActive?"Aktiv":"Aktivieren"}
+                    </button>}
+                    {isSpiel&&<button onClick={()=>{
+                      setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));
+                      const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];
+                      if(!ev.released){setReleasedTactic(t);setTacticReleased(true);}
+                      showNotif(ev.released?`Freigabe zurückgezogen`:`Taktik freigegeben`);
+                    }} style={{flex:1,background:ev.released?"rgba(74,200,200,0.1)":"transparent",border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
+                      {ev.released?"Freigabe aufheben":"Freigeben"}
+                    </button>}
+                  </div>
+                </div>
+              );
+            };
+
+            return <>
+              {/* Neuer Eintrag Button */}
+              {!showNewSpieltag&&(
+                <div style={{display:"flex",gap:8,marginBottom:14}}>
+                  <button onClick={()=>{setShowNewSpieltag("spiel");setNewSpieltagForm({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1,type:"spiel"});}}
+                    style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
+                    ⚽ Spiel eintragen
+                  </button>
+                  <button onClick={()=>{setShowNewSpieltag("training");setNewSpieltagForm({datum:"",zeit:"",ort:"",notiz:"",type:"training"});}}
+                    style={{flex:1,background:"rgba(74,200,200,0.1)",border:`1px solid rgba(74,200,200,0.3)`,borderRadius:10,color:C.greenText,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
+                    🏃 Training eintragen
+                  </button>
+                </div>
+              )}
+
+              {/* Formular */}
+              {showNewSpieltag&&(
+                <div style={{background:C.surface,borderRadius:12,padding:16,border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.3)"}`,marginBottom:14}}>
+                  <div style={{color:showNewSpieltag==="spiel"?C.accent:C.greenText,fontWeight:700,fontSize:13,marginBottom:14}}>
+                    {showNewSpieltag==="spiel"?"⚽ Neues Spiel":"🏃 Neues Training"}
+                  </div>
+
+                  {/* Datum + Zeit */}
+                  <div style={{display:"flex",gap:8,marginBottom:12}}>
+                    <div style={{flex:2}}>
+                      <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Datum</div>
+                      <input type="date" value={newSpieltagForm.datum}
+                        onChange={e=>setNewSpieltagForm(p=>({...p,datum:e.target.value}))}
+                        style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Uhrzeit</div>
+                      <input type="time" value={newSpieltagForm.zeit||""}
+                        onChange={e=>setNewSpieltagForm(p=>({...p,zeit:e.target.value}))}
+                        style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
+                    </div>
+                  </div>
+
+                  {/* Spiel-spezifisch */}
+                  {showNewSpieltag==="spiel"&&<>
+                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Gegner</div>
+                    <input placeholder="z.B. FC Musterstadt" value={newSpieltagForm.gegner||""}
+                      onChange={e=>setNewSpieltagForm(p=>({...p,gegner:e.target.value}))}
+                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+
+                    <div style={{display:"flex",gap:8,marginBottom:12}}>
+                      {["heim","auswärts"].map(v=>(
+                        <button key={v} onClick={()=>setNewSpieltagForm(p=>({...p,heimAuswärts:v}))}
+                          style={{flex:1,padding:"9px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
+                            border:`1px solid ${newSpieltagForm.heimAuswärts===v?C.accentBorder:C.border}`,
+                            background:newSpieltagForm.heimAuswärts===v?C.accentDim:"transparent",
+                            color:newSpieltagForm.heimAuswärts===v?C.accent:C.gray}}>
+                          {v==="heim"?"🏠 Heim":"✈ Auswärts"}
+                        </button>
+                      ))}
+                    </div>
+                  </>}
+
+                  {/* Ort */}
+                  <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Ort / Adresse</div>
+                  <input placeholder="z.B. Sportplatz Hauptstraße 1" value={newSpieltagForm.ort||""}
+                    onChange={e=>setNewSpieltagForm(p=>({...p,ort:e.target.value}))}
+                    style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+
+                  {/* Notiz */}
+                  <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>
+                    {showNewSpieltag==="training"?"Beschreibung (optional)":"Notizen (optional)"}
+                  </div>
+                  <textarea placeholder={showNewSpieltag==="training"?"z.B. Schwerpunkt Standardsituationen...":"z.B. Wichtig: früh erscheinen..."}
+                    value={newSpieltagForm.notiz||""}
+                    onChange={e=>setNewSpieltagForm(p=>({...p,notiz:e.target.value}))}
+                    style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",resize:"none",height:70,outline:"none",boxSizing:"border-box",marginBottom:14}}/>
+
+                  {/* Taktik nur für Spiele */}
+                  {showNewSpieltag==="spiel"&&<>
+                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Taktik</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
+                      {ALL_TACTICS.slice(0,6).map(t=>(
+                        <button key={t.id} onClick={()=>setNewSpieltagForm(p=>({...p,tacticId:t.id}))}
+                          style={{padding:"5px 12px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
+                            border:`1px solid ${newSpieltagForm.tacticId===t.id?C.accentBorder:C.border}`,
+                            background:newSpieltagForm.tacticId===t.id?C.accentDim:"transparent",
+                            color:newSpieltagForm.tacticId===t.id?C.accent:C.gray}}>
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  </>}
+
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={()=>setShowNewSpieltag(false)}
+                      style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>
+                      Abbrechen
+                    </button>
+                    <button onClick={()=>{
+                      if (!newSpieltagForm.datum) return showNotif("Bitte Datum eingeben");
+                      if (showNewSpieltag==="spiel" && !newSpieltagForm.gegner?.trim()) return showNotif("Bitte Gegner eingeben");
+                      const newEv = {
+                        id: Date.now(),
+                        type: showNewSpieltag,
+                        datum: newSpieltagForm.datum,
+                        zeit: newSpieltagForm.zeit,
+                        ort: newSpieltagForm.ort,
+                        notiz: newSpieltagForm.notiz,
+                        gegner: newSpieltagForm.gegner,
+                        heimAuswärts: newSpieltagForm.heimAuswärts,
+                        tacticId: newSpieltagForm.tacticId||1,
+                        released: false,
+                        attendance: {},
+                      };
+                      setSpieltage(prev=>[...prev, newEv]);
+                      setShowNewSpieltag(false);
+                      showNotif(showNewSpieltag==="spiel"?`Spiel vs. ${newEv.gegner} eingetragen`:"Training eingetragen");
+                    }} style={{flex:1,background:showNewSpieltag==="spiel"?C.accentDim:"rgba(74,200,200,0.15)",border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.4)"}`,borderRadius:10,color:showNewSpieltag==="spiel"?C.accent:C.greenText,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
+                      Speichern
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Leerer Zustand */}
+              {upcoming.length===0&&!showNewSpieltag&&(
+                <div style={{background:C.surface,borderRadius:12,padding:24,border:`1px solid ${C.border}`,textAlign:"center"}}>
+                  <div style={{fontSize:32,marginBottom:8}}>📅</div>
+                  <div style={{color:C.gray,fontSize:13,marginBottom:4}}>Noch keine Einträge</div>
+                  <div style={{color:C.grayDark,fontSize:11}}>Trage dein nächstes Spiel oder Training ein</div>
+                </div>
+              )}
+
+              {/* Liste */}
+              {upcoming.map(ev=><EventCard key={ev.id} ev={ev}/>)}
+            </>;
+          })()}
         </>}
 
         {/* ── SPIELER ── */}
         {view==="player"&&<>
-          <div style={{display:"flex",gap:6,marginBottom:16}}>
-            {[["status","Mein Status"],["feld","Feld"],["chat","Chat"]].map(([key,label])=>(
-              <Tab key={key} label={label} active={tab===key} onClick={()=>setTab(key)}/>
-            ))}
-          </div>
 
           {tab==="status"&&<>
             <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:14,marginBottom:12}}>
@@ -1797,6 +2165,72 @@ export default function Teamchemie({ user, onLogout }) {
                 })}
               </div>
             </div>
+
+            {/* Nächste Termine */}
+            {spieltage.length>0&&(
+              <Card style={{marginBottom:10}}>
+                <Label>Nächste Termine</Label>
+                {[...spieltage].sort((a,b)=>new Date(a.datum+'T'+(a.zeit||'12:00'))-new Date(b.datum+'T'+(b.zeit||'12:00'))).slice(0,3).map(ev=>{
+                  const isSpiel = ev.type==="spiel";
+                  const color = isSpiel?C.accent:C.greenText;
+                  const myAtt = (ev.attendance||{})[user?.uid];
+                  return (
+                    <div key={ev.id} style={{background:C.surface2,borderRadius:10,padding:"11px 12px",marginBottom:8,border:`1px solid ${C.border}`}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                        <div>
+                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                            <span style={{color,fontSize:10,fontWeight:700}}>{isSpiel?"⚽ Spiel":"🏃 Training"}</span>
+                          </div>
+                          <div style={{color:C.white,fontWeight:600,fontSize:13}}>
+                            {isSpiel?`vs. ${ev.gegner}`:(ev.notiz||"Training")}
+                          </div>
+                          <div style={{color:C.gray,fontSize:11,marginTop:2}}>
+                            {ev.datum?new Date(ev.datum+'T12:00:00').toLocaleDateString("de",{weekday:"short",day:"2-digit",month:"short"}):""}{ev.zeit?` · ${ev.zeit} Uhr`:""}
+                            {ev.ort?` · ${ev.ort}`:""}
+                          </div>
+                        </div>
+                      </div>
+                      {/* An/Abmeldung */}
+                      <div style={{display:"flex",gap:6}}>
+                        {[
+                          {key:"ja",    label:"Dabei",    color:C.greenText},
+                          {key:"vielleicht",label:"Vielleicht",color:C.yellowText},
+                          {key:"nein",  label:"Absagen",  color:C.error},
+                        ].map(opt=>(
+                          <button key={opt.key} onClick={()=>{
+                            setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,attendance:{...(s.attendance||{}),[user?.uid]:opt.key}}:s));
+                            showNotif(opt.key==="ja"?"Angemeldet!":opt.key==="nein"?"Abgemeldet":"Als unsicher markiert");
+                          }} style={{flex:1,padding:"6px 4px",borderRadius:8,cursor:"pointer",fontSize:10,fontFamily:"inherit",fontWeight:600,
+                            border:`1px solid ${myAtt===opt.key?opt.color:`${opt.color}44`}`,
+                            background:myAtt===opt.key?`${opt.color}18`:"transparent",
+                            color:opt.color}}>
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </Card>
+            )}
+              <div style={{color:C.gray,fontSize:12,marginBottom:10}}>Kommst du zum nächsten Spiel?</div>
+              <div style={{display:"flex",gap:8}}>
+                {[
+                  {key:"ja",         label:"Ich bin dabei",  color:C.greenText},
+                  {key:"vielleicht", label:"Vielleicht",     color:C.yellowText},
+                  {key:"nein",       label:"Kann nicht",     color:C.error},
+                ].map(opt=>(
+                  <button key={opt.key} onClick={()=>setMyAttendance(opt.key)}
+                    style={{flex:1,padding:"9px 4px",borderRadius:8,cursor:"pointer",fontSize:10,fontFamily:"inherit",fontWeight:600,
+                      border:`1px solid ${myAttendance===opt.key?opt.color:`${opt.color}44`}`,
+                      background:myAttendance===opt.key?`${opt.color}18`:"transparent",
+                      color:opt.color, lineHeight:1.3,
+                    }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </Card>
 
             <Card style={{marginBottom:10}}>
               <Label info={FIELD_INFOS.fitness}>Fitnesszustand</Label>
@@ -1878,135 +2312,118 @@ export default function Teamchemie({ user, onLogout }) {
           </>}
 
           {tab==="feld"&&<>
-            {/* Slide Labels */}
-            <div style={{display:"flex",gap:5,marginBottom:10,overflowX:"auto"}}>
-              {[
-                {i:0,label:"Grundaufstellung"},
-                {i:1,label:"Offensiv"},
-                {i:2,label:"Defensiv"},
-                {i:3,label:"Ecke Angriff"},
-                {i:4,label:"Ecke Abwehr"},
-              ].map(({i,label})=>(
-                <button key={i} onClick={()=>setPlayerFieldSlide(i)} style={{
-                  flexShrink:0,padding:"5px 10px",borderRadius:20,cursor:"pointer",fontSize:10,
-                  fontFamily:"inherit",fontWeight:600,whiteSpace:"nowrap",
-                  border:`1px solid ${playerFieldSlide===i?C.accentBorder:C.border}`,
-                  background:playerFieldSlide===i?C.accentDim:"transparent",
-                  color:playerFieldSlide===i?C.accent:C.gray,
-                }}>{label}</button>
-              ))}
+            {/* Taktik-Badge */}
+            <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"8px 13px",marginBottom:16,fontSize:11,color:C.accent,textAlign:"center"}}>
+              Taktik vom Trainer: <span style={{color:C.white,fontWeight:600}}>{releasedTactic.name}</span>
             </div>
 
-            {/* Swipe-Bereich */}
-            <div
-              onTouchStart={e=>setPlayerSwipeStartX(e.touches[0].clientX)}
-              onTouchEnd={e=>{
-                if (playerSwipeStartX===null) return;
-                const dx=e.changedTouches[0].clientX-playerSwipeStartX;
-                if (dx<-40 && playerFieldSlide<4) setPlayerFieldSlide(s=>s+1);
-                if (dx>40  && playerFieldSlide>0) setPlayerFieldSlide(s=>s-1);
-                setPlayerSwipeStartX(null);
-              }}
-            >
-              {/* Taktik-Badge */}
-              <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"8px 13px",marginBottom:10,fontSize:11,color:C.accent}}>
-                {playerFieldSlide===0 && <>Grundaufstellung — <span style={{color:C.white,fontWeight:600}}>{releasedTactic.name}</span></>}
-                {playerFieldSlide===1 && <span style={{color:C.offColor,fontWeight:600}}>Offensiv-Ausrichtung</span>}
-                {playerFieldSlide===2 && <span style={{color:C.defColor,fontWeight:600}}>Defensiv-Ausrichtung</span>}
-                {playerFieldSlide===3 && <span style={{color:C.accent,fontWeight:600}}>Eckball Angriff</span>}
-                {playerFieldSlide===4 && <span style={{color:C.accent,fontWeight:600}}>Eckball Abwehr</span>}
-              </div>
-
-              {/* Grundaufstellung */}
-              {playerFieldSlide===0 && <>
-                <Field interactive={false}/>
-                <div style={{marginTop:6,color:C.grayDark,fontSize:10,textAlign:"center"}}>Du bist magenta markiert · Wischen zum Wechseln</div>
-              </>}
-
-              {/* Offensiv */}
-              {playerFieldSlide===1 && <>
-                <DragField
-                  positions={releasedTactic.custom ? releasedTactic.posOffensiv : FORMATIONS["4-3-3"].map((p,i)=>({...p,y:Math.max(4,p.y-8)}))}
-                  setPositions={()=>{}}
-                  players={players}
-                  label="Offensiv-Ausrichtung"
-                  color={C.offColor}
-                />
-                <div style={{marginTop:6,color:C.grayDark,fontSize:10,textAlign:"center"}}>Wischen zum Wechseln</div>
-              </>}
-
-              {/* Defensiv */}
-              {playerFieldSlide===2 && <>
-                <DragField
-                  positions={releasedTactic.custom ? releasedTactic.posDefensiv : FORMATIONS["4-3-3"].map((p,i)=>({...p,y:Math.min(96,p.y+8)}))}
-                  setPositions={()=>{}}
-                  players={players}
-                  label="Defensiv-Ausrichtung"
-                  color={C.defColor}
-                />
-                <div style={{marginTop:6,color:C.grayDark,fontSize:10,textAlign:"center"}}>Wischen zum Wechseln</div>
-              </>}
-
-              {/* Eckball Angriff */}
-              {playerFieldSlide===3 && <>
-                <div style={{display:"flex",gap:6,marginBottom:10}}>
-                  {["links","rechts"].map(s=>(
-                    <button key={s} onClick={()=>setPlayerCornerSide(s)} style={{
-                      flex:1,padding:"7px",borderRadius:8,cursor:"pointer",fontSize:11,
-                      fontWeight:600,fontFamily:"inherit",
-                      border:`1px solid ${playerCornerSide===s?C.accentBorder:C.border}`,
-                      background:playerCornerSide===s?C.accentDim:"transparent",
-                      color:playerCornerSide===s?C.accent:C.gray,
-                    }}>
-                      {s==="links"?"Linke Ecke":"Rechte Ecke"}
+            {/* ── ATOM NAVIGATION ── */}
+            {playerFieldSlide===null&&(()=>{
+              const ATOM_ITEMS = [
+                {id:0, label:"Aufstellung", sublabel:releasedTactic.name, color:C.accent,    x:0,    y:0,    size:90, center:true},
+                {id:1, label:"Offensiv",    sublabel:"Angriff",           color:C.offColor,  x:0,    y:-115, size:68},
+                {id:2, label:"Defensiv",    sublabel:"Abwehr",            color:C.defColor,  x:0,    y:115,  size:68},
+                {id:3, label:"Ecke Links",  sublabel:"Angriff",           color:"#e0c040",   x:-115, y:-60,  size:64},
+                {id:4, label:"Ecke Rechts", sublabel:"Abwehr",            color:C.greenText, x:115,  y:-60,  size:64},
+              ];
+              return (
+                <div style={{position:"relative",height:320,margin:"20px auto",maxWidth:380}}>
+                  {/* Orbit rings */}
+                  {[130,90,50].map((r,i)=>(
+                    <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid rgba(200,74,255,${0.06+i*0.04})`,transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
+                  ))}
+                  {/* Orbit lines */}
+                  {[0,60,120].map((deg,i)=>(
+                    <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:260,height:1,background:"rgba(200,74,255,0.06)",transform:`translate(-50%,-50%) rotate(${deg}deg)`,pointerEvents:"none"}}/>
+                  ))}
+                  {/* Electron dots */}
+                  {[[130,20],[90,140],[110,-70]].map(([r,deg],i)=>{
+                    const x=Math.cos(deg*Math.PI/180)*r, y=Math.sin(deg*Math.PI/180)*r;
+                    return <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:6,height:6,borderRadius:"50%",background:"#c84aff",opacity:0.5,transform:`translate(calc(-50% + ${x}px),calc(-50% + ${y}px))`,pointerEvents:"none",boxShadow:"0 0 6px #c84aff"}}/>
+                  })}
+                  {/* Buttons */}
+                  {ATOM_ITEMS.map(item=>(
+                    <button key={item.id} onClick={()=>setPlayerFieldSlide(item.id)}
+                      style={{position:"absolute",top:"50%",left:"50%",
+                        width:item.size,height:item.size,borderRadius:"50%",
+                        background:`${item.color}15`,
+                        border:`2px solid ${item.color}88`,
+                        transform:`translate(calc(-50% + ${item.x}px),calc(-50% + ${item.y}px))`,
+                        cursor:"pointer",display:"flex",flexDirection:"column",
+                        alignItems:"center",justifyContent:"center",gap:2,
+                        boxShadow:`0 0 14px ${item.color}33`,
+                        transition:"all 0.2s",
+                      }}>
+                      {item.center&&(
+                        <svg width="28" height="28" viewBox="0 0 28 28" style={{marginBottom:2}}>
+                          <rect x="2" y="2" width="24" height="24" rx="1.5" fill="none" stroke="rgba(200,74,255,0.6)" strokeWidth="0.9"/>
+                          <line x1="2" y1="14" x2="26" y2="14" stroke="rgba(200,74,255,0.4)" strokeWidth="0.8"/>
+                          <circle cx="14" cy="14" r="4" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.8"/>
+                          {[[14,6],[9,10],[19,10],[11,17],[17,17],[14,22]].map(([x,y],i)=>(
+                            <circle key={i} cx={x} cy={y} r="1.8" fill="#c84aff" opacity="0.8"/>
+                          ))}
+                        </svg>
+                      )}
+                      <span style={{color:item.color,fontSize:item.center?10:9,fontWeight:700,lineHeight:1.2,textAlign:"center",padding:"0 4px"}}>{item.label}</span>
+                      <span style={{color:`${item.color}99`,fontSize:8,lineHeight:1}}>{item.sublabel}</span>
                     </button>
                   ))}
                 </div>
-                <CornerField
-                  players={players}
-                  positions={playerCornerSide==="links" ? DEFAULT_CORNER_OFF : DEFAULT_CORNER_OFF.map(p=>({...p,x:100-p.x}))}
-                  setPositions={()=>{}}
-                  side={playerCornerSide}
-                  type="offensiv"
-                />
-                <div style={{marginTop:6,color:C.grayDark,fontSize:10,textAlign:"center"}}>Wischen zum Wechseln</div>
-              </>}
+              );
+            })()}
 
-              {/* Eckball Abwehr */}
-              {playerFieldSlide===4 && <>
-                <div style={{display:"flex",gap:6,marginBottom:10}}>
-                  {["links","rechts"].map(s=>(
-                    <button key={s} onClick={()=>setPlayerCornerSide(s)} style={{
-                      flex:1,padding:"7px",borderRadius:8,cursor:"pointer",fontSize:11,
-                      fontWeight:600,fontFamily:"inherit",
-                      border:`1px solid ${playerCornerSide===s?C.accentBorder:C.border}`,
-                      background:playerCornerSide===s?C.accentDim:"transparent",
-                      color:playerCornerSide===s?C.accent:C.gray,
-                    }}>
-                      {s==="links"?"Linke Ecke":"Rechte Ecke"}
-                    </button>
-                  ))}
-                </div>
-                <CornerField
-                  players={players}
-                  positions={playerCornerSide==="links" ? DEFAULT_CORNER_DEF : DEFAULT_CORNER_DEF.map(p=>({...p,x:100-p.x}))}
-                  setPositions={()=>{}}
-                  side={playerCornerSide}
-                  type="defensiv"
-                />
-                <div style={{marginTop:6,color:C.grayDark,fontSize:10,textAlign:"center"}}>Wischen zum Wechseln</div>
-              </>}
+            {/* Detail-Ansicht wenn ein Item ausgewählt */}
+            {playerFieldSlide!==null&&(
+              <>
+                <button onClick={()=>setPlayerFieldSlide(null)}
+                  style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:12,padding:0}}>
+                  ← Zurück zur Übersicht
+                </button>
 
-              {/* Dots */}
-              <div style={{display:"flex",justifyContent:"center",gap:6,marginTop:12}}>
-                {[0,1,2,3,4].map(i=>(
-                  <div key={i} onClick={()=>setPlayerFieldSlide(i)}
-                    style={{width:i===playerFieldSlide?16:6,height:6,borderRadius:3,
-                      background:i===playerFieldSlide?C.accent:"rgba(255,255,255,0.15)",
-                      transition:"all 0.3s",cursor:"pointer"}}/>
-                ))}
-              </div>
-            </div>
+                {playerFieldSlide===0&&<Field interactive={false}/>}
+
+                {playerFieldSlide===1&&(
+                  <DragField
+                    positions={releasedTactic.custom?releasedTactic.posOffensiv:positions.map(p=>({...p,y:Math.max(4,p.y-8)}))}
+                    setPositions={()=>{}}
+                    players={order.map(id=>players.find(p=>p.id===id)).filter(Boolean)}
+                    label="Offensiv-Ausrichtung" color={C.offColor}
+                  />
+                )}
+
+                {playerFieldSlide===2&&(
+                  <DragField
+                    positions={releasedTactic.custom?releasedTactic.posDefensiv:positions.map(p=>({...p,y:Math.min(96,p.y+8)}))}
+                    setPositions={()=>{}}
+                    players={order.map(id=>players.find(p=>p.id===id)).filter(Boolean)}
+                    label="Defensiv-Ausrichtung" color={C.defColor}
+                  />
+                )}
+
+                {(playerFieldSlide===3||playerFieldSlide===4)&&<>
+                  <div style={{display:"flex",gap:6,marginBottom:10}}>
+                    {["links","rechts"].map(s=>(
+                      <button key={s} onClick={()=>setPlayerCornerSide(s)} style={{
+                        flex:1,padding:"7px",borderRadius:8,cursor:"pointer",fontSize:11,
+                        fontWeight:600,fontFamily:"inherit",
+                        border:`1px solid ${playerCornerSide===s?C.accentBorder:C.border}`,
+                        background:playerCornerSide===s?C.accentDim:"transparent",
+                        color:playerCornerSide===s?C.accent:C.gray,
+                      }}>{s==="links"?"Linke Ecke":"Rechte Ecke"}</button>
+                    ))}
+                  </div>
+                  <CornerField
+                    players={players}
+                    positions={playerFieldSlide===3
+                      ? (playerCornerSide==="links"?DEFAULT_CORNER_OFF:DEFAULT_CORNER_OFF.map(p=>({...p,x:100-p.x})))
+                      : (playerCornerSide==="links"?DEFAULT_CORNER_DEF:DEFAULT_CORNER_DEF.map(p=>({...p,x:100-p.x})))}
+                    setPositions={()=>{}}
+                    side={playerCornerSide}
+                    type={playerFieldSlide===3?"offensiv":"defensiv"}
+                  />
+                </>}
+              </>
+            )}
           </>}
 
           {tab==="chat"&&<>
@@ -2016,10 +2433,48 @@ export default function Teamchemie({ user, onLogout }) {
         </>}
 
         {notif&&(
-          <div style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"11px 20px",color:C.accent,fontWeight:700,fontSize:13,boxShadow:"0 4px 20px rgba(200,74,255,0.2)",zIndex:999,whiteSpace:"nowrap"}}>
+          <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"11px 20px",color:C.accent,fontWeight:700,fontSize:13,boxShadow:"0 4px 20px rgba(200,74,255,0.2)",zIndex:999,whiteSpace:"nowrap"}}>
             {notif}
           </div>
         )}
+      </div>
+
+      {/* ── BOTTOM NAVIGATION BAR ── */}
+      <div style={{
+        position:"fixed",bottom:0,left:0,right:0,
+        background:"rgba(18,18,42,0.97)",
+        borderTop:`1px solid ${C.border}`,
+        zIndex:100,
+        backdropFilter:"blur(12px)",
+        paddingBottom:"env(safe-area-inset-bottom)",
+      }}>
+        <div style={{
+          maxWidth:440,margin:"0 auto",
+          display:"flex",
+        }}>
+          {navItems.map(item=>{
+            const active = tab===item.key;
+            return (
+              <button key={item.key}
+                onClick={()=>{setTab(item.key);setSwapFirst(null);setFieldSelected(null);}}
+                style={{
+                  flex:1,
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                  padding:"10px 4px 8px",
+                  background:"transparent",border:"none",cursor:"pointer",
+                  gap:3,
+                }}>
+                <span style={{fontSize:20,lineHeight:1}}>{item.icon}</span>
+                <span style={{
+                  fontSize:9,fontWeight:active?700:500,
+                  color:active?C.accent:"rgba(120,120,170,0.7)",
+                  letterSpacing:"0.3px",
+                }}>{item.label}</span>
+                {active&&<div style={{width:16,height:2,borderRadius:1,background:C.accent,marginTop:1}}/>}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
