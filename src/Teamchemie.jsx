@@ -2079,7 +2079,6 @@ export default function Teamchemie({ user, onLogout }) {
             user={user}
             showNotif={showNotif}
           />}
-          </>}
         </>}
 
         {/* ── SPIELER ── */}
