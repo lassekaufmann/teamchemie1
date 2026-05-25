@@ -244,6 +244,7 @@ const DEFAULT_CORNER_POSITIONS = [
 function CornerField({positions,setPositions,players,order,side,type}) {
   const fieldRef = useRef(null);
   const [dragging,setDragging] = useState(null);
+  const dragMoved = useRef(false);
 
   function getCoords(e) {
     const r = fieldRef.current?.getBoundingClientRect();
@@ -253,50 +254,59 @@ function CornerField({positions,setPositions,players,order,side,type}) {
     return {x:Math.max(3,Math.min(97,((cx-r.left)/r.width)*100)),y:Math.max(3,Math.min(97,((cy-r.top)/r.height)*100))};
   }
 
-  function onDown(e,idx){e.preventDefault();e.stopPropagation();setDragging(idx);}
-  function onMove(e){if(dragging===null)return;const c=getCoords(e);if(c)setPositions(prev=>prev.map((p,i)=>i===dragging?{...p,...c}:p));}
-  function onUp(){setDragging(null);}
-
-  const cornerX = side==="links"?2:98;
-  const cornerY = type==="angriff"?2:98;
+  function onDown(e,idx){e.preventDefault();e.stopPropagation();dragMoved.current=false;setDragging(idx);}
+  function onMove(e){if(dragging===null)return;const c=getCoords(e);if(c){dragMoved.current=true;if(setPositions)setPositions(prev=>prev.map((p,i)=>i===dragging?{...p,...c}:p));}}
+  function onUp(){setDragging(null);dragMoved.current=false;}
 
   return (
     <div ref={fieldRef}
-      style={{position:"relative",width:"100%",paddingBottom:"140%",borderRadius:8,overflow:"hidden",background:"#0e0e28",border:"1px solid rgba(200,74,255,0.2)",marginBottom:10,touchAction:"none"}}
+      style={{position:"relative",width:"100%",paddingBottom:"140%",borderRadius:8,overflow:"hidden",background:"#0e0e28",border:"1px solid rgba(200,74,255,0.2)",marginBottom:6,touchAction:"none"}}
       onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
       onTouchMove={e=>{e.preventDefault();onMove(e);}} onTouchEnd={onUp}
     >
       <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 100 140" preserveAspectRatio="none">
+        {/* Spielfeld komplett */}
         <rect x="0" y="0" width="100" height="140" fill="#0e0e28"/>
-        <rect x="2" y="2" width="96" height="136" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.8"/>
-        <line x1="2" y1="70" x2="98" y2="70" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        {type==="angriff" ? (
+        <rect x="2" y="2" width="96" height="136" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="0.8"/>
+        <line x1="2" y1="70" x2="98" y2="70" stroke="rgba(200,74,255,0.35)" strokeWidth="0.6"/>
+        <circle cx="50" cy="70" r="12" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.6"/>
+        <rect x="22" y="2"  width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
+        <rect x="32" y="2"  width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
+        <rect x="22" y="118" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
+        <rect x="32" y="128" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
+        <path d="M28 22 A16 16 0 0 0 72 22" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
+        <path d="M28 118 A16 16 0 0 1 72 118" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
+        <circle cx="50" cy="14" r="1" fill="rgba(200,74,255,0.35)"/>
+        <circle cx="50" cy="126" r="1" fill="rgba(200,74,255,0.35)"/>
+
+        {/* Eckfahne – Offensiv links oben, Defensiv rechts oben gespiegelt */}
+        {type==="angriff" && side==="links" && (
           <>
-            <rect x="22" y="2" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-            <rect x="32" y="2" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-          </>
-        ) : (
-          <>
-            <rect x="22" y="118" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-            <rect x="32" y="128" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
+            <line x1="2" y1="5" x2="7" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+            <line x1="2" y1="2" x2="7" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
           </>
         )}
-        {/* Eckfahne – Magenta Kreuz */}
-        {side==="links" && (
+        {type==="angriff" && side==="rechts" && (
           <>
-            <line x1="2" y1="2" x2="10" y2="10" stroke="#c84aff" strokeWidth="2.5" strokeLinecap="round"/>
-            <line x1="10" y1="2" x2="2" y2="10" stroke="#c84aff" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="98" y1="5" x2="93" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+            <line x1="98" y1="2" x2="93" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
           </>
         )}
-        {side==="rechts" && (
+        {type==="abwehr" && side==="links" && (
           <>
-            <line x1="90" y1="2" x2="98" y2="10" stroke="#c84aff" strokeWidth="2.5" strokeLinecap="round"/>
-            <line x1="98" y1="2" x2="90" y2="10" stroke="#c84aff" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="98" y1="5" x2="93" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+            <line x1="98" y1="2" x2="93" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+          </>
+        )}
+        {type==="abwehr" && side==="rechts" && (
+          <>
+            <line x1="2" y1="5" x2="7" y2="2" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+            <line x1="2" y1="2" x2="7" y2="7" stroke="#c84aff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
           </>
         )}
       </svg>
       <div style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.6)",borderRadius:8,padding:"2px 10px",fontSize:9,color:"rgba(200,74,255,0.7)",zIndex:5,whiteSpace:"nowrap"}}>
-        Halten zum Verschieben
+        Halten und Ziehen zum Positionieren
       </div>
       {positions.map((pos,idx)=>{
         const pid=order?order[idx]:idx+1;
@@ -306,13 +316,13 @@ function CornerField({positions,setPositions,players,order,side,type}) {
         return (
           <div key={idx}
             onMouseDown={e=>onDown(e,idx)} onTouchStart={e=>onDown(e,idx)}
-            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:isDragging?10:3,cursor:"grab",transition:isDragging?"none":"all 0.2s"}}>
+            style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:isDragging?10:3,cursor:"grab",transition:isDragging?"none":"left 0.2s,top 0.2s"}}>
             <div style={{
               width:28,height:28,borderRadius:"50%",
               background:isDragging?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
               border:`2px solid ${isDragging?C.accent:isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              boxShadow:isDragging?`0 0 16px ${C.accent}`:`0 0 6px rgba(200,74,255,0.3)`,
+              boxShadow:isDragging?`0 0 16px ${C.accent}`:`0 0 5px rgba(200,74,255,0.3)`,
             }}>
               <span style={{color:isDragging?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800}}>{player?.number||idx+1}</span>
               {!isPlaceholder&&<span style={{color:isDragging?C.bg:"rgba(255,255,255,0.55)",fontSize:6,fontWeight:600}}>{player.name.split(" ")[0].slice(0,4)}</span>}
@@ -512,6 +522,7 @@ export default function Teamchemie({user,onLogout}) {
   const [playerFieldView,setPlayerFieldView] = useState(null);
   const [trainerFieldView,setTrainerFieldView] = useState(null);
   const [fieldEditMode,setFieldEditMode]       = useState(false);
+  const [trainerPositions,setTrainerPositions] = useState(null);
   const [posOffensiv,setPosOffensiv]           = useState(null);
   const [posDefensiv,setPosDefensiv]           = useState(null);
   const [cornerSide,setCornerSide]             = useState("links");
@@ -580,7 +591,8 @@ export default function Teamchemie({user,onLogout}) {
   function showNotif(msg){setNotif(msg);setTimeout(()=>setNotif(null),2200);}
 
   // Init Offensiv/Defensiv/Ecken Positionen wenn Taktik wechselt
-  useEffect(()=>{    setPosOffensiv(positions.map(p=>({...p,y:Math.max(4,p.y-8)})));
+  useEffect(()=>{    setTrainerPositions(positions.map(p=>({...p})));
+    setPosOffensiv(positions.map(p=>({...p,y:Math.max(4,p.y-8)})));
     setPosDefensiv(positions.map(p=>({...p,y:Math.min(96,p.y+8)})));
     const defaultCorner = [
       {x:8,y:8},{x:30,y:20},{x:50,y:25},{x:70,y:20},{x:85,y:15},
@@ -670,7 +682,14 @@ export default function Teamchemie({user,onLogout}) {
   // Spieler Detail Ansicht (Trainer)
   if (isTrainer && detailId) {
     const dp = players.find(p=>p.id===detailId);
-    if (!dp || dp.isPlaceholder) { setDetailId(null); return null; }
+    if (!dp || dp.isPlaceholder) {
+      return (
+        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:14}}>
+          <div style={{color:C.gray,fontSize:14}}>Spieler nicht gefunden</div>
+          <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px 20px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>Zurück</button>
+        </div>
+      );
+    }
     const allStrengths = [...new Set([...(dp.strengths||[]),...(trainerStrengths[dp.uid]||[])])];
     const att = attendance[dp.uid||dp.id];
     const attCfg = {ja:{l:"Dabei",c:C.greenText},vielleicht:{l:"Unsicher",c:C.yellowText},nein:{l:"Fehlt",c:C.error}};
@@ -1027,9 +1046,15 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{color:C.accent,fontSize:12,textAlign:"center",marginBottom:4}}>Taktik: <span style={{color:C.white,fontWeight:600}}>{tactic.name}</span></div>
                     <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginBottom:8}}>Bereich antippen zum Bearbeiten</div>
                     <div style={{position:"relative",height:300,margin:"0 auto"}}>
-                      {[130,90,50].map((r,i)=>(
-                        <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid rgba(200,74,255,${0.06+i*0.04})`,transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
-                      ))}
+                      {/* Orbit Bahnen */}
+                      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="-150 -150 300 300">
+                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.12)" strokeWidth="1"/>
+                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.08)" strokeWidth="1" transform="rotate(60)"/>
+                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.06)" strokeWidth="1" transform="rotate(120)"/>
+                        <circle cx="130" cy="0" r="3" fill="#c84aff" opacity="0.5"/>
+                        <circle cx="-65" cy="-112" r="2.5" fill="#c84aff" opacity="0.35"/>
+                        <circle cx="-55" cy="100" r="2" fill="#c84aff" opacity="0.25"/>
+                      </svg>
                       {[
                         {id:"grund",      label:"Grundaufstellung",color:C.accent,   x:0,   y:0,   size:90},
                         {id:"offensiv",   label:"Offensiv",        color:C.offColor, x:0,   y:-115,size:68},
@@ -1127,15 +1152,15 @@ export default function Teamchemie({user,onLogout}) {
                         )}
                         <Field
                           positions={
-                            trainerFieldView==="offensiv"?posOffensiv:
-                            trainerFieldView==="defensiv"?posDefensiv:
-                            positions
+                            trainerFieldView==="offensiv"?(posOffensiv||positions.map(p=>({...p,y:Math.max(4,p.y-8)}))):
+                            trainerFieldView==="defensiv"?(posDefensiv||positions.map(p=>({...p,y:Math.min(96,p.y+8)}))):
+                            (trainerPositions||positions)
                           }
                           setPositions={
                             fieldEditMode?(
                               trainerFieldView==="offensiv"?setPosOffensiv:
                               trainerFieldView==="defensiv"?setPosDefensiv:
-                              null
+                              setTrainerPositions
                             ):null
                           }
                           order={order} players={players}
@@ -1497,9 +1522,15 @@ export default function Teamchemie({user,onLogout}) {
                   <>
                     <div style={{color:C.accent,fontSize:12,textAlign:"center",marginBottom:8}}>Taktik: {releasedTactic.name}</div>
                     <div style={{position:"relative",height:300,margin:"0 auto"}}>
-                      {[130,90,50].map((r,i)=>(
-                        <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid rgba(200,74,255,${0.06+i*0.04})`,transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
-                      ))}
+                      {/* Orbit Bahnen */}
+                      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="-150 -150 300 300">
+                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.12)" strokeWidth="1"/>
+                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.08)" strokeWidth="1" transform="rotate(60)"/>
+                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.06)" strokeWidth="1" transform="rotate(120)"/>
+                        <circle cx="130" cy="0" r="3" fill="#c84aff" opacity="0.5"/>
+                        <circle cx="-65" cy="-112" r="2.5" fill="#c84aff" opacity="0.35"/>
+                        <circle cx="-55" cy="100" r="2" fill="#c84aff" opacity="0.25"/>
+                      </svg>
                       {[
                         {id:0,label:"Aufstellung",sub:releasedTactic.name,color:C.accent,x:0,y:0,size:90},
                         {id:1,label:"Offensiv",sub:"Angriff",color:C.offColor,x:0,y:-115,size:68},
