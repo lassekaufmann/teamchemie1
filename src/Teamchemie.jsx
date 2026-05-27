@@ -207,27 +207,21 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         <path d="M67 1 A1 1 0 0 0 66 2" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M1 104 A1 1 0 0 0 2 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M67 104 A1 1 0 0 1 66 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
-        {/* Mentalität – kleine Pfeile in Feldmitte */}
+        {/* Mentalität – 4 Chevrons untereinander in Feldmitte, kein Pfeilschwanz */}
         {mentalitaet!==undefined && mentalitaet>55 && (()=>{
-          const o = Math.min(0.55,(mentalitaet-55)/45);
+          const o = Math.min(0.65,(mentalitaet-55)/45);
           const col = `rgba(255,112,64,${o})`;
-          // 4 kleine Pfeile nach oben, um Mittellinie gruppiert
-          return [[-8,0],[-3,0],[3,0],[8,0]].map(([dx],i)=>(
-            <g key={i} transform={`translate(${34+dx},52.5)`}>
-              <line x1="0" y1="5" x2="0" y2="-5" stroke={col} strokeWidth="0.8" strokeLinecap="round"/>
-              <polyline points="-2,-2 0,-5 2,-2" fill="none" stroke={col} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </g>
+          return [0,1,2,3].map(i=>(
+            <polyline key={i} points={`28,${56-i*4} 34,${52-i*4} 40,${56-i*4}`}
+              fill="none" stroke={col} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           ));
         })()}
         {mentalitaet!==undefined && mentalitaet<45 && (()=>{
-          const o = Math.min(0.55,(45-mentalitaet)/45);
+          const o = Math.min(0.65,(45-mentalitaet)/45);
           const col = `rgba(64,144,224,${o})`;
-          // 4 kleine Pfeile nach unten
-          return [[-8,0],[-3,0],[3,0],[8,0]].map(([dx],i)=>(
-            <g key={i} transform={`translate(${34+dx},52.5)`}>
-              <line x1="0" y1="-5" x2="0" y2="5" stroke={col} strokeWidth="0.8" strokeLinecap="round"/>
-              <polyline points="-2,2 0,5 2,2" fill="none" stroke={col} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </g>
+          return [0,1,2,3].map(i=>(
+            <polyline key={i} points={`28,${49+i*4} 34,${53+i*4} 40,${49+i*4}`}
+              fill="none" stroke={col} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           ));
         })()}
       </svg>
@@ -564,7 +558,7 @@ export default function Teamchemie({user,onLogout}) {
   const [playerMenu,setPlayerMenu] = useState(null);
   const [standards,setStandards]   = useState({elfmeter:null,freistoss:null,eckeLinks:null,eckeRechts:null});
 
-  const formKey   = TACTIC_FORMATION[tactic.id]||"4-4-2";
+  const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
   const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
 
   // Firebase: Spieler laden
