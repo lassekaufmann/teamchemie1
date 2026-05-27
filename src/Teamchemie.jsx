@@ -1340,78 +1340,177 @@ export default function Teamchemie({user,onLogout}) {
             {/* Spieler */}
             {tab==="spieler" && (
               <>
-                <Card style={{marginBottom:14}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                    <Label>Anwesenheit</Label>
-                    <button onClick={()=>setAttendance({})} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}}>Reset</button>
-                  </div>
-                  <div style={{display:"flex",gap:20}}>
-                    {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error},{k:null,l:"Offen",c:C.grayDark}].map(({k,l,c})=>(
-                      <div key={l} style={{textAlign:"center"}}>
-                        <div style={{color:c,fontSize:22,fontWeight:800}}>
-                          {k===null?players.filter(p=>!p.isPlaceholder&&!attendance[p.uid||p.id]).length:players.filter(p=>!p.isPlaceholder&&attendance[p.uid||p.id]===k).length}
-                        </div>
-                        <div style={{color:C.grayDark,fontSize:9}}>{l}</div>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-
-                <Label>Mannschaft — {players.filter(p=>!p.isPlaceholder).length} Spieler</Label>
-                {players.filter(p=>!p.isPlaceholder).length===0 && (
-                  <div style={{background:C.surface,borderRadius:12,padding:20,border:`1px solid ${C.border}`,textAlign:"center",marginBottom:10}}>
-                    <div style={{color:C.gray,fontSize:13}}>Noch keine Spieler beigetreten</div>
-                    <div style={{color:C.grayDark,fontSize:11,marginTop:4}}>Team-Code: {user?.teamCode}</div>
-                  </div>
-                )}
-                {players.filter(p=>!p.isPlaceholder).map(p=>{
-                  const menuOpen = playerMenu===p.uid;
-                  const att = attendance[p.uid];
-                  const attCfg = {ja:{l:"Dabei",c:C.greenText},vielleicht:{l:"Unsicher",c:C.yellowText},nein:{l:"Fehlt",c:C.error}};
-                  return (
-                    <div key={p.uid} onClick={()=>setDetailId(p.uid)} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
-                      <div style={{width:40,height:40,borderRadius:"50%",background:C.white,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:C.bg,flexShrink:0}}>
-                        {p.number}
-                      </div>
-                      <div style={{flex:1}}>
-                        <div style={{color:C.white,fontWeight:600,fontSize:14}}>{p.name}</div>
-                        <div style={{color:C.gray,fontSize:11}}>{p.wishRole||ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
-                        {p.fitness && <div style={{marginTop:4}}><FitnessBar value={p.fitness}/></div>}
-                      </div>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5}}>
-                        {att && attCfg[att] && (
-                          <span style={{background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}55`,borderRadius:20,padding:"2px 8px",color:attCfg[att].c,fontSize:10,fontWeight:600}}>{attCfg[att].l}</span>
-                        )}
-                        <div style={{position:"relative"}} onClick={e=>e.stopPropagation()}>
-                          <button onClick={()=>setPlayerMenu(menuOpen?null:p.uid)}
-                            style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,color:C.gray,padding:"4px 8px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>
-                            ...
-                          </button>
-                          {menuOpen && (
-                            <div style={{position:"absolute",right:0,top:"100%",marginTop:4,background:C.surface2,borderRadius:10,border:`1px solid ${C.borderHi}`,overflow:"hidden",zIndex:50,minWidth:200,boxShadow:"0 4px 20px rgba(0,0,0,0.5)"}}>
-                              <div style={{padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
-                                <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Anwesenheit</div>
-                                <div style={{display:"flex",gap:6}}>
-                                  {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Unsicher",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error}].map(opt=>(
-                                    <button key={opt.k} onClick={()=>{setAttendance(prev=>({...prev,[p.uid]:opt.k}));setPlayerMenu(null);showNotif(`${p.name.split(" ")[0]}: ${opt.l}`);}}
-                                      style={{flex:1,padding:"5px 4px",borderRadius:6,cursor:"pointer",fontSize:9,fontFamily:"inherit",fontWeight:600,
-                                        border:`1px solid ${att===opt.k?opt.c:`${opt.c}44`}`,background:att===opt.k?`${opt.c}22`:"transparent",color:opt.c}}>
-                                      {opt.l}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                              <button onClick={()=>{setPlayerMenu(null);setConfirmRemove(p);}}
-                                style={{width:"100%",background:"transparent",border:"none",color:C.error,padding:"11px 16px",cursor:"pointer",fontSize:13,fontFamily:"inherit",textAlign:"left"}}>
-                                Aus Team entfernen
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                {/* Spieler Detail als Overlay */}
+                {detailId && (()=>{
+                  const dp = players.find(p=>p.uid===detailId||p.id===detailId)||players.find(p=>String(p.uid)===String(detailId)||String(p.id)===String(detailId));
+                  if (!dp) return (
+                    <div style={{textAlign:"center",padding:"40px 0"}}>
+                      <div style={{color:C.gray,marginBottom:12}}>Spieler wird geladen...</div>
+                      <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"8px 16px",cursor:"pointer",fontFamily:"inherit"}}>← Zurück</button>
                     </div>
                   );
-                })}
+                  const att = attendance[dp.uid];
+                  const attCfg = {ja:{l:"Dabei",c:C.greenText},vielleicht:{l:"Unsicher",c:C.yellowText},nein:{l:"Fehlt",c:C.error}};
+                  const allStrengths = [...new Set([...(dp.strengths||[]),...(trainerStrengths[dp.uid]||[])])];
+                  return (
+                    <>
+                      <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:16,padding:0}}>← Zurück</button>
+
+                      {/* Spieler Header */}
+                      <div style={{background:C.surface,borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:14}}>
+                        <div style={{width:50,height:50,borderRadius:"50%",background:C.accentDim,border:`2px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:20,color:C.accent,flexShrink:0}}>
+                          {dp.number}
+                        </div>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:18,fontWeight:800,color:C.white}}>{dp.name}</div>
+                          <div style={{color:C.gray,fontSize:12,marginTop:2}}>{ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
+                          {att && attCfg[att] && <span style={{display:"inline-block",marginTop:4,background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>}
+                        </div>
+                      </div>
+
+                      {/* Aktuelle Infos */}
+                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Aktuelle Infos</div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                        <Card style={{marginBottom:0}}>
+                          <Label>Fitness</Label>
+                          <div style={{color:dp.fitness>=80?C.greenText:dp.fitness>=60?C.yellowText:C.error,fontSize:22,fontWeight:800,marginBottom:4}}>{dp.fitness||85}%</div>
+                          <FitnessBar value={dp.fitness||85}/>
+                        </Card>
+                        <Card style={{marginBottom:0}}>
+                          <Label>Stimmung</Label>
+                          <div style={{color:dp.ruhe?C.yellowText:C.greenText,fontSize:12,fontWeight:600,marginTop:4}}>{dp.ruhe?"Braucht Stille":"Fokussiert"}</div>
+                        </Card>
+                      </div>
+
+                      {dp.note && <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+                        <Label>Nachricht</Label>
+                        <div style={{color:C.grayLight,fontSize:13,fontStyle:"italic",lineHeight:1.5}}>"{dp.note}"</div>
+                      </Card>}
+
+                      {/* Anwesenheit setzen */}
+                      <Card style={{marginBottom:12}}>
+                        <Label>Anwesenheit setzen</Label>
+                        <div style={{display:"flex",gap:8}}>
+                          {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Unsicher",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error}].map(opt=>(
+                            <button key={opt.k} onClick={()=>{setAttendance(prev=>({...prev,[dp.uid]:opt.k}));showNotif(`${dp.name.split(" ")[0]}: ${opt.l}`);}}
+                              style={{flex:1,padding:"8px 4px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600,
+                                border:`1px solid ${att===opt.k?opt.c:`${opt.c}44`}`,background:att===opt.k?`${opt.c}18`:"transparent",color:opt.c}}>
+                              {opt.l}
+                            </button>
+                          ))}
+                        </div>
+                      </Card>
+
+                      {/* Spielerprofil */}
+                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spielerprofil</div>
+                      {dp.wishRole && <Card style={{marginBottom:10}}><Label>Wunschposition</Label><div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div></Card>}
+                      {dp.wishFormation && <Card style={{marginBottom:10}}><Label>Lieblingsformation</Label><div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishFormation}</div></Card>}
+                      {allStrengths.length>0 && <Card style={{marginBottom:10}}>
+                        <Label>Stärken</Label>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                          {allStrengths.map(s=>{const sl=STRENGTHS_LIST.find(x=>x.id===s);return <span key={s} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:20,padding:"3px 10px",color:C.accent,fontSize:11}}>{sl?.label||s}</span>;})}
+                        </div>
+                      </Card>}
+                      {dp.strongFoot && <Card style={{marginBottom:10}}><Label>Starker Fuß</Label><div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.strongFoot}</div></Card>}
+
+                      {/* Trainer Bewertung */}
+                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
+                      <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+                        {TRAINER_ATTRIBUTES.map(attr=>{
+                          const val=(trainerAttributes[dp.uid]||{})[attr.id]||0;
+                          return <div key={attr.id} style={{marginBottom:12}}>
+                            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                              <span style={{color:C.gray,fontSize:12}}>{attr.label}</span>
+                              <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:12,fontWeight:700}}>{val||"–"}/10</span>
+                            </div>
+                            <div style={{display:"flex",gap:3}}>
+                              {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                                <button key={n} onClick={()=>setTrainerAttributes(prev=>({...prev,[dp.uid]:{...(prev[dp.uid]||{}),[attr.id]:n}}))}
+                                  style={{flex:1,height:20,borderRadius:3,border:"none",cursor:"pointer",background:n<=val?(n>=8?C.greenText:n>=5?C.yellowText:C.accent):"rgba(200,74,255,0.1)"}}/>
+                              ))}
+                            </div>
+                          </div>;
+                        })}
+                      </Card>
+
+                      {/* Trainer Stärken */}
+                      <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+                        <Label>Stärken vom Trainer vergeben</Label>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                          {STRENGTHS_LIST.map(s=>{
+                            const active=(trainerStrengths[dp.uid]||[]).includes(s.id);
+                            return <button key={s.id} onClick={()=>setTrainerStrengths(prev=>{const cur=prev[dp.uid]||[];return {...prev,[dp.uid]:active?cur.filter(x=>x!==s.id):[...cur,s.id]};})}
+                              style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",border:`1px solid ${active?C.accentBorder:C.border}`,background:active?C.accentDim:"transparent",color:active?C.accent:C.gray}}>{s.label}</button>;
+                          })}
+                        </div>
+                      </Card>
+
+                      {/* Position ändern */}
+                      <Card style={{marginBottom:14}}>
+                        <Label>Position im Team ändern</Label>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                          {ROLE_LABELS.map((label,i)=>{
+                            const isCurrent=order[i]===dp.id;
+                            return <button key={i} onClick={()=>{if(!isCurrent){const o=[...order];const from=o.indexOf(dp.id);if(from!==-1)o[from]=o[i];o[i]=dp.id;setOrder(o);showNotif(`${dp.name.split(" ")[0]} → ${label}`);}}}
+                              style={{padding:"5px 10px",borderRadius:20,cursor:isCurrent?"default":"pointer",fontSize:11,fontFamily:"inherit",border:`1px solid ${isCurrent?C.greenText:C.border}`,background:isCurrent?"rgba(74,200,200,0.15)":"transparent",color:isCurrent?C.greenText:C.gray}}>{label}</button>;
+                          })}
+                        </div>
+                      </Card>
+
+                      {/* Chat */}
+                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Direktchat</div>
+                      <Card>{renderChat()}</Card>
+                    </>
+                  );
+                })()}
+
+                {/* Spielerliste */}
+                {!detailId && <>
+                  <Card style={{marginBottom:14}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                      <Label>Anwesenheit</Label>
+                      <button onClick={()=>setAttendance({})} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}}>Reset</button>
+                    </div>
+                    <div style={{display:"flex",gap:20}}>
+                      {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error},{k:null,l:"Offen",c:C.grayDark}].map(({k,l,c})=>(
+                        <div key={l} style={{textAlign:"center"}}>
+                          <div style={{color:c,fontSize:22,fontWeight:800}}>
+                            {k===null?players.filter(p=>!p.isPlaceholder&&!attendance[p.uid]).length:players.filter(p=>!p.isPlaceholder&&attendance[p.uid]===k).length}
+                          </div>
+                          <div style={{color:C.grayDark,fontSize:9}}>{l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Label>Mannschaft — {players.filter(p=>!p.isPlaceholder).length} Spieler</Label>
+                  {players.filter(p=>!p.isPlaceholder).length===0 && (
+                    <div style={{background:C.surface,borderRadius:12,padding:20,border:`1px solid ${C.border}`,textAlign:"center",marginBottom:10}}>
+                      <div style={{color:C.gray,fontSize:13}}>Noch keine Spieler beigetreten</div>
+                      <div style={{color:C.grayDark,fontSize:11,marginTop:4}}>Team-Code teilen: {user?.teamCode}</div>
+                    </div>
+                  )}
+                  {players.filter(p=>!p.isPlaceholder).map(p=>{
+                    const att = attendance[p.uid];
+                    const attCfg = {ja:{l:"Dabei",c:C.greenText},vielleicht:{l:"Unsicher",c:C.yellowText},nein:{l:"Fehlt",c:C.error}};
+                    return (
+                      <div key={p.uid||p.id} onClick={()=>{setDetailId(p.uid||p.id);}} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+                        <div style={{width:40,height:40,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:C.accent,flexShrink:0}}>
+                          {p.number}
+                        </div>
+                        <div style={{flex:1}}>
+                          <div style={{color:C.white,fontWeight:600,fontSize:14}}>{p.name}</div>
+                          <div style={{color:C.gray,fontSize:11}}>{p.wishRole||ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
+                          <div style={{marginTop:4}}><FitnessBar value={p.fitness||85}/></div>
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                          {att && attCfg[att] && <span style={{background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}55`,borderRadius:20,padding:"2px 8px",color:attCfg[att].c,fontSize:10,fontWeight:600}}>{attCfg[att].l}</span>}
+                          <span style={{color:C.accent,fontSize:18,lineHeight:1}}>›</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>}
               </>
             )}
 
