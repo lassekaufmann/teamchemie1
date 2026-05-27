@@ -1134,6 +1134,31 @@ export default function Teamchemie({user,onLogout}) {
                         })}
                       </div>
                     </Card>
+
+                    {/* Taktik teilen Toggle */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.surface,borderRadius:12,padding:"14px 16px",border:`1px solid ${tacticReleased?C.accentBorder:C.border}`,marginTop:10}}>
+                      <div>
+                        <div style={{color:C.white,fontSize:13,fontWeight:600}}>Taktik mit Spielern teilen</div>
+                        <div style={{color:tacticReleased?C.greenText:C.grayDark,fontSize:11,marginTop:2}}>{tacticReleased?"Spieler sehen deine Taktik":"Taktik ist nicht geteilt"}</div>
+                      </div>
+                      <button onClick={()=>{
+                        const next = !tacticReleased;
+                        setTacticReleased(next);
+                        if (next) { setReleasedTactic(tactic); if (user?.teamCode) updateDoc(doc(db,"teams",user.teamCode),{releasedTacticId:tactic.id,releasedTacticName:tactic.name}).catch(console.error); }
+                        else { if (user?.teamCode) updateDoc(doc(db,"teams",user.teamCode),{releasedTacticId:null}).catch(console.error); }
+                        showNotif(next?"Taktik freigegeben":"Taktik zurückgezogen");
+                      }} style={{
+                        width:52,height:28,borderRadius:14,border:"none",cursor:"pointer",
+                        background:tacticReleased?"#c84aff":"rgba(255,255,255,0.1)",
+                        position:"relative",transition:"background 0.2s",flexShrink:0,
+                      }}>
+                        <div style={{
+                          width:22,height:22,borderRadius:"50%",background:C.white,
+                          position:"absolute",top:3,transition:"left 0.2s",
+                          left:tacticReleased?27:3,
+                        }}/>
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <>
@@ -1654,50 +1679,117 @@ export default function Teamchemie({user,onLogout}) {
               </>
             )}
 
-            {/* Feld - Atom Navigation */}
+            {/* Feld - Atom Navigation (readonly) */}
             {tab==="feld" && (
               <>
                 {playerFieldView===null ? (
                   <>
-                    <div style={{color:C.accent,fontSize:12,textAlign:"center",marginBottom:8}}>Taktik: {releasedTactic.name}</div>
-                    <div style={{position:"relative",height:300,margin:"0 auto"}}>
-                      {/* Orbit Bahnen */}
-                      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="-150 -150 300 300">
-                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.12)" strokeWidth="1"/>
-                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.08)" strokeWidth="1" transform="rotate(60)"/>
-                        <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.06)" strokeWidth="1" transform="rotate(120)"/>
-                        <circle cx="130" cy="0" r="3" fill="#c84aff" opacity="0.5"/>
-                        <circle cx="-65" cy="-112" r="2.5" fill="#c84aff" opacity="0.35"/>
-                        <circle cx="-55" cy="100" r="2" fill="#c84aff" opacity="0.25"/>
-                      </svg>
-                      {[
-                        {id:0,label:"Aufstellung",sub:releasedTactic.name,color:C.accent,x:0,y:0,size:90},
-                        {id:1,label:"Offensiv",sub:"Angriff",color:C.offColor,x:0,y:-115,size:68},
-                        {id:2,label:"Defensiv",sub:"Abwehr",color:C.defColor,x:0,y:115,size:68},
-                        {id:3,label:"Ecke Links",sub:"",color:"#e0c040",x:-115,y:-60,size:64},
-                        {id:4,label:"Ecke Rechts",sub:"",color:C.greenText,x:115,y:-60,size:64},
-                      ].map(item=>(
-                        <button key={item.id} onClick={()=>setPlayerFieldView(item.id)}
-                          style={{position:"absolute",top:"50%",left:"50%",width:item.size,height:item.size,borderRadius:"50%",
-                            background:`${item.color}15`,border:`2px solid ${item.color}88`,
-                            transform:`translate(calc(-50% + ${item.x}px),calc(-50% + ${item.y}px))`,
-                            cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
-                          <span style={{color:item.color,fontSize:9,fontWeight:700,textAlign:"center",padding:"0 4px"}}>{item.label}</span>
-                          {item.sub && <span style={{color:`${item.color}99`,fontSize:8}}>{item.sub}</span>}
-                        </button>
-                      ))}
-                    </div>
+                    {tacticReleased ? (
+                      <>
+                        <div style={{color:C.accent,fontSize:12,textAlign:"center",marginBottom:4}}>Taktik vom Trainer: <span style={{color:C.white,fontWeight:700}}>{releasedTactic.name}</span></div>
+                        <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginBottom:8}}>Antippen zum Anzeigen</div>
+                        <div style={{position:"relative",height:300,margin:"0 auto"}}>
+                          <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="-150 -150 300 300">
+                            <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.12)" strokeWidth="1"/>
+                            <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.08)" strokeWidth="1" transform="rotate(60)"/>
+                            <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.06)" strokeWidth="1" transform="rotate(120)"/>
+                            <circle cx="130" cy="0" r="3" fill="#c84aff" opacity="0.5"/>
+                            <circle cx="-65" cy="-112" r="2.5" fill="#c84aff" opacity="0.35"/>
+                            <circle cx="-55" cy="100" r="2" fill="#c84aff" opacity="0.25"/>
+                          </svg>
+                          {[
+                            {id:"grund",      label:"Aufstellung",   color:C.accent,   x:0,   y:0,   size:90},
+                            {id:"offensiv",   label:"Offensiv",      color:C.offColor, x:0,   y:-115,size:68},
+                            {id:"defensiv",   label:"Defensiv",      color:C.defColor, x:0,   y:115, size:68},
+                            {id:"eckeAngriff",label:"Ecke Angriff",  color:"#e0c040",  x:-115,y:-60, size:64},
+                            {id:"eckeAbwehr", label:"Ecke Abwehr",   color:C.greenText,x:115, y:-60, size:64},
+                          ].map(item=>(
+                            <button key={item.id} onClick={()=>setPlayerFieldView(item.id)}
+                              style={{position:"absolute",top:"50%",left:"50%",width:item.size,height:item.size,borderRadius:"50%",
+                                background:`${item.color}15`,border:`2px solid ${item.color}88`,
+                                transform:`translate(calc(-50% + ${item.x}px),calc(-50% + ${item.y}px))`,
+                                cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
+                              <span style={{color:item.color,fontSize:item.id==="grund"?10:9,fontWeight:700,textAlign:"center",padding:"0 4px"}}>{item.label}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Standardschützen anzeigen */}
+                        {(standards.elfmeter||standards.freistoss||standards.eckeLinks||standards.eckeRechts) && (
+                          <Card style={{marginTop:14}}>
+                            <Label>Standardschützen</Label>
+                            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                              {[
+                                {key:"elfmeter",  label:"Elfmeter"},
+                                {key:"freistoss", label:"Freistoss"},
+                                {key:"eckeLinks", label:"Ecke Links"},
+                                {key:"eckeRechts",label:"Ecke Rechts"},
+                              ].map(({key,label})=>{
+                                const pid = standards[key];
+                                const p = players.find(pl=>pl.id===pid&&!pl.isPlaceholder);
+                                if (!p) return null;
+                                return (
+                                  <div key={key} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                    <span style={{color:C.gray,fontSize:12}}>{label}</span>
+                                    <span style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:20,padding:"3px 12px",color:C.accent,fontSize:12,fontWeight:600}}>{p.name.split(" ")[0]}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </Card>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{background:C.surface,borderRadius:12,padding:32,border:`1px solid ${C.border}`,textAlign:"center",marginTop:20}}>
+                        <div style={{color:C.grayDark,fontSize:32,marginBottom:12}}>🔒</div>
+                        <div style={{color:C.gray,fontSize:14,fontWeight:600,marginBottom:6}}>Noch keine Taktik freigegeben</div>
+                        <div style={{color:C.grayDark,fontSize:12}}>Der Trainer hat noch keine Taktik geteilt</div>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <>
-                    <button onClick={()=>setPlayerFieldView(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:12,padding:0}}>
-                      zurück zur Übersicht
-                    </button>
-                    {playerFieldView===0 && <Field positions={positions} order={order} players={players} interactive={false}/>}
-                    {playerFieldView===1 && <Field positions={positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} interactive={false}/>}
-                    {playerFieldView===2 && <Field positions={positions.map(p=>({...p,y:Math.min(96,p.y+8)}))} order={order} players={players} interactive={false}/>}
-                    {(playerFieldView===3||playerFieldView===4) && (
-                      <div style={{color:C.gray,fontSize:13,textAlign:"center",padding:"40px 0"}}>Eckball-Aufstellung wird vom Trainer konfiguriert</div>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                      <button onClick={()=>setPlayerFieldView(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                        ← zurück
+                      </button>
+                      <div style={{color:C.white,fontSize:13,fontWeight:600}}>
+                        {playerFieldView==="grund"?"Aufstellung":
+                         playerFieldView==="offensiv"?"Offensiv":
+                         playerFieldView==="defensiv"?"Defensiv":
+                         playerFieldView==="eckeAngriff"?"Ecke Angriff":"Ecke Abwehr"}
+                      </div>
+                      <div style={{width:60}}/>
+                    </div>
+
+                    {playerFieldView==="grund" && <Field positions={trainerPositions||positions} order={order} players={players} editMode={false} mentalitaet={mentalität}/>}
+                    {playerFieldView==="offensiv" && <Field positions={posOffensiv||positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} editMode={false}/>}
+                    {playerFieldView==="defensiv" && <Field positions={posDefensiv||positions.map(p=>({...p,y:Math.min(96,p.y+8)}))} order={order} players={players} editMode={false}/>}
+                    {(playerFieldView==="eckeAngriff"||playerFieldView==="eckeAbwehr") && (
+                      <>
+                        <div style={{display:"flex",gap:8,marginBottom:10}}>
+                          {["links","rechts"].map(s=>(
+                            <button key={s} onClick={()=>setCornerSide(s)}
+                              style={{flex:1,padding:"8px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
+                                border:`1px solid ${cornerSide===s?C.accentBorder:C.border}`,
+                                background:cornerSide===s?C.accentDim:"transparent",
+                                color:cornerSide===s?C.accent:C.gray}}>
+                              {s==="links"?"Linke Ecke":"Rechte Ecke"}
+                            </button>
+                          ))}
+                        </div>
+                        <CornerField
+                          positions={
+                            playerFieldView==="eckeAngriff"
+                              ?(cornerSide==="links"?cornerOffL:cornerOffR)
+                              :(cornerSide==="links"?cornerDefL:cornerDefR)
+                          }
+                          setPositions={null}
+                          players={players} order={order}
+                          side={cornerSide}
+                          type={playerFieldView==="eckeAngriff"?"angriff":"abwehr"}
+                        />
+                      </>
                     )}
                   </>
                 )}
