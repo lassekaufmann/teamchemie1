@@ -133,7 +133,7 @@ function TabBtn({label,active,onClick}) {
 }
 
 // ── SPIELFELD ────────────────────────────────────────────
-function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label,mentalitaet}) {
+function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label,mentalitaet,myUid}) {
   const fieldRef = useRef(null);
   const [dragging,setDragging] = useState(null);
   const dragMoved = useRef(false);
@@ -237,6 +237,7 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         const isPlaceholder = !player||player.isPlaceholder;
         const isSelected = editMode && swapFirst===idx;
         const isDragging = dragging===idx;
+        const isMe = myUid && player && player.uid===myUid;
         // Convert from percentage (0-100) to new coordinate system
         const leftPct = pos.x + "%";
         const topPct  = pos.y + "%";
@@ -248,16 +249,16 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
               cursor:editMode?"grab":"default",transition:isDragging?"none":"left 0.3s ease,top 0.3s ease"}}>
             <div style={{
               width:30,height:30,borderRadius:"50%",
-              background:isSelected||isDragging?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
-              border:`2px solid ${isSelected||isDragging?C.accent:isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
+              background:isSelected||isDragging?C.accent:isMe?"#c84aff":isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
+              border:`2px solid ${isSelected||isDragging?C.accent:isMe?"#ff88ff":isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              boxShadow:isDragging?`0 0 20px ${C.accent}`:isSelected?`0 0 12px ${C.accent}`:isPlaceholder?"none":`0 0 6px rgba(200,74,255,0.4)`,
+              boxShadow:isDragging?`0 0 20px ${C.accent}`:isSelected?`0 0 12px ${C.accent}`:isMe?`0 0 10px #ff88ff, 0 0 22px rgba(200,74,255,0.6)`:isPlaceholder?"none":`0 0 6px rgba(200,74,255,0.4)`,
             }}>
               <span style={{color:isSelected||isDragging?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800,lineHeight:1}}>
                 {player?.number||idx+1}
               </span>
               {!isPlaceholder && (
-                <span style={{color:isSelected||isDragging?C.bg:"rgba(255,255,255,0.55)",fontSize:6,lineHeight:1.2,fontWeight:600}}>
+                <span style={{color:isSelected||isDragging?C.bg:isMe?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.55)",fontSize:6,lineHeight:1.2,fontWeight:600}}>
                   {player.name.split(" ")[0].slice(0,5)}
                 </span>
               )}
@@ -566,8 +567,6 @@ export default function Teamchemie({user,onLogout}) {
     if (!user?.teamCode) return;
     const q = query(collection(db,"users"),where("teamCode","==",user.teamCode),where("role","==","player"));
     return onSnapshot(q,snap=>{
-      console.log("Firebase Spieler geladen:", snap.docs.length, "Dokumente");
-      snap.docs.forEach(d=>console.log("Spieler Doc:", d.id, d.data()));
       const real = snap.docs.map((d,i)=>({
         id:         i+1,
         uid:        d.id,
@@ -593,7 +592,7 @@ export default function Teamchemie({user,onLogout}) {
     });
   },[user?.teamCode]);
 
-  // Firebase: Taktik sync
+  // Firebase: Taktik sync + Aufstellung laden
   useEffect(()=>{
     if (!user?.teamCode) return;
     return onSnapshot(doc(db,"teams",user.teamCode),snap=>{
@@ -603,8 +602,24 @@ export default function Teamchemie({user,onLogout}) {
         const found = ALL_TACTICS.find(t=>t.id===d.releasedTacticId);
         if (found) { setReleasedTactic(found); if (!isTrainer) setTactic(found); }
       }
+      // Aufstellung laden (nur für Trainer beim ersten Laden)
+      if (isTrainer && d.order && Array.isArray(d.order)) {
+        setOrder(d.order);
+      }
+      if (isTrainer && d.trainerPositions) {
+        setTrainerPositions(d.trainerPositions);
+      }
     });
   },[user?.teamCode]);
+
+  // Aufstellung in Firebase speichern wenn sich order ändert
+  useEffect(()=>{
+    if (!isTrainer || !user?.teamCode) return;
+    const timer = setTimeout(()=>{
+      updateDoc(doc(db,"teams",user.teamCode),{order, trainerPositions: trainerPositions||positions}).catch(()=>{});
+    }, 1000); // debounce 1s
+    return ()=>clearTimeout(timer);
+  },[order, trainerPositions]);
 
   // Firebase: Chat – für Spieler fix, für Trainer dynamisch je nach ausgewähltem Spieler
   const chatPlayerUid = isTrainer ? players.find(p=>p.uid===chatPartnerId||p.id===chatPartnerId)?.uid : user?.uid;
@@ -1361,8 +1376,7 @@ export default function Teamchemie({user,onLogout}) {
               <>
                 {/* Spieler Detail als Overlay */}
                 {detailId && (()=>{
-                  console.log("detailId:", detailId, "players:", players.map(p=>({id:p.id,uid:p.uid,name:p.name})));
-                  const dp = players.find(p=>p.uid===detailId||p.id===detailId)||players.find(p=>String(p.uid)===String(detailId)||String(p.id)===String(detailId));
+                              const dp = players.find(p=>p.uid===detailId||p.id===detailId)||players.find(p=>String(p.uid)===String(detailId)||String(p.id)===String(detailId));
                   if (!dp) return (
                     <div style={{textAlign:"center",padding:"40px 0"}}>
                       <div style={{color:C.gray,marginBottom:12}}>Spieler wird geladen...</div>
@@ -1659,6 +1673,25 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
+                  <Label>Harmonie – mit wem spielst du am liebsten?</Label>
+                  {players.filter(p=>!p.isPlaceholder&&p.uid!==user?.uid).length===0 ? (
+                    <div style={{color:C.grayDark,fontSize:12}}>Noch keine anderen Spieler im Team</div>
+                  ) : (
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                      {players.filter(p=>!p.isPlaceholder&&p.uid!==user?.uid).map(p=>(
+                        <button key={p.uid} onClick={()=>setMyPartners(prev=>prev.includes(p.uid)?prev.filter(x=>x!==p.uid):[...prev,p.uid])}
+                          style={{padding:"5px 12px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
+                            border:`1px solid ${myPartners.includes(p.uid)?C.accentBorder:C.border}`,
+                            background:myPartners.includes(p.uid)?C.accentDim:"transparent",
+                            color:myPartners.includes(p.uid)?C.accent:C.gray}}>
+                          {p.name.split(" ")[0]} #{p.number}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+
+                <Card style={{marginBottom:10}}>
                   <Label>Lieblingsformation</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {ALL_TACTICS.map(t=>(
@@ -1762,9 +1795,9 @@ export default function Teamchemie({user,onLogout}) {
                       <div style={{width:60}}/>
                     </div>
 
-                    {playerFieldView==="grund" && <Field positions={trainerPositions||positions} order={order} players={players} editMode={false} mentalitaet={mentalität}/>}
-                    {playerFieldView==="offensiv" && <Field positions={posOffensiv||positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} editMode={false}/>}
-                    {playerFieldView==="defensiv" && <Field positions={posDefensiv||positions.map(p=>({...p,y:Math.min(96,p.y+8)}))} order={order} players={players} editMode={false}/>}
+                    {playerFieldView==="grund" && <Field positions={trainerPositions||positions} order={order} players={players} editMode={false} mentalitaet={mentalität} myUid={user?.uid}/>}
+                    {playerFieldView==="offensiv" && <Field positions={posOffensiv||positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} editMode={false} myUid={user?.uid}/>}
+                    {playerFieldView==="defensiv" && <Field positions={posDefensiv||positions.map(p=>({...p,y:Math.min(96,p.y+8)}))} order={order} players={players} editMode={false} myUid={user?.uid}/> }
                     {(playerFieldView==="eckeAngriff"||playerFieldView==="eckeAbwehr") && (
                       <>
                         <div style={{display:"flex",gap:8,marginBottom:10}}>
