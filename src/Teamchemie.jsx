@@ -595,31 +595,67 @@ export default function Teamchemie({user,onLogout}) {
   // Firebase: Taktik sync + Aufstellung laden
   useEffect(()=>{
     if (!user?.teamCode) return;
+    const [loaded, setLoaded] = [false];
     return onSnapshot(doc(db,"teams",user.teamCode),snap=>{
       if (!snap.exists()) return;
       const d = snap.data();
+      // Freigegebene Taktik
       if (d.releasedTacticId) {
-        const found = ALL_TACTICS.find(t=>t.id===d.releasedTacticId);
+        const std = ALL_TACTICS.find(t=>t.id===d.releasedTacticId);
+        const custom = (d.customTactics||[]).find(t=>t.id===d.releasedTacticId);
+        const found = std||custom;
         if (found) { setReleasedTactic(found); if (!isTrainer) setTactic(found); }
+        if (isTrainer && d.releasedTacticId) setTacticReleased(true);
       }
-      // Aufstellung laden (nur für Trainer beim ersten Laden)
-      if (isTrainer && d.order && Array.isArray(d.order)) {
-        setOrder(d.order);
+      if (!isTrainer) return; // Spieler brauchen den Rest nicht
+      // Aufstellung
+      if (d.order && Array.isArray(d.order)) setOrder(d.order);
+      if (d.trainerPositions) setTrainerPositions(d.trainerPositions);
+      if (d.posOffensiv)  setPosOffensiv(d.posOffensiv);
+      if (d.posDefensiv)  setPosDefensiv(d.posDefensiv);
+      if (d.cornerOffL)   setCornerOffL(d.cornerOffL);
+      if (d.cornerOffR)   setCornerOffR(d.cornerOffR);
+      if (d.cornerDefL)   setCornerDefL(d.cornerDefL);
+      if (d.cornerDefR)   setCornerDefR(d.cornerDefR);
+      // Taktik
+      if (d.tacticId) {
+        const std = ALL_TACTICS.find(t=>t.id===d.tacticId);
+        const custom = (d.customTactics||[]).find(t=>t.id===d.tacticId);
+        if (std||custom) setTactic(std||custom);
       }
-      if (isTrainer && d.trainerPositions) {
-        setTrainerPositions(d.trainerPositions);
-      }
+      if (d.customTactics) setCustomTactics(d.customTactics);
+      if (d.mentalitaet!==undefined) setMentalität(d.mentalitaet);
+      // Standards
+      if (d.standards) setStandards(d.standards);
+      // Kalender
+      if (d.spieltage) setSpieltage(d.spieltage);
     });
   },[user?.teamCode]);
 
-  // Aufstellung in Firebase speichern wenn sich order ändert
+  // Alles in Firebase speichern – debounced
   useEffect(()=>{
     if (!isTrainer || !user?.teamCode) return;
     const timer = setTimeout(()=>{
-      updateDoc(doc(db,"teams",user.teamCode),{order, trainerPositions: trainerPositions||positions}).catch(()=>{});
-    }, 1000); // debounce 1s
+      updateDoc(doc(db,"teams",user.teamCode),{
+        order,
+        trainerPositions: trainerPositions||positions,
+        posOffensiv:  posOffensiv||positions.map(p=>({...p,y:Math.max(4,p.y-8)})),
+        posDefensiv:  posDefensiv||positions.map(p=>({...p,y:Math.min(96,p.y+8)})),
+        cornerOffL:   cornerOffL||[],
+        cornerOffR:   cornerOffR||[],
+        cornerDefL:   cornerDefL||[],
+        cornerDefR:   cornerDefR||[],
+        tacticId:     tactic.id,
+        customTactics,
+        mentalitaet:  mentalität,
+        standards,
+        spieltage,
+      }).catch(()=>{});
+    }, 1200);
     return ()=>clearTimeout(timer);
-  },[order, trainerPositions]);
+  },[order, trainerPositions, posOffensiv, posDefensiv,
+     cornerOffL, cornerOffR, cornerDefL, cornerDefR,
+     tactic.id, customTactics, mentalität, standards, spieltage]);
 
   // Firebase: Chat – für Spieler fix, für Trainer dynamisch je nach ausgewähltem Spieler
   const chatPlayerUid = isTrainer ? players.find(p=>p.uid===chatPartnerId||p.id===chatPartnerId)?.uid : user?.uid;
