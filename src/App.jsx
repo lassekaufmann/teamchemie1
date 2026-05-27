@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, enableIndexedDbPersistence } from "firebase/firestore";
 import LoginScreen from "./LoginScreen.jsx";
 import Teamchemie from "./Teamchemie.jsx";
 
@@ -17,6 +17,12 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db   = getFirestore(app);
+
+// Offline-Support: Daten werden lokal gecacht
+enableIndexedDbPersistence(db).catch(err=>{
+  if (err.code==="failed-precondition") console.warn("Offline-Cache: mehrere Tabs offen");
+  else if (err.code==="unimplemented") console.warn("Browser unterstützt Offline-Cache nicht");
+});
 
 function SplashScreen() {
   return (
