@@ -207,21 +207,23 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         <path d="M67 1 A1 1 0 0 0 66 2" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M1 104 A1 1 0 0 0 2 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M67 104 A1 1 0 0 1 66 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
-        {/* Mentalität Pfeile */}
-        {mentalitaet!==undefined && mentalitaet>55 && (
-          <>
-            <path d="M34 30 L34 15 M30 21 L34 15 L38 21" fill="none" stroke={`rgba(255,112,64,${Math.min(0.55,(mentalitaet-55)/45)})`} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M22 38 L22 23 M18 29 L22 23 L26 29" fill="none" stroke={`rgba(255,112,64,${Math.min(0.35,(mentalitaet-55)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M46 38 L46 23 M42 29 L46 23 L50 29" fill="none" stroke={`rgba(255,112,64,${Math.min(0.35,(mentalitaet-55)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </>
-        )}
-        {mentalitaet!==undefined && mentalitaet<45 && (
-          <>
-            <path d="M34 75 L34 90 M30 84 L34 90 L38 84" fill="none" stroke={`rgba(64,144,224,${Math.min(0.55,(45-mentalitaet)/45)})`} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M22 67 L22 82 M18 76 L22 82 L26 76" fill="none" stroke={`rgba(64,144,224,${Math.min(0.35,(45-mentalitaet)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M46 67 L46 82 M42 76 L46 82 L50 76" fill="none" stroke={`rgba(64,144,224,${Math.min(0.35,(45-mentalitaet)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </>
-        )}
+        {/* Mentalität – dezente Richtungslinien über ganzes Feld */}
+        {mentalitaet!==undefined && mentalitaet>55 && (()=>{
+          const o = Math.min(0.5,(mentalitaet-55)/45);
+          const col = `rgba(255,112,64,${o})`;
+          return <>
+            <line x1="1" y1="52.5" x2="34" y2="1" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
+            <line x1="67" y1="52.5" x2="34" y2="1" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
+          </>;
+        })()}
+        {mentalitaet!==undefined && mentalitaet<45 && (()=>{
+          const o = Math.min(0.5,(45-mentalitaet)/45);
+          const col = `rgba(64,144,224,${o})`;
+          return <>
+            <line x1="1" y1="52.5" x2="34" y2="104" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
+            <line x1="67" y1="52.5" x2="34" y2="104" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
+          </>;
+        })()}
       </svg>
       {label && <div style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.6)",borderRadius:8,padding:"2px 10px",fontSize:9,color:"rgba(200,74,255,0.7)",zIndex:5}}>{label}</div>}
       {editMode && (
@@ -1130,18 +1132,6 @@ export default function Teamchemie({user,onLogout}) {
                           );
                         })}
                       </div>
-                    </Card>
-
-                    {/* Mentalität */}
-                    <Card>
-                      <Label>Mentalität</Label>
-                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                        <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
-                        <span style={{color:C.gray,fontSize:11}}>{mentalität<=30?"Sehr defensiv":mentalität<=50?"Ausgewogen":mentalität<=70?"Offensiv":"Sehr offensiv"}</span>
-                        <span style={{color:C.offColor,fontSize:11}}>Offensiv</span>
-                      </div>
-                      <input type="range" min={0} max={100} value={mentalität} onChange={e=>setMentalität(Number(e.target.value))}
-                        style={{width:"100%",accentColor:C.accent}}/>
                     </Card>
                   </>
                 ) : (
