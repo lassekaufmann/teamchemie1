@@ -562,6 +562,8 @@ export default function Teamchemie({user,onLogout}) {
     if (!user?.teamCode) return;
     const q = query(collection(db,"users"),where("teamCode","==",user.teamCode),where("role","==","player"));
     return onSnapshot(q,snap=>{
+      console.log("Firebase Spieler geladen:", snap.docs.length, "Dokumente");
+      snap.docs.forEach(d=>console.log("Spieler Doc:", d.id, d.data()));
       const real = snap.docs.map((d,i)=>({
         id:         i+1,
         uid:        d.id,
