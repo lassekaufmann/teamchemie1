@@ -481,18 +481,23 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
               <div style={{textAlign:"center"}}><div style={{color:C.grayDark,fontSize:18,fontWeight:800}}>{players.length-attendCount-maybeCount-absentCount}</div><div style={{color:C.grayDark,fontSize:9}}>Offen</div></div>
             </div>
             <div style={{display:"flex",gap:8}}>
-              {isSpiel && (
-                <button onClick={()=>{setActiveSpieltagId(ev.id);const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];setTactic(t);showNotif(`Spiel vs. ${ev.gegner} aktiviert`);}}
-                  style={{flex:1,background:isActive?"transparent":C.surface2,border:`1px solid ${isActive?C.accentBorder:C.border}`,borderRadius:8,color:isActive?C.accent:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
-                  {isActive?"Aktiv":"Aktivieren"}
-                </button>
-              )}
-              {isSpiel && (
-                <button onClick={()=>{setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));const t=ALL_TACTICS.find(t=>t.id===ev.tacticId)||ALL_TACTICS[0];if(!ev.released){setReleasedTactic(t);setTacticReleased(true);}showNotif(ev.released?"Freigabe zurückgezogen":"Taktik freigegeben");}}
-                  style={{flex:1,background:ev.released?"rgba(74,200,200,0.1)":"transparent",border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"8px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>
-                  {ev.released?"Freigabe aufheben":"Freigeben"}
-                </button>
-              )}
+              <button onClick={()=>{
+                setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));
+                showNotif(ev.released?"Termin ausgeblendet":"Termin für Spieler freigegeben");
+              }} style={{
+                flex:1,
+                background:ev.released?"rgba(74,200,200,0.12)":C.surface2,
+                border:`1px solid ${ev.released?C.greenText:C.border}`,
+                borderRadius:8,color:ev.released?C.greenText:C.gray,
+                padding:"9px",cursor:"pointer",fontSize:12,
+                fontFamily:"inherit",fontWeight:700,
+                display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+              }}>
+                <div style={{width:28,height:16,borderRadius:8,background:ev.released?"#4ac8c8":"rgba(255,255,255,0.1)",position:"relative",flexShrink:0,transition:"background 0.2s"}}>
+                  <div style={{width:12,height:12,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:ev.released?14:2,transition:"left 0.2s"}}/>
+                </div>
+                {ev.released?"Sichtbar für Spieler":"Für Spieler freigeben"}
+              </button>
             </div>
           </div>
         );
@@ -614,7 +619,10 @@ export default function Teamchemie({user,onLogout}) {
         if (isTrainer) setTacticReleased(true);
       } else {
         if (isTrainer) setTacticReleased(false);
-        // Spieler sehen gesperrte Ansicht
+      }
+      // Spieler laden freigegebene Termine
+      if (!isTrainer && d.spieltage) {
+        setSpieltage(d.spieltage.filter(ev=>ev.released));
       }
       if (!isTrainer) {
         // Spieler laden Positionen und Kalender auch
@@ -1683,24 +1691,37 @@ export default function Teamchemie({user,onLogout}) {
             {/* Status */}
             {tab==="status" && (
               <>
-                {spieltage.length>0 && (
+                {spieltage.filter(ev=>ev.released).length>0 ? (
                   <Card style={{marginBottom:10}}>
-                    <Label>Nächste Termine</Label>
-                    {[...spieltage].sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"12:00"))-new Date(b.datum+"T"+(b.zeit||"12:00"))).slice(0,3).map(ev=>{
+                    <Label>Termine vom Trainer</Label>
+                    {[...spieltage].filter(ev=>ev.released).sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"12:00"))-new Date(b.datum+"T"+(b.zeit||"12:00"))).map(ev=>{
                       const isSpiel = ev.type==="spiel";
+                      const color = isSpiel?C.accent:C.greenText;
                       const myAtt = (ev.attendance||{})[user?.uid];
                       return (
-                        <div key={ev.id} style={{background:C.surface2,borderRadius:10,padding:"11px 12px",marginBottom:8,border:`1px solid ${C.border}`}}>
-                          <div style={{color:C.white,fontWeight:600,fontSize:13,marginBottom:2}}>{isSpiel?`vs. ${ev.gegner}`:(ev.notiz||"Training")}</div>
-                          <div style={{color:C.gray,fontSize:11,marginBottom:8}}>
-                            {ev.datum?new Date(ev.datum+"T12:00:00").toLocaleDateString("de",{weekday:"short",day:"2-digit",month:"short"}):""}
+                        <div key={ev.id} style={{background:C.surface2,borderRadius:10,padding:"12px",marginBottom:8,border:`1px solid ${C.border}`}}>
+                          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                            <span style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:20,padding:"2px 8px",fontSize:10,fontWeight:700,color,flexShrink:0}}>
+                              {isSpiel?"Spiel":"Training"}
+                            </span>
+                            {myAtt && <span style={{fontSize:10,fontWeight:600,color:myAtt==="ja"?C.greenText:myAtt==="nein"?C.error:C.yellowText}}>
+                              {myAtt==="ja"?"Zugesagt":myAtt==="nein"?"Abgesagt":"Unsicher"}
+                            </span>}
+                          </div>
+                          <div style={{color:C.white,fontWeight:700,fontSize:14,marginBottom:3}}>
+                            {isSpiel?`vs. ${ev.gegner}`:(ev.notiz||"Training")}
+                          </div>
+                          <div style={{color:C.gray,fontSize:11,marginBottom:10}}>
+                            {ev.datum?new Date(ev.datum+"T12:00:00").toLocaleDateString("de",{weekday:"long",day:"2-digit",month:"long"}):""}
                             {ev.zeit?` · ${ev.zeit} Uhr`:""}{ev.ort?` · ${ev.ort}`:""}
                           </div>
                           <div style={{display:"flex",gap:6}}>
-                            {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Absagen",c:C.error}].map(opt=>(
-                              <button key={opt.k} onClick={()=>{setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,attendance:{...(s.attendance||{}),[user?.uid]:opt.k}}:s));showNotif(opt.k==="ja"?"Angemeldet!":"Abgemeldet");}}
-                                style={{flex:1,padding:"6px 4px",borderRadius:8,cursor:"pointer",fontSize:10,fontFamily:"inherit",fontWeight:600,
-                                  border:`1px solid ${myAtt===opt.k?opt.c:`${opt.c}44`}`,background:myAtt===opt.k?`${opt.c}18`:"transparent",color:opt.c}}>
+                            {[{k:"ja",l:"Zusagen",c:C.greenText},{k:"vielleicht",l:"Unsicher",c:C.yellowText},{k:"nein",l:"Absagen",c:C.error}].map(opt=>(
+                              <button key={opt.k} onClick={()=>{
+                                setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,attendance:{...(s.attendance||{}),[user?.uid]:opt.k}}:s));
+                                showNotif(opt.k==="ja"?"Zugesagt!":opt.k==="nein"?"Abgesagt":"Als unsicher markiert");
+                              }} style={{flex:1,padding:"7px 4px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600,
+                                border:`1px solid ${myAtt===opt.k?opt.c:`${opt.c}44`}`,background:myAtt===opt.k?`${opt.c}18`:"transparent",color:opt.c}}>
                                 {opt.l}
                               </button>
                             ))}
@@ -1708,6 +1729,11 @@ export default function Teamchemie({user,onLogout}) {
                         </div>
                       );
                     })}
+                  </Card>
+                ) : (
+                  <Card style={{marginBottom:10}}>
+                    <Label>Termine</Label>
+                    <div style={{color:C.grayDark,fontSize:12,textAlign:"center",padding:"10px 0"}}>Noch keine Termine vom Trainer freigegeben</div>
                   </Card>
                 )}
 
