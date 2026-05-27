@@ -613,8 +613,22 @@ export default function Teamchemie({user,onLogout}) {
         if (isTrainer) setTacticReleased(false);
         // Spieler sehen gesperrte Ansicht
       }
-      if (!isTrainer) return; // Spieler brauchen den Rest nicht
-      // Aufstellung
+      if (!isTrainer) {
+        // Spieler laden Positionen und Kalender auch
+        if (d.order && Array.isArray(d.order)) setOrder(d.order);
+        if (d.trainerPositions) setTrainerPositions(d.trainerPositions);
+        if (d.posOffensiv)  setPosOffensiv(d.posOffensiv);
+        if (d.posDefensiv)  setPosDefensiv(d.posDefensiv);
+        if (d.cornerOffL)   setCornerOffL(d.cornerOffL);
+        if (d.cornerOffR)   setCornerOffR(d.cornerOffR);
+        if (d.cornerDefL)   setCornerDefL(d.cornerDefL);
+        if (d.cornerDefR)   setCornerDefR(d.cornerDefR);
+        if (d.standards)    setStandards(d.standards);
+        if (d.spieltage)    setSpieltage(d.spieltage);
+        if (d.mentalitaet!==undefined) setMentalität(d.mentalitaet);
+        return;
+      }
+      // Trainer lädt alles
       if (d.order && Array.isArray(d.order)) setOrder(d.order);
       if (d.trainerPositions) setTrainerPositions(d.trainerPositions);
       if (d.posOffensiv)  setPosOffensiv(d.posOffensiv);
@@ -1017,7 +1031,7 @@ export default function Teamchemie({user,onLogout}) {
 
   const navItems = isTrainer
     ? [{key:"feld",label:"Feld"},{key:"taktik",label:"Taktik"},{key:"kalender",label:"Kalender"},{key:"spieler",label:"Spieler"},{key:"chat",label:"Chat"}]
-    : [{key:"status",label:"Status"},{key:"feld",label:"Feld"},{key:"chat",label:"Chat"}];
+    : [{key:"status",label:"Status"},{key:"feld",label:"Feld"},{key:"kalender",label:"Kalender"},{key:"chat",label:"Chat"}];
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",color:C.white}}
@@ -1882,6 +1896,65 @@ export default function Teamchemie({user,onLogout}) {
               <>
                 <Label>Chat mit Trainer</Label>
                 {renderChat()}
+              </>
+            )}
+
+            {/* Kalender */}
+            {tab==="kalender" && (
+              <>
+                {spieltage.length===0 && (
+                  <div style={{background:C.surface,borderRadius:12,padding:24,border:`1px solid ${C.border}`,textAlign:"center"}}>
+                    <div style={{fontSize:28,marginBottom:8}}>📅</div>
+                    <div style={{color:C.gray,fontSize:13}}>Noch keine Termine eingetragen</div>
+                    <div style={{color:C.grayDark,fontSize:11,marginTop:4}}>Der Trainer trägt bald Spiele und Trainings ein</div>
+                  </div>
+                )}
+                {[...spieltage].sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"00:00"))-new Date(b.datum+"T"+(b.zeit||"00:00"))).map(ev=>{
+                  const isSpiel = ev.type==="spiel";
+                  const color = isSpiel?C.accent:C.greenText;
+                  const myAtt = (ev.attendance||{})[user?.uid];
+                  return (
+                    <div key={ev.id} style={{background:C.surface,borderRadius:12,padding:14,marginBottom:10,border:`1px solid ${C.border}`}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}}>
+                        <span style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:700,color}}>
+                          {isSpiel?"Spiel":"Training"}
+                        </span>
+                        {isSpiel&&ev.heimAuswärts&&<span style={{color:C.grayDark,fontSize:10}}>{ev.heimAuswärts==="heim"?"Heim":"Auswärts"}</span>}
+                      </div>
+                      <div style={{color:C.white,fontWeight:700,fontSize:15,marginBottom:3}}>
+                        {isSpiel?`vs. ${ev.gegner||"–"}`:(ev.notiz||"Training")}
+                      </div>
+                      <div style={{color:C.gray,fontSize:12,marginBottom:10}}>
+                        {ev.datum?new Date(ev.datum+"T12:00:00").toLocaleDateString("de",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}):""}
+                        {ev.zeit?` · ${ev.zeit} Uhr`:""}{ev.ort?` · ${ev.ort}`:""}
+                      </div>
+                      <div style={{display:"flex",gap:8}}>
+                        {[
+                          {k:"ja",      l:"Ich bin dabei",  c:C.greenText},
+                          {k:"vielleicht",l:"Vielleicht",   c:C.yellowText},
+                          {k:"nein",    l:"Kann nicht",     c:C.error},
+                        ].map(opt=>(
+                          <button key={opt.k}
+                            onClick={()=>{
+                              setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,attendance:{...(s.attendance||{}),[user?.uid]:opt.k}}:s));
+                              // Auch in Firebase speichern
+                              if (user?.teamCode) {
+                                const updated = spieltage.map(s=>s.id===ev.id?{...s,attendance:{...(s.attendance||{}),[user?.uid]:opt.k}}:s);
+                                updateDoc(doc(db,"teams",user.teamCode),{spieltage:updated}).catch(()=>{});
+                              }
+                              showNotif(opt.k==="ja"?"Angemeldet!":opt.k==="nein"?"Abgemeldet":"Als unsicher markiert");
+                            }}
+                            style={{flex:1,padding:"9px 4px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600,
+                              border:`1px solid ${myAtt===opt.k?opt.c:`${opt.c}44`}`,
+                              background:myAtt===opt.k?`${opt.c}18`:"transparent",
+                              color:opt.c,lineHeight:1.3}}>
+                            {opt.l}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </>
             )}
           </>
