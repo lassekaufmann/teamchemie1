@@ -7,7 +7,7 @@ const C = {
   border:"rgba(255,255,255,0.09)", borderHi:"rgba(180,100,255,0.35)",
   accent:"#c84aff", accentDim:"rgba(200,74,255,0.15)", accentBorder:"rgba(200,74,255,0.4)",
   green:"#1e3a4a", greenLight:"#2a5a6a", greenText:"#4ac8c8",
-  white:"#ffffff", gray:"#7878aa", grayDark:"#44446a", grayLight:"#c0c0e0",
+  white:"#ffffff", gray:"#9898bb", grayDark:"#5a5a80", grayLight:"#d0d0ee",
   error:"#cc3355", yellowText:"#e0b040", offColor:"#ff7040", defColor:"#4090e0",
 };
 
@@ -516,6 +516,8 @@ export default function Teamchemie({user,onLogout}) {
   const [swapFirst,setSwapFirst]   = useState(null);
   const [detailId,setDetailId]     = useState(null);   // Spieler-Tab Detail
   const [chatPartnerId,setChatPartnerId] = useState(null); // Chat-Tab Partner
+  const [isOffline,setIsOffline]   = useState(!navigator.onLine);
+  const [firebaseError,setFirebaseError] = useState(null);
   const [chat,setChat]             = useState([]);
   const [chatInput,setChatInput]   = useState("");
   const [notif,setNotif]           = useState(null);
@@ -554,6 +556,7 @@ export default function Teamchemie({user,onLogout}) {
   const [trainerAttributes,setTrainerAttributes] = useState({});
   const [trainerStrengths,setTrainerStrengths] = useState({});
   const [swipeStartX,setSwipeStartX] = useState(null);
+  const [swipeStartY,setSwipeStartY] = useState(null);
   const [showOnboarding,setShowOnboarding] = useState(isTrainer && !user?.hasSeenOnboarding);
   const [confirmRemove,setConfirmRemove] = useState(null);
   const [playerMenu,setPlayerMenu] = useState(null);
@@ -670,7 +673,7 @@ export default function Teamchemie({user,onLogout}) {
         mentalitaet:  mentalität,
         standards,
         spieltage,
-      }).catch(()=>{});
+      }).catch(e=>{ setFirebaseError("Speichern fehlgeschlagen – prüfe deine Verbindung"); setTimeout(()=>setFirebaseError(null),4000); });
     }, 1200);
     return ()=>clearTimeout(timer);
   },[order, trainerPositions, posOffensiv, posDefensiv,
@@ -689,6 +692,15 @@ export default function Teamchemie({user,onLogout}) {
   },[chatId]);
 
   function showNotif(msg){setNotif(msg);setTimeout(()=>setNotif(null),2200);}
+
+  // Online/Offline detection
+  useEffect(()=>{
+    const goOnline  = ()=>{ setIsOffline(false); showNotif("Verbindung wiederhergestellt"); };
+    const goOffline = ()=>{ setIsOffline(true); };
+    window.addEventListener("online",  goOnline);
+    window.addEventListener("offline", goOffline);
+    return ()=>{ window.removeEventListener("online",goOnline); window.removeEventListener("offline",goOffline); };
+  },[]);
 
   // Init Offensiv/Defensiv/Ecken Positionen wenn Taktik wechselt
   useEffect(()=>{    setTrainerPositions(positions.map(p=>({...p})));
@@ -744,10 +756,21 @@ export default function Teamchemie({user,onLogout}) {
     setOrder(o);setSwapFirst(null);showNotif("Spieler getauscht");
   }
 
-  function handleSwipe(endX){
+  function handleSwipeStart(e){
+    // Nur horizontale Swipes tracken
+    setSwipeStartX(e.touches[0].clientX);
+    setSwipeStartY(e.touches[0].clientY);
+  }
+
+  function handleSwipeEnd(e){
     if (swipeStartX===null) return;
-    const dx = endX-swipeStartX;
-    if (Math.abs(dx)<50) return;
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - (swipeStartY||0);
+    // Ignorieren wenn eher vertikal gewischt (scroll)
+    if (Math.abs(dy) > Math.abs(dx)) { setSwipeStartX(null); return; }
+    if (Math.abs(dx) < 60) { setSwipeStartX(null); return; }
+    // Nicht swapen wenn man gerade ein Spieler zieht oder im Bearbeitungsmodus ist
+    if (fieldEditMode || swapFirst!==null) { setSwipeStartX(null); return; }
     const tabs = isTrainer?["feld","taktik","kalender","spieler","chat"]:["status","feld","chat"];
     const idx = tabs.indexOf(tab);
     if (dx<0 && idx<tabs.length-1) setTab(tabs[idx+1]);
@@ -1035,8 +1058,8 @@ export default function Teamchemie({user,onLogout}) {
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",color:C.white}}
-      onTouchStart={e=>setSwipeStartX(e.touches[0].clientX)}
-      onTouchEnd={e=>handleSwipe(e.changedTouches[0].clientX)}
+      onTouchStart={e=>handleSwipeStart(e)}
+      onTouchEnd={e=>handleSwipeEnd(e)}
     >
       <div style={{maxWidth:440,margin:"0 auto",padding:"20px 20px 90px"}}>
 
@@ -1269,8 +1292,11 @@ export default function Teamchemie({user,onLogout}) {
                     {(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
                       <>
                         {fieldEditMode && (
-                          <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,padding:"8px 12px",marginBottom:8,fontSize:11,color:C.accent}}>
-                            Spieler halten und ziehen zum Verschieben · Antippen zum Tauschen
+                          <div style={{background:swapFirst!==null?"rgba(200,74,255,0.25)":C.accentDim,border:`1px solid ${swapFirst!==null?C.accent:C.accentBorder}`,borderRadius:8,padding:"8px 12px",marginBottom:8,fontSize:11,color:C.accent,display:"flex",alignItems:"center",gap:8,transition:"all 0.2s"}}>
+                            <div style={{width:8,height:8,borderRadius:"50%",background:swapFirst!==null?C.accent:"rgba(200,74,255,0.5)",flexShrink:0}}/>
+                            {swapFirst!==null
+                              ? `Spieler ${players.find(p=>p.id===order[swapFirst])?.name?.split(" ")[0]||""} ausgewählt – zweiten antippen zum Tauschen`
+                              : "Halten = Ziehen · Antippen = Tauschen"}
                           </div>
                         )}
                         <Field
@@ -1958,6 +1984,20 @@ export default function Teamchemie({user,onLogout}) {
               </>
             )}
           </>
+        )}
+
+        {/* Offline Banner */}
+        {isOffline && (
+          <div style={{position:"fixed",top:0,left:0,right:0,background:"#cc8800",zIndex:999,padding:"8px 16px",textAlign:"center",fontSize:12,fontWeight:600,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <span>●</span> Offline – Änderungen werden gespeichert sobald du wieder verbunden bist
+          </div>
+        )}
+
+        {/* Firebase Fehler Banner */}
+        {firebaseError && (
+          <div style={{position:"fixed",top:isOffline?32:0,left:0,right:0,background:C.error,zIndex:999,padding:"8px 16px",textAlign:"center",fontSize:12,fontWeight:600,color:"#fff"}}>
+            ⚠ {firebaseError}
+          </div>
         )}
 
         {/* Notification */}
