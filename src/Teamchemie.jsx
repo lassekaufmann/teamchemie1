@@ -177,33 +177,49 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
       onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={()=>{setDragging(null);dragMoved.current=false;}}
       onTouchMove={e=>{e.preventDefault();onMove(e);}} onTouchEnd={onUp}
     >
-      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 100 140" preserveAspectRatio="none">
-        <rect x="0" y="0" width="100" height="140" fill="#0e0e28"/>
-        <rect x="2" y="2" width="96" height="136" fill="none" stroke="rgba(200,74,255,0.5)" strokeWidth="0.8"/>
-        <line x1="2" y1="70" x2="98" y2="70" stroke="rgba(200,74,255,0.4)" strokeWidth="0.6"/>
-        <circle cx="50" cy="70" r="12" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        <circle cx="50" cy="70" r="1" fill="rgba(200,74,255,0.5)"/>
-        <rect x="22" y="2"  width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        <rect x="32" y="2"  width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <rect x="22" y="118" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        <rect x="32" y="128" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <path d="M28 22 A16 16 0 0 0 72 22" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <path d="M28 118 A16 16 0 0 1 72 118" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <circle cx="50" cy="14" r="1" fill="rgba(200,74,255,0.4)"/>
-        <circle cx="50" cy="126" r="1" fill="rgba(200,74,255,0.4)"/>
+      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 68 105" preserveAspectRatio="xMidYMid meet">
+        <rect x="0" y="0" width="68" height="105" fill="#0e0e28"/>
+        {/* Außenlinien */}
+        <rect x="1" y="1" width="66" height="103" fill="none" stroke="rgba(200,74,255,0.55)" strokeWidth="0.5"/>
+        {/* Mittellinie */}
+        <line x1="1" y1="52.5" x2="67" y2="52.5" stroke="rgba(200,74,255,0.45)" strokeWidth="0.4"/>
+        {/* Mittelkreis r=9.15m */}
+        <circle cx="34" cy="52.5" r="9.15" fill="none" stroke="rgba(200,74,255,0.35)" strokeWidth="0.4"/>
+        <circle cx="34" cy="52.5" r="0.5" fill="rgba(200,74,255,0.6)"/>
+        {/* Strafraum oben: 40.32m breit, 16.5m tief */}
+        <rect x="13.84" y="1" width="40.32" height="16.5" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.4"/>
+        {/* 5m-Raum oben: 18.32m breit, 5.5m tief */}
+        <rect x="24.84" y="1" width="18.32" height="5.5" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
+        {/* Elfmeterpunkt oben: 11m */}
+        <circle cx="34" cy="12" r="0.4" fill="rgba(200,74,255,0.55)"/>
+        {/* Halbkreis oben: Mittelpunkt Elfmeter, r=9.15, nur außerhalb Strafraum */}
+        <path d="M24.2 17.5 A9.15 9.15 0 0 0 43.8 17.5" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
+        {/* Strafraum unten */}
+        <rect x="13.84" y="87.5" width="40.32" height="16.5" fill="none" stroke="rgba(200,74,255,0.4)" strokeWidth="0.4"/>
+        {/* 5m-Raum unten */}
+        <rect x="24.84" y="98.5" width="18.32" height="5.5" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
+        {/* Elfmeterpunkt unten */}
+        <circle cx="34" cy="93" r="0.4" fill="rgba(200,74,255,0.55)"/>
+        {/* Halbkreis unten */}
+        <path d="M24.2 87.5 A9.15 9.15 0 0 1 43.8 87.5" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
+        {/* Eckbögen r=1m */}
+        <path d="M1 1 A1 1 0 0 1 2 2" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
+        <path d="M67 1 A1 1 0 0 0 66 2" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
+        <path d="M1 104 A1 1 0 0 0 2 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
+        <path d="M67 104 A1 1 0 0 1 66 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         {/* Mentalität Pfeile */}
         {mentalitaet!==undefined && mentalitaet>55 && (
           <>
-            <path d="M50 35 L50 15 M44 22 L50 15 L56 22" fill="none" stroke={`rgba(255,112,64,${Math.min(0.6,(mentalitaet-55)/45)})`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M35 45 L35 25 M29 32 L35 25 L41 32" fill="none" stroke={`rgba(255,112,64,${Math.min(0.4,(mentalitaet-55)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M65 45 L65 25 M59 32 L65 25 L71 32" fill="none" stroke={`rgba(255,112,64,${Math.min(0.4,(mentalitaet-55)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M34 30 L34 15 M30 21 L34 15 L38 21" fill="none" stroke={`rgba(255,112,64,${Math.min(0.55,(mentalitaet-55)/45)})`} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 38 L22 23 M18 29 L22 23 L26 29" fill="none" stroke={`rgba(255,112,64,${Math.min(0.35,(mentalitaet-55)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M46 38 L46 23 M42 29 L46 23 L50 29" fill="none" stroke={`rgba(255,112,64,${Math.min(0.35,(mentalitaet-55)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
           </>
         )}
         {mentalitaet!==undefined && mentalitaet<45 && (
           <>
-            <path d="M50 105 L50 125 M44 118 L50 125 L56 118" fill="none" stroke={`rgba(64,144,224,${Math.min(0.6,(45-mentalitaet)/45)})`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M35 95 L35 115 M29 108 L35 115 L41 108" fill="none" stroke={`rgba(64,144,224,${Math.min(0.4,(45-mentalitaet)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M65 95 L65 115 M59 108 L65 115 L71 108" fill="none" stroke={`rgba(64,144,224,${Math.min(0.4,(45-mentalitaet)/60)})`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M34 75 L34 90 M30 84 L34 90 L38 84" fill="none" stroke={`rgba(64,144,224,${Math.min(0.55,(45-mentalitaet)/45)})`} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 67 L22 82 M18 76 L22 82 L26 76" fill="none" stroke={`rgba(64,144,224,${Math.min(0.35,(45-mentalitaet)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M46 67 L46 82 M42 76 L46 82 L50 76" fill="none" stroke={`rgba(64,144,224,${Math.min(0.35,(45-mentalitaet)/60)})`} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
           </>
         )}
       </svg>
@@ -219,6 +235,9 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         const isPlaceholder = !player||player.isPlaceholder;
         const isSelected = editMode && swapFirst===idx;
         const isDragging = dragging===idx;
+        // Convert from percentage (0-100) to new coordinate system
+        const leftPct = pos.x + "%";
+        const topPct  = pos.y + "%";
         return (
           <div key={idx}
             onMouseDown={e=>onDown(e,idx)}
@@ -279,26 +298,23 @@ function CornerField({positions,setPositions,players,order,side,type}) {
       onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
       onTouchMove={e=>{e.preventDefault();onMove(e);}} onTouchEnd={onUp}
     >
-      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 100 140" preserveAspectRatio="none">
-        {/* Spielfeld komplett */}
-        <rect x="0" y="0" width="100" height="140" fill="#0e0e28"/>
-        <rect x="2" y="2" width="96" height="136" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="0.8"/>
-        <line x1="2" y1="70" x2="98" y2="70" stroke="rgba(200,74,255,0.35)" strokeWidth="0.6"/>
-        <circle cx="50" cy="70" r="12" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.6"/>
-        <rect x="22" y="2"  width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        <rect x="32" y="2"  width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <rect x="22" y="118" width="56" height="20" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.6"/>
-        <rect x="32" y="128" width="36" height="10" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <path d="M28 22 A16 16 0 0 0 72 22" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <path d="M28 118 A16 16 0 0 1 72 118" fill="none" stroke="rgba(200,74,255,0.2)" strokeWidth="0.6"/>
-        <circle cx="50" cy="14" r="1" fill="rgba(200,74,255,0.35)"/>
-        <circle cx="50" cy="126" r="1" fill="rgba(200,74,255,0.35)"/>
-
-        {/* Eckfahne – dezenter Punkt in der richtigen Ecke */}
-        {type==="angriff" && side==="links"  && <circle cx="2"  cy="2"   r="2" fill="#c84aff" opacity="0.65"/>}
-        {type==="angriff" && side==="rechts" && <circle cx="98" cy="2"   r="2" fill="#c84aff" opacity="0.65"/>}
-        {type==="abwehr"  && side==="links"  && <circle cx="98" cy="138" r="2" fill="#c84aff" opacity="0.65"/>}
-        {type==="abwehr"  && side==="rechts" && <circle cx="2"  cy="138" r="2" fill="#c84aff" opacity="0.65"/>}
+      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox="0 0 68 105" preserveAspectRatio="xMidYMid meet">
+        <rect x="0" y="0" width="68" height="105" fill="#0e0e28"/>
+        <rect x="1" y="1" width="66" height="103" fill="none" stroke="rgba(200,74,255,0.45)" strokeWidth="0.5"/>
+        <line x1="1" y1="52.5" x2="67" y2="52.5" stroke="rgba(200,74,255,0.3)" strokeWidth="0.4"/>
+        <circle cx="34" cy="52.5" r="9.15" fill="none" stroke="rgba(200,74,255,0.22)" strokeWidth="0.4"/>
+        <rect x="13.84" y="1" width="40.32" height="16.5" fill="none" stroke="rgba(200,74,255,0.35)" strokeWidth="0.4"/>
+        <rect x="24.84" y="1" width="18.32" height="5.5" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.35"/>
+        <circle cx="34" cy="12" r="0.4" fill="rgba(200,74,255,0.45)"/>
+        <path d="M24.2 17.5 A9.15 9.15 0 0 0 43.8 17.5" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.35"/>
+        <rect x="13.84" y="87.5" width="40.32" height="16.5" fill="none" stroke="rgba(200,74,255,0.35)" strokeWidth="0.4"/>
+        <rect x="24.84" y="98.5" width="18.32" height="5.5" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.35"/>
+        <circle cx="34" cy="93" r="0.4" fill="rgba(200,74,255,0.45)"/>
+        <path d="M24.2 87.5 A9.15 9.15 0 0 1 43.8 87.5" fill="none" stroke="rgba(200,74,255,0.25)" strokeWidth="0.35"/>
+        {type==="angriff" && side==="links"  && <circle cx="1" cy="1" r="1.2" fill="#c84aff" opacity="0.6"/>}
+        {type==="angriff" && side==="rechts" && <circle cx="67" cy="1" r="1.2" fill="#c84aff" opacity="0.6"/>}
+        {type==="abwehr"  && side==="links"  && <circle cx="67" cy="104" r="1.2" fill="#c84aff" opacity="0.6"/>}
+        {type==="abwehr"  && side==="rechts" && <circle cx="1" cy="104" r="1.2" fill="#c84aff" opacity="0.6"/>}
       </svg>
       <div style={{position:"absolute",top:6,right:8,zIndex:6,background:"rgba(0,0,0,0.7)",borderRadius:8,padding:"3px 8px",fontSize:9,color:C.accent}}>
         Halten = Ziehen
@@ -574,8 +590,9 @@ export default function Teamchemie({user,onLogout}) {
     });
   },[user?.teamCode]);
 
-  // Firebase: Chat
-  const chatId = user?.teamCode && user?.uid ? `${user.teamCode}_${user.uid}` : null;
+  // Firebase: Chat – für Spieler fix, für Trainer dynamisch je nach ausgewähltem Spieler
+  const chatPlayerUid = isTrainer ? players.find(p=>p.id===detailId)?.uid : user?.uid;
+  const chatId = user?.teamCode && chatPlayerUid ? `${user.teamCode}_${chatPlayerUid}` : null;
   useEffect(()=>{
     if (!chatId) return;
     const q = query(collection(db,"chats",chatId,"messages"),orderBy("timestamp","asc"));
@@ -1163,16 +1180,16 @@ export default function Teamchemie({user,onLogout}) {
                           editMode={fieldEditMode}
                           swapFirst={fieldEditMode?swapFirst:null}
                           onTap={fieldEditMode?handleFieldTap:null}
-                          mentalitaet={trainerFieldView==="grund"?mentalitaet:undefined}
+                          mentalitaet={trainerFieldView==="grund"?mentalität:undefined}
                         />
                         {trainerFieldView==="grund" && (
                           <Card style={{marginTop:6}}>
                             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
                               <span style={{color:C.defColor,fontSize:11}}>Defensiv</span>
-                              <span style={{color:C.gray,fontSize:11}}>{mentalitaet<=30?"Sehr defensiv":mentalitaet<=50?"Ausgewogen":mentalitaet<=70?"Offensiv":"Sehr offensiv"}</span>
+                              <span style={{color:C.gray,fontSize:11}}>{mentalität<=30?"Sehr defensiv":mentalität<=50?"Ausgewogen":mentalität<=70?"Offensiv":"Sehr offensiv"}</span>
                               <span style={{color:C.offColor,fontSize:11}}>Offensiv</span>
                             </div>
-                            <input type="range" min={0} max={100} value={mentalitaet} onChange={e=>setMentalitaet(Number(e.target.value))}
+                            <input type="range" min={0} max={100} value={mentalität} onChange={e=>setMentalität(Number(e.target.value))}
                               style={{width:"100%",accentColor:C.accent}}/>
                           </Card>
                         )}
