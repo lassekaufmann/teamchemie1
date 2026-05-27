@@ -207,22 +207,28 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         <path d="M67 1 A1 1 0 0 0 66 2" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M1 104 A1 1 0 0 0 2 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M67 104 A1 1 0 0 1 66 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
-        {/* Mentalität – dezente Richtungslinien über ganzes Feld */}
+        {/* Mentalität – kleine Pfeile in Feldmitte */}
         {mentalitaet!==undefined && mentalitaet>55 && (()=>{
-          const o = Math.min(0.5,(mentalitaet-55)/45);
+          const o = Math.min(0.55,(mentalitaet-55)/45);
           const col = `rgba(255,112,64,${o})`;
-          return <>
-            <line x1="1" y1="52.5" x2="34" y2="1" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
-            <line x1="67" y1="52.5" x2="34" y2="1" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
-          </>;
+          // 4 kleine Pfeile nach oben, um Mittellinie gruppiert
+          return [[-8,0],[-3,0],[3,0],[8,0]].map(([dx],i)=>(
+            <g key={i} transform={`translate(${34+dx},52.5)`}>
+              <line x1="0" y1="5" x2="0" y2="-5" stroke={col} strokeWidth="0.8" strokeLinecap="round"/>
+              <polyline points="-2,-2 0,-5 2,-2" fill="none" stroke={col} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </g>
+          ));
         })()}
         {mentalitaet!==undefined && mentalitaet<45 && (()=>{
-          const o = Math.min(0.5,(45-mentalitaet)/45);
+          const o = Math.min(0.55,(45-mentalitaet)/45);
           const col = `rgba(64,144,224,${o})`;
-          return <>
-            <line x1="1" y1="52.5" x2="34" y2="104" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
-            <line x1="67" y1="52.5" x2="34" y2="104" stroke={col} strokeWidth="0.6" strokeLinecap="round"/>
-          </>;
+          // 4 kleine Pfeile nach unten
+          return [[-8,0],[-3,0],[3,0],[8,0]].map(([dx],i)=>(
+            <g key={i} transform={`translate(${34+dx},52.5)`}>
+              <line x1="0" y1="-5" x2="0" y2="5" stroke={col} strokeWidth="0.8" strokeLinecap="round"/>
+              <polyline points="-2,2 0,5 2,2" fill="none" stroke={col} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </g>
+          ));
         })()}
       </svg>
       {label && <div style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.6)",borderRadius:8,padding:"2px 10px",fontSize:9,color:"rgba(200,74,255,0.7)",zIndex:5}}>{label}</div>}
@@ -513,7 +519,8 @@ export default function Teamchemie({user,onLogout}) {
   const [tacticReleased,setTacticReleased] = useState(false);
   const [mentalität,setMentalität] = useState(50);
   const [swapFirst,setSwapFirst]   = useState(null);
-  const [detailId,setDetailId]     = useState(null);
+  const [detailId,setDetailId]     = useState(null);   // Spieler-Tab Detail
+  const [chatPartnerId,setChatPartnerId] = useState(null); // Chat-Tab Partner
   const [chat,setChat]             = useState([]);
   const [chatInput,setChatInput]   = useState("");
   const [notif,setNotif]           = useState(null);
@@ -606,7 +613,7 @@ export default function Teamchemie({user,onLogout}) {
   },[user?.teamCode]);
 
   // Firebase: Chat – für Spieler fix, für Trainer dynamisch je nach ausgewähltem Spieler
-  const chatPlayerUid = isTrainer ? players.find(p=>p.uid===detailId||p.id===detailId)?.uid : user?.uid;
+  const chatPlayerUid = isTrainer ? players.find(p=>p.uid===chatPartnerId||p.id===chatPartnerId)?.uid : user?.uid;
   const chatId = user?.teamCode && chatPlayerUid ? `${user.teamCode}_${chatPlayerUid}` : null;
   useEffect(()=>{
     if (!chatId) return;
@@ -1511,12 +1518,12 @@ export default function Teamchemie({user,onLogout}) {
             {/* Chat */}
             {tab==="chat" && (
               <>
-                {!detailId ? (
+                {!chatPartnerId ? (
                   <>
                     <Label>Direktchat – Spieler auswählen</Label>
                     <div style={{display:"flex",flexDirection:"column",gap:8}}>
                       {players.filter(p=>!p.isPlaceholder).map(p=>(
-                        <div key={p.uid||p.id} onClick={()=>setDetailId(p.uid||p.id)}
+                        <div key={p.uid||p.id} onClick={()=>setChatPartnerId(p.uid||p.id)}
                           style={{background:C.surface,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",gap:12,border:`1px solid ${C.border}`,cursor:"pointer"}}>
                           <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14,color:C.accent,flexShrink:0}}>{p.number}</div>
                           <div style={{flex:1}}>
@@ -1534,11 +1541,11 @@ export default function Teamchemie({user,onLogout}) {
                 ) : (
                   <>
                     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-                      <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                      <button onClick={()=>setChatPartnerId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
                         zurück
                       </button>
                       <div style={{color:C.white,fontWeight:700,fontSize:15}}>
-                        Chat mit {players.find(p=>p.uid===detailId||p.id===detailId)?.name}
+                        Chat mit {players.find(p=>p.uid===chatPartnerId||p.id===chatPartnerId)?.name}
                       </div>
                     </div>
                     {renderChat()}
