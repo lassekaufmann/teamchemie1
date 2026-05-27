@@ -591,7 +591,7 @@ export default function Teamchemie({user,onLogout}) {
   },[user?.teamCode]);
 
   // Firebase: Chat – für Spieler fix, für Trainer dynamisch je nach ausgewähltem Spieler
-  const chatPlayerUid = isTrainer ? players.find(p=>p.id===detailId)?.uid : user?.uid;
+  const chatPlayerUid = isTrainer ? players.find(p=>p.uid===detailId||p.id===detailId)?.uid : user?.uid;
   const chatId = user?.teamCode && chatPlayerUid ? `${user.teamCode}_${chatPlayerUid}` : null;
   useEffect(()=>{
     if (!chatId) return;
@@ -694,12 +694,13 @@ export default function Teamchemie({user,onLogout}) {
 
   // Spieler Detail Ansicht (Trainer)
   if (isTrainer && detailId) {
-    const dp = players.find(p=>p.id===detailId);
+    const dp = players.find(p=>p.uid===detailId || p.id===detailId);
     if (!dp || dp.isPlaceholder) {
       return (
-        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:14}}>
-          <div style={{color:C.gray,fontSize:14}}>Spieler nicht gefunden</div>
-          <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px 20px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>Zurück</button>
+        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:14,padding:24}}>
+          <div style={{color:C.gray,fontSize:14,textAlign:"center"}}>Spieler wird geladen...</div>
+          <div style={{color:C.grayDark,fontSize:12,textAlign:"center"}}>Stelle sicher dass der Spieler sich mit deinem Team-Code registriert hat.</div>
+          <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px 20px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>← Zurück</button>
         </div>
       );
     }
@@ -1358,7 +1359,7 @@ export default function Teamchemie({user,onLogout}) {
                   const att = attendance[p.uid||p.id];
                   const attCfg = {ja:{l:"Dabei",c:C.greenText},vielleicht:{l:"Unsicher",c:C.yellowText},nein:{l:"Fehlt",c:C.error}};
                   return (
-                    <div key={p.id} onClick={()=>setDetailId(p.id)} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+                    <div key={p.uid||p.id} onClick={()=>setDetailId(p.uid||p.id)} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
                       <div style={{width:40,height:40,borderRadius:"50%",background:C.white,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:C.bg,flexShrink:0}}>
                         {p.number}
                       </div>
@@ -1412,7 +1413,7 @@ export default function Teamchemie({user,onLogout}) {
                     <Label>Direktchat – Spieler auswählen</Label>
                     <div style={{display:"flex",flexDirection:"column",gap:8}}>
                       {players.filter(p=>!p.isPlaceholder).map(p=>(
-                        <div key={p.id} onClick={()=>setDetailId(p.id)}
+                        <div key={p.uid||p.id} onClick={()=>setDetailId(p.uid||p.id)}
                           style={{background:C.surface,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",gap:12,border:`1px solid ${C.border}`,cursor:"pointer"}}>
                           <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14,color:C.accent,flexShrink:0}}>{p.number}</div>
                           <div style={{flex:1}}>
@@ -1434,7 +1435,7 @@ export default function Teamchemie({user,onLogout}) {
                         zurück
                       </button>
                       <div style={{color:C.white,fontWeight:700,fontSize:15}}>
-                        Chat mit {players.find(p=>p.id===detailId)?.name}
+                        Chat mit {players.find(p=>p.uid===detailId||p.id===detailId)?.name}
                       </div>
                     </div>
                     {renderChat()}
