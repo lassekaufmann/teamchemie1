@@ -68,10 +68,12 @@ const STRENGTHS_LIST = [
 ];
 
 const TRAINER_ATTRIBUTES = [
-  {id:"gesamtwertung",label:"Gesamtwertung"},
-  {id:"potenzial",    label:"Potenzial"},
-  {id:"einstellung",  label:"Einstellung"},
-  {id:"konstanz",     label:"Konstanz"},
+  {id:"leistungsniveau", label:"Aktuelles Leistungsniveau",   sub:"Sportliche & taktische Qualität"},
+  {id:"konstanz",        label:"Zuverlässigkeit & Konstanz",  sub:"Stabile Leistungen ohne Schwankungen"},
+  {id:"matchplan",       label:"Matchplan-Eignung",           sub:"Passt zum Spielerprofil gegen diesen Gegner"},
+  {id:"formkurve",       label:"Trainingseindruck & Formkurve",sub:"Leistung & Einsatz diese Woche"},
+  {id:"mentalitaet",     label:"Mentalität & Fitness",        sub:"Physische Bereitschaft & Siegeswille"},
+  {id:"teamdienlich",    label:"Teamdienlichkeit",            sub:"Körpersprache, Coaching & Unterordnung"},
 ];
 
 const INIT_PLAYERS = Array.from({length:11},(_,i)=>({
@@ -133,10 +135,11 @@ function TabBtn({label,active,onClick}) {
 }
 
 // ── SPIELFELD ────────────────────────────────────────────
-function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label,mentalitaet,myUid}) {
+function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label,mentalitaet,myUid,onLongPress}) {
   const fieldRef = useRef(null);
   const [dragging,setDragging] = useState(null);
   const dragMoved = useRef(false);
+  const longPressTimer = useRef(null);
 
   function getCoords(e) {
     const r = fieldRef.current?.getBoundingClientRect();
@@ -150,23 +153,27 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
   }
 
   function onDown(e,idx) {
-    if (!editMode) return;
+    if (!editMode) {
+      if (onLongPress) longPressTimer.current = setTimeout(()=>{ onLongPress(idx); }, 500);
+      return;
+    }
     e.preventDefault(); e.stopPropagation();
     dragMoved.current = false;
     setDragging(idx);
+    if (onLongPress) longPressTimer.current = setTimeout(()=>{ if(!dragMoved.current) onLongPress(idx); }, 500);
   }
   function onMove(e) {
     if (dragging===null) return;
     const c = getCoords(e);
     if (c) {
       dragMoved.current = true;
+      clearTimeout(longPressTimer.current);
       if (setPositions) setPositions(prev=>prev.map((p,i)=>i===dragging?{...p,...c}:p));
     }
   }
   function onUp() {
-    if (dragging!==null && !dragMoved.current && onTap && editMode) {
-      onTap(dragging);
-    }
+    clearTimeout(longPressTimer.current);
+    if (dragging!==null && !dragMoved.current && onTap && editMode) onTap(dragging);
     setDragging(null);
     dragMoved.current = false;
   }
@@ -207,21 +214,21 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         <path d="M67 1 A1 1 0 0 0 66 2" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M1 104 A1 1 0 0 0 2 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
         <path d="M67 104 A1 1 0 0 1 66 103" fill="none" stroke="rgba(200,74,255,0.3)" strokeWidth="0.35"/>
-        {/* Mentalität – 4 Chevrons untereinander in Feldmitte, kein Pfeilschwanz */}
+        {/* Mentalität – Chevrons in Feldmitte, länger und dünner */}
         {mentalitaet!==undefined && mentalitaet>55 && (()=>{
           const o = Math.min(0.65,(mentalitaet-55)/45);
           const col = `rgba(255,112,64,${o})`;
           return [0,1,2,3].map(i=>(
-            <polyline key={i} points={`28,${56-i*4} 34,${52-i*4} 40,${56-i*4}`}
-              fill="none" stroke={col} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <polyline key={i} points={`26,${58-i*5} 34,${51-i*5} 42,${58-i*5}`}
+              fill="none" stroke={col} strokeWidth="0.7" strokeLinecap="round" strokeLinejoin="round"/>
           ));
         })()}
         {mentalitaet!==undefined && mentalitaet<45 && (()=>{
           const o = Math.min(0.65,(45-mentalitaet)/45);
           const col = `rgba(64,144,224,${o})`;
           return [0,1,2,3].map(i=>(
-            <polyline key={i} points={`28,${49+i*4} 34,${53+i*4} 40,${49+i*4}`}
-              fill="none" stroke={col} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <polyline key={i} points={`26,${47+i*5} 34,${54+i*5} 42,${47+i*5}`}
+              fill="none" stroke={col} strokeWidth="0.7" strokeLinecap="round" strokeLinejoin="round"/>
           ));
         })()}
       </svg>
@@ -519,6 +526,7 @@ export default function Teamchemie({user,onLogout}) {
   const [tacticReleased,setTacticReleased] = useState(false);
   const [mentalität,setMentalität] = useState(50);
   const [swapFirst,setSwapFirst]   = useState(null);
+  const [hoveredPlayer,setHoveredPlayer] = useState(null); // Spieler-Info bei langem Drücken
   const [detailId,setDetailId]     = useState(null);   // Spieler-Tab Detail
   const [chatPartnerId,setChatPartnerId] = useState(null); // Chat-Tab Partner
   const [isOffline,setIsOffline]   = useState(!navigator.onLine);
@@ -565,7 +573,7 @@ export default function Teamchemie({user,onLogout}) {
   const [showOnboarding,setShowOnboarding] = useState(isTrainer && !user?.hasSeenOnboarding);
   const [confirmRemove,setConfirmRemove] = useState(null);
   const [playerMenu,setPlayerMenu] = useState(null);
-  const [standards,setStandards]   = useState({elfmeter:null,freistoss:null,eckeLinks:null,eckeRechts:null});
+  const [standards,setStandards]   = useState({elfmeter:null,freistossDirekt:null,freistossIndirekt:null,eckeLinks:null,eckeRechts:null});
 
   const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
   const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
@@ -1207,33 +1215,30 @@ export default function Teamchemie({user,onLogout}) {
                     {/* Standards */}
                     <Card style={{marginTop:14}}>
                       <Label>Standardschützen</Label>
-                      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                      <div style={{display:"flex",flexDirection:"column",gap:10}}>
                         {[
-                          {key:"elfmeter",  label:"Elfmeter"},
-                          {key:"freistoss", label:"Freistoss"},
-                          {key:"eckeLinks", label:"Ecke Links"},
-                          {key:"eckeRechts",label:"Ecke Rechts"},
-                        ].map(({key,label})=>{
-                          const pid = standards[key];
-                          const p = players.find(pl=>pl.id===pid&&!pl.isPlaceholder);
-                          return (
-                            <div key={key} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                              <span style={{color:C.gray,fontSize:12,width:90}}>{label}</span>
-                              <div style={{flex:1,display:"flex",flexWrap:"wrap",gap:4}}>
-                                {players.filter(pl=>!pl.isPlaceholder).map(pl=>(
-                                  <button key={pl.id} onClick={()=>setStandards(prev=>({...prev,[key]:pl.id}))}
-                                    style={{padding:"3px 8px",borderRadius:20,cursor:"pointer",fontSize:10,fontFamily:"inherit",
-                                      border:`1px solid ${standards[key]===pl.id?C.accentBorder:C.border}`,
-                                      background:standards[key]===pl.id?C.accentDim:"transparent",
-                                      color:standards[key]===pl.id?C.accent:C.gray}}>
-                                    {pl.name.split(" ")[0]}
-                                  </button>
-                                ))}
-                                {players.filter(pl=>!pl.isPlaceholder).length===0 && <span style={{color:C.grayDark,fontSize:11}}>Keine Spieler</span>}
-                              </div>
+                          {key:"elfmeter",         label:"Elfmeter"},
+                          {key:"freistossDirekt",   label:"Freistoss direkt"},
+                          {key:"freistossIndirekt", label:"Freistoss indirekt"},
+                          {key:"eckeLinks",         label:"Ecke Links"},
+                          {key:"eckeRechts",        label:"Ecke Rechts"},
+                        ].map(({key,label})=>(
+                          <div key={key}>
+                            <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:5}}>{label}</div>
+                            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                              {players.filter(pl=>!pl.isPlaceholder).map(pl=>(
+                                <button key={pl.id} onClick={()=>setStandards(prev=>({...prev,[key]:standards[key]===pl.id?null:pl.id}))}
+                                  style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
+                                    border:`1px solid ${standards[key]===pl.id?C.accentBorder:C.border}`,
+                                    background:standards[key]===pl.id?C.accentDim:"transparent",
+                                    color:standards[key]===pl.id?C.accent:C.gray}}>
+                                  {pl.name.split(" ")[0]} <span style={{opacity:0.6}}>#{pl.number}</span>
+                                </button>
+                              ))}
+                              {players.filter(pl=>!pl.isPlaceholder).length===0 && <span style={{color:C.grayDark,fontSize:11}}>Keine Spieler</span>}
                             </div>
-                          );
-                        })}
+                          </div>
+                        ))}
                       </div>
                     </Card>
 
@@ -1325,7 +1330,30 @@ export default function Teamchemie({user,onLogout}) {
                           swapFirst={fieldEditMode?swapFirst:null}
                           onTap={fieldEditMode?handleFieldTap:null}
                           mentalitaet={trainerFieldView==="grund"?mentalität:undefined}
+                          onLongPress={idx=>{
+                            const pid=order[idx];
+                            const p=players.find(pl=>pl.id===pid&&!pl.isPlaceholder);
+                            setHoveredPlayer(p||null);
+                          }}
                         />
+                        {/* Spieler-Info bei langem Drücken */}
+                        {hoveredPlayer && (
+                          <div style={{background:C.surface,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:"12px 14px",marginTop:6,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}
+                            onClick={()=>setHoveredPlayer(null)}>
+                            <div>
+                              <div style={{color:C.white,fontWeight:700,fontSize:13,marginBottom:6}}>{hoveredPlayer.name}</div>
+                              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                                {hoveredPlayer.strongFoot && <span style={{background:"rgba(255,255,255,0.07)",borderRadius:20,padding:"2px 9px",color:C.grayLight,fontSize:11}}>Fuß: {hoveredPlayer.strongFoot}</span>}
+                                {hoveredPlayer.wishRole && <span style={{background:C.accentDim,borderRadius:20,padding:"2px 9px",color:C.accent,fontSize:11}}>{hoveredPlayer.wishRole}</span>}
+                                {(hoveredPlayer.strengths||[]).slice(0,3).map(s=>{
+                                  const sl=STRENGTHS_LIST.find(x=>x.id===s);
+                                  return <span key={s} style={{background:"rgba(74,200,200,0.1)",borderRadius:20,padding:"2px 9px",color:C.greenText,fontSize:11}}>{sl?.label||s}</span>;
+                                })}
+                              </div>
+                            </div>
+                            <span style={{color:C.grayDark,fontSize:18,lineHeight:1,marginLeft:8}}>×</span>
+                          </div>
+                        )}
                         {trainerFieldView==="grund" && (
                           <Card style={{marginTop:6}}>
                             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
@@ -1862,15 +1890,16 @@ export default function Teamchemie({user,onLogout}) {
                         </div>
 
                         {/* Standardschützen anzeigen */}
-                        {(standards.elfmeter||standards.freistoss||standards.eckeLinks||standards.eckeRechts) && (
+                        {(standards.elfmeter||standards.freistossDirekt||standards.freistossIndirekt||standards.eckeLinks||standards.eckeRechts) && (
                           <Card style={{marginTop:14}}>
                             <Label>Standardschützen</Label>
                             <div style={{display:"flex",flexDirection:"column",gap:6}}>
                               {[
-                                {key:"elfmeter",  label:"Elfmeter"},
-                                {key:"freistoss", label:"Freistoss"},
-                                {key:"eckeLinks", label:"Ecke Links"},
-                                {key:"eckeRechts",label:"Ecke Rechts"},
+                                {key:"elfmeter",          label:"Elfmeter"},
+                                {key:"freistossDirekt",   label:"Freistoss direkt"},
+                                {key:"freistossIndirekt", label:"Freistoss indirekt"},
+                                {key:"eckeLinks",         label:"Ecke Links"},
+                                {key:"eckeRechts",        label:"Ecke Rechts"},
                               ].map(({key,label})=>{
                                 const pid = standards[key];
                                 const p = players.find(pl=>pl.id===pid&&!pl.isPlaceholder);
@@ -1878,7 +1907,7 @@ export default function Teamchemie({user,onLogout}) {
                                 return (
                                   <div key={key} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                                     <span style={{color:C.gray,fontSize:12}}>{label}</span>
-                                    <span style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:20,padding:"3px 12px",color:C.accent,fontSize:12,fontWeight:600}}>{p.name.split(" ")[0]}</span>
+                                    <span style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:20,padding:"3px 12px",color:C.accent,fontSize:12,fontWeight:600}}>{p.name.split(" ")[0]} #{p.number}</span>
                                   </div>
                                 );
                               })}
