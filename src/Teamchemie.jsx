@@ -1344,6 +1344,7 @@ export default function Teamchemie({user,onLogout}) {
               <>
                 {/* Spieler Detail als Overlay */}
                 {detailId && (()=>{
+                  console.log("detailId:", detailId, "players:", players.map(p=>({id:p.id,uid:p.uid,name:p.name})));
                   const dp = players.find(p=>p.uid===detailId||p.id===detailId)||players.find(p=>String(p.uid)===String(detailId)||String(p.id)===String(detailId));
                   if (!dp) return (
                     <div style={{textAlign:"center",padding:"40px 0"}}>
