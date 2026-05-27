@@ -68,13 +68,28 @@ const STRENGTHS_LIST = [
 ];
 
 const TRAINER_ATTRIBUTES = [
-  {id:"leistungsniveau", label:"Aktuelles Leistungsniveau",   sub:"Sportliche & taktische Qualität"},
-  {id:"konstanz",        label:"Zuverlässigkeit & Konstanz",  sub:"Stabile Leistungen ohne Schwankungen"},
-  {id:"matchplan",       label:"Matchplan-Eignung",           sub:"Passt zum Spielerprofil gegen diesen Gegner"},
-  {id:"formkurve",       label:"Trainingseindruck & Formkurve",sub:"Leistung & Einsatz diese Woche"},
-  {id:"mentalitaet",     label:"Mentalität & Fitness",        sub:"Physische Bereitschaft & Siegeswille"},
-  {id:"teamdienlich",    label:"Teamdienlichkeit",            sub:"Körpersprache, Coaching & Unterordnung"},
+  {id:"leistungsniveau", label:"Aktuelles Leistungsniveau",  sub:"Sportliche & taktische Qualität im Hier und Jetzt"},
+  {id:"konstanz",        label:"Zuverlässigkeit & Konstanz", sub:"Stabile Leistungen ohne große Schwankungen"},
+  {id:"matchplan",       label:"Matchplan-Eignung",          sub:"Wie gut das Spielerprofil zum aktuellen Gegner passt"},
+  {id:"trainingseindruck",label:"Trainingseindruck",         sub:"Einsatz und Auftreten im letzten Training"},
+  {id:"formkurve",       label:"Formkurve",                  sub:"Entwicklung der Leistungen in den letzten Wochen"},
+  {id:"mentalitaet",     label:"Mentalität",                 sub:"Siegeswille, Zweikampfhärte und Einstellung"},
+  {id:"fitness",         label:"Fitness",                    sub:"Physische Verfassung und Belastbarkeit"},
+  {id:"teamdienlich",    label:"Teamdienlichkeit",           sub:"Körpersprache, Coaching auf dem Platz & Unterordnung"},
 ];
+
+// Infotexte für Spieler-Eingaben
+const PLAYER_INFOS = {
+  fitness:      "Wie fit fühlst du dich heute? 100% = topfit, 40% = angeschlagen oder müde.",
+  ruhe:         "Magst du es vor dem Spiel eher ruhig und fokussiert, oder bist du lieber in der Gruppe?",
+  attendance:   "Gibst du dem Trainer Bescheid ob du beim nächsten Termin dabei bist.",
+  wishRole:     "Auf welcher Position spielst du am liebsten? Der Trainer berücksichtigt das bei der Aufstellung.",
+  strengths:    "Wähle deine 3–5 stärksten Qualitäten. Hilft dem Trainer dich optimal einzusetzen.",
+  formation:    "Welche Taktik liegt dir am meisten? Z.B. weil du dort deine Stärken am besten einbringen kannst.",
+  foot:         "Welcher Fuß ist dein stärkerer? Wichtig für Flügelpositionen und Standards.",
+  partners:     "Mit wem harmonierst du auf dem Platz besonders gut? Der Trainer kann euch zusammen einplanen.",
+  note:         "Hast du etwas Wichtiges mitzuteilen? Z.B. Verletzung, persönliche Situation oder taktischer Wunsch.",
+};
 
 const INIT_PLAYERS = Array.from({length:11},(_,i)=>({
   id:i+1, name:`Spieler ${i+1}`, number:i+1,
@@ -90,10 +105,37 @@ function Card({children,style}) {
     </div>
   );
 }
-function Label({children}) {
+
+function InfoBtn({text}) {
+  const [open,setOpen] = useState(false);
   return (
-    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>
+    <span style={{position:"relative",display:"inline-block",verticalAlign:"middle",marginLeft:5}}>
+      <button onClick={e=>{e.stopPropagation();setOpen(o=>!o);}} style={{
+        width:16,height:16,borderRadius:"50%",border:`1px solid ${C.grayDark}`,
+        background:"transparent",color:C.gray,fontSize:9,fontWeight:700,
+        cursor:"pointer",padding:0,fontFamily:"inherit",lineHeight:1,
+        display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0,
+      }}>i</button>
+      {open && (
+        <>
+          <div onClick={()=>setOpen(false)} style={{position:"fixed",inset:0,zIndex:80}}/>
+          <div style={{position:"absolute",left:0,top:"120%",zIndex:81,background:C.surface2,
+            border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"10px 12px",
+            minWidth:220,maxWidth:280,fontSize:11,color:C.grayLight,lineHeight:1.6,
+            boxShadow:"0 4px 20px rgba(0,0,0,0.5)"}}>
+            {text}
+          </div>
+        </>
+      )}
+    </span>
+  );
+}
+
+function Label({children,info}) {
+  return (
+    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center"}}>
       {children}
+      {info && <InfoBtn text={info}/>}
     </div>
   );
 }
@@ -862,7 +904,7 @@ export default function Teamchemie({user,onLogout}) {
           {/* Fitness + Stimmung nebeneinander */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
             <Card style={{marginBottom:0}}>
-              <Label>Fitnesszustand</Label>
+              <Label info={PLAYER_INFOS.fitness}>Fitnesszustand</Label>
               <div style={{color:dp.fitness>=80?C.greenText:dp.fitness>=60?C.yellowText:C.error,fontSize:20,fontWeight:800,marginBottom:4}}>{dp.fitness}%</div>
               <FitnessBar value={dp.fitness}/>
             </Card>
@@ -876,7 +918,7 @@ export default function Teamchemie({user,onLogout}) {
           {/* Nachricht vom Spieler */}
           {dp.note && (
             <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
-              <Label>Nachricht an Trainer</Label>
+              <Label info={PLAYER_INFOS.note}>Nachricht an Trainer</Label>
               <div style={{color:C.grayLight,fontSize:13,fontStyle:"italic",lineHeight:1.5}}>"{dp.note}"</div>
             </Card>
           )}
@@ -957,7 +999,7 @@ export default function Teamchemie({user,onLogout}) {
           {/* Lieblingsformation */}
           {dp.wishFormation && (
             <Card style={{marginBottom:14}}>
-              <Label>Lieblingsformation</Label>
+              <Label info={PLAYER_INFOS.formation}>Lieblingsformation</Label>
               <div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishFormation}</div>
             </Card>
           )}
@@ -971,7 +1013,7 @@ export default function Teamchemie({user,onLogout}) {
               return (
                 <div key={attr.id} style={{marginBottom:12}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                    <span style={{color:C.gray,fontSize:12}}>{attr.label}</span>
+                    <span style={{color:C.gray,fontSize:12}}>{attr.label} <InfoBtn text={attr.sub}/></span>
                     <span style={{color:val>=8?C.greenText:val>=6?C.yellowText:val>0?C.error:C.grayDark,fontSize:12,fontWeight:700}}>{val||"–"}/10</span>
                   </div>
                   <div style={{display:"flex",gap:3}}>
@@ -1562,7 +1604,7 @@ export default function Teamchemie({user,onLogout}) {
                       {/* Spielerprofil */}
                       <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spielerprofil</div>
                       {dp.wishRole && <Card style={{marginBottom:10}}><Label>Wunschposition</Label><div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div></Card>}
-                      {dp.wishFormation && <Card style={{marginBottom:10}}><Label>Lieblingsformation</Label><div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishFormation}</div></Card>}
+                      {dp.wishFormation && <Card style={{marginBottom:10}}><Label info={PLAYER_INFOS.formation}>Lieblingsformation</Label><div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishFormation}</div></Card>}
                       {allStrengths.length>0 && <Card style={{marginBottom:10}}>
                         <Label>Stärken</Label>
                         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
@@ -1578,7 +1620,7 @@ export default function Teamchemie({user,onLogout}) {
                           const val=(trainerAttributes[dp.uid]||{})[attr.id]||0;
                           return <div key={attr.id} style={{marginBottom:12}}>
                             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                              <span style={{color:C.gray,fontSize:12}}>{attr.label}</span>
+                              <span style={{color:C.gray,fontSize:12}}>{attr.label} <InfoBtn text={attr.sub}/></span>
                               <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:12,fontWeight:700}}>{val||"–"}/10</span>
                             </div>
                             <div style={{display:"flex",gap:3}}>
@@ -1766,7 +1808,7 @@ export default function Teamchemie({user,onLogout}) {
                 )}
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Zum nächsten Spiel</Label>
+                  <Label info={PLAYER_INFOS.attendance}>Zum nächsten Spiel</Label>
                   <div style={{display:"flex",gap:8}}>
                     {[{k:"ja",l:"Ich bin dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Kann nicht",c:C.error}].map(opt=>(
                       <button key={opt.k} onClick={()=>setMyAttendance(opt.k)}
@@ -1787,7 +1829,7 @@ export default function Teamchemie({user,onLogout}) {
                 )}
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Fitnesszustand</Label>
+                  <Label info={PLAYER_INFOS.fitness}>Fitnesszustand</Label>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
                     {[100,85,70,55,40].map(v=><Pill key={v} active={myFitness===v} onClick={()=>setMyFitness(v)}>{v}%</Pill>)}
                   </div>
@@ -1795,7 +1837,7 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Wunschposition</Label>
+                  <Label info={PLAYER_INFOS.wishRole}>Wunschposition</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {["Torwart","Innenverteidiger","Außenverteidiger","Defensives MF","Zentrales MF","Offensives MF","Außenbahn","Stürmer"].map(pos=>(
                       <Pill key={pos} active={myWish===pos} onClick={()=>setMyWish(pos)}>{pos}</Pill>
@@ -1804,7 +1846,7 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Meine Stärken</Label>
+                  <Label info={PLAYER_INFOS.strengths}>Meine Stärken</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {STRENGTHS_LIST.map(s=>(
                       <Pill key={s.id} active={myStrengths.includes(s.id)} onClick={()=>setMyStrengths(prev=>prev.includes(s.id)?prev.filter(x=>x!==s.id):[...prev,s.id])}>
@@ -1815,7 +1857,7 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Harmonie – mit wem spielst du am liebsten?</Label>
+                  <Label info={PLAYER_INFOS.partners}>Harmonie – mit wem spielst du am liebsten?</Label>
                   {players.filter(p=>!p.isPlaceholder&&p.uid!==user?.uid).length===0 ? (
                     <div style={{color:C.grayDark,fontSize:12}}>Noch keine anderen Spieler im Team</div>
                   ) : (
@@ -1834,7 +1876,7 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Lieblingsformation</Label>
+                  <Label info={PLAYER_INFOS.formation}>Lieblingsformation</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {ALL_TACTICS.map(t=>(
                       <Pill key={t.id} active={myFormation===t.name} onClick={()=>setMyFormation(t.name)}>{t.name}</Pill>
@@ -1843,7 +1885,7 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label>Nachricht an Trainer</Label>
+                  <Label info={PLAYER_INFOS.note}>Nachricht an Trainer</Label>
                   <textarea value={myNote} onChange={e=>setMyNote(e.target.value)} placeholder="Verletzung, besondere Situation..."
                     style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",resize:"none",height:80,outline:"none",boxSizing:"border-box"}}/>
                 </Card>
