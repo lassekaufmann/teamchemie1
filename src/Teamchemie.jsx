@@ -563,10 +563,20 @@ export default function Teamchemie({user,onLogout}) {
     const q = query(collection(db,"users"),where("teamCode","==",user.teamCode),where("role","==","player"));
     return onSnapshot(q,snap=>{
       const real = snap.docs.map((d,i)=>({
-        id:i+1,uid:d.id,name:d.data().name||`Spieler ${i+1}`,number:d.data().number||i+1,
-        fitness:d.data().fitness||85,ruhe:d.data().ruhe||false,partners:d.data().partners||[],
-        note:d.data().note||"",wishRole:d.data().wishRole||"",strengths:d.data().strengths||[],
-        strongFoot:d.data().strongFoot||"",attendance:d.data().attendance||null,isPlaceholder:false,
+        id:         i+1,
+        uid:        d.id,
+        name:       d.data().name        || `Spieler ${i+1}`,
+        number:     d.data().number      || i+1,
+        fitness:    d.data().fitness     || 85,
+        ruhe:       d.data().ruhe        || false,
+        partners:   d.data().partners    || [],
+        note:       d.data().note        || "",
+        wishRole:   d.data().wishRole    || "",
+        wishFormation: d.data().wishFormation || "",
+        strengths:  d.data().strengths   || [],
+        strongFoot: d.data().strongFoot  || "",
+        attendance: d.data().attendance  || null,
+        isPlaceholder: false,
       }));
       const slots = Array.from({length:11},(_,i)=>real[i]||{
         id:i+1,uid:null,name:`Spieler ${i+1}`,number:i+1,
@@ -1355,11 +1365,11 @@ export default function Teamchemie({user,onLogout}) {
                   </div>
                 )}
                 {players.filter(p=>!p.isPlaceholder).map(p=>{
-                  const menuOpen = playerMenu===p.id;
-                  const att = attendance[p.uid||p.id];
+                  const menuOpen = playerMenu===p.uid;
+                  const att = attendance[p.uid];
                   const attCfg = {ja:{l:"Dabei",c:C.greenText},vielleicht:{l:"Unsicher",c:C.yellowText},nein:{l:"Fehlt",c:C.error}};
                   return (
-                    <div key={p.uid||p.id} onClick={()=>setDetailId(p.uid||p.id)} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+                    <div key={p.uid} onClick={()=>setDetailId(p.uid)} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
                       <div style={{width:40,height:40,borderRadius:"50%",background:C.white,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:C.bg,flexShrink:0}}>
                         {p.number}
                       </div>
@@ -1373,7 +1383,7 @@ export default function Teamchemie({user,onLogout}) {
                           <span style={{background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}55`,borderRadius:20,padding:"2px 8px",color:attCfg[att].c,fontSize:10,fontWeight:600}}>{attCfg[att].l}</span>
                         )}
                         <div style={{position:"relative"}} onClick={e=>e.stopPropagation()}>
-                          <button onClick={()=>setPlayerMenu(menuOpen?null:p.id)}
+                          <button onClick={()=>setPlayerMenu(menuOpen?null:p.uid)}
                             style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,color:C.gray,padding:"4px 8px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>
                             ...
                           </button>
@@ -1383,7 +1393,7 @@ export default function Teamchemie({user,onLogout}) {
                                 <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Anwesenheit</div>
                                 <div style={{display:"flex",gap:6}}>
                                   {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Unsicher",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error}].map(opt=>(
-                                    <button key={opt.k} onClick={()=>{setAttendance(prev=>({...prev,[p.uid||p.id]:opt.k}));setPlayerMenu(null);showNotif(`${p.name.split(" ")[0]}: ${opt.l}`);}}
+                                    <button key={opt.k} onClick={()=>{setAttendance(prev=>({...prev,[p.uid]:opt.k}));setPlayerMenu(null);showNotif(`${p.name.split(" ")[0]}: ${opt.l}`);}}
                                       style={{flex:1,padding:"5px 4px",borderRadius:6,cursor:"pointer",fontSize:9,fontFamily:"inherit",fontWeight:600,
                                         border:`1px solid ${att===opt.k?opt.c:`${opt.c}44`}`,background:att===opt.k?`${opt.c}22`:"transparent",color:opt.c}}>
                                       {opt.l}
