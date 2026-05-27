@@ -604,8 +604,14 @@ export default function Teamchemie({user,onLogout}) {
         const std = ALL_TACTICS.find(t=>t.id===d.releasedTacticId);
         const custom = (d.customTactics||[]).find(t=>t.id===d.releasedTacticId);
         const found = std||custom;
-        if (found) { setReleasedTactic(found); if (!isTrainer) setTactic(found); }
-        if (isTrainer && d.releasedTacticId) setTacticReleased(true);
+        if (found) {
+          setReleasedTactic(found);
+          if (!isTrainer) { setTactic(found); setTacticReleased(true); }
+        }
+        if (isTrainer) setTacticReleased(true);
+      } else {
+        if (isTrainer) setTacticReleased(false);
+        // Spieler sehen gesperrte Ansicht
       }
       if (!isTrainer) return; // Spieler brauchen den Rest nicht
       // Aufstellung
@@ -1195,9 +1201,18 @@ export default function Teamchemie({user,onLogout}) {
                       <button onClick={()=>{
                         const next = !tacticReleased;
                         setTacticReleased(next);
-                        if (next) { setReleasedTactic(tactic); if (user?.teamCode) updateDoc(doc(db,"teams",user.teamCode),{releasedTacticId:tactic.id,releasedTacticName:tactic.name}).catch(console.error); }
-                        else { if (user?.teamCode) updateDoc(doc(db,"teams",user.teamCode),{releasedTacticId:null}).catch(console.error); }
-                        showNotif(next?"Taktik freigegeben":"Taktik zurückgezogen");
+                        if (next) {
+                          setReleasedTactic(tactic);
+                          if (user?.teamCode) updateDoc(doc(db,"teams",user.teamCode),{
+                            releasedTacticId: tactic.id,
+                            releasedTacticName: tactic.name,
+                          }).catch(console.error);
+                        } else {
+                          if (user?.teamCode) updateDoc(doc(db,"teams",user.teamCode),{
+                            releasedTacticId: null,
+                          }).catch(console.error);
+                        }
+                        showNotif(next?"Taktik freigegeben – Spieler sehen sie jetzt":"Taktik zurückgezogen");
                       }} style={{
                         width:52,height:28,borderRadius:14,border:"none",cursor:"pointer",
                         background:tacticReleased?"#c84aff":"rgba(255,255,255,0.1)",
@@ -1388,9 +1403,6 @@ export default function Teamchemie({user,onLogout}) {
                   </div>
                 )}
 
-                <button onClick={releaseTactic} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>
-                  "{tactic.name}" an Spieler freigeben
-                </button>
                 {tacticReleased && <div style={{color:C.greenText,fontSize:12,textAlign:"center",marginTop:8}}>Taktik freigegeben</div>}
               </>
             )}
