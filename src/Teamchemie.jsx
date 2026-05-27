@@ -547,6 +547,7 @@ export default function Teamchemie({user,onLogout}) {
   const [customTacticName,setCustomTacticName] = useState("");
   const [customTacticNote,setCustomTacticNote] = useState("");
   const [customTacticBase,setCustomTacticBase] = useState(1);
+  const [trainerAttributes,setTrainerAttributes] = useState({});
   const [trainerStrengths,setTrainerStrengths] = useState({});
   const [swipeStartX,setSwipeStartX] = useState(null);
   const [showOnboarding,setShowOnboarding] = useState(isTrainer && !user?.hasSeenOnboarding);
