@@ -1125,19 +1125,14 @@ export default function Teamchemie({user,onLogout}) {
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+30)*Math.cos(ang(i));
-                      const ly=cy+(r+30)*Math.sin(ang(i));
+                      const lx=cx+(r+28)*Math.cos(ang(i));
+                      const ly=cy+(r+28)*Math.sin(ang(i));
                       const cosA=Math.cos(ang(i));
                       const anchor=cosA>0.2?"start":cosA<-0.2?"end":"middle";
-                      // Split label into max 2 lines of ~10 chars
-                      const words=a.label.split(/[\s\-/]+/);
-                      const lines=[];
-                      let cur="";
-                      words.forEach(w=>{if((cur+" "+w).trim().length>10&&cur){lines.push(cur.trim());cur=w;}else{cur=(cur+" "+w).trim();}});
-                      if(cur)lines.push(cur);
+                      const short=a.label.length>12?a.label.substring(0,11)+"…":a.label;
                       return (
-                        <text key={i} textAnchor={anchor} fontSize="8" fill={C.grayLight} fontFamily="inherit">
-                          {lines.map((l,li)=><tspan key={li} x={lx} dy={li===0?(-(lines.length-1)*5):10}>{l}</tspan>)}
+                        <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8.5" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
+                          {short}
                         </text>
                       );
                     })}
@@ -1251,19 +1246,14 @@ export default function Teamchemie({user,onLogout}) {
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+30)*Math.cos(ang(i));
-                      const ly=cy+(r+30)*Math.sin(ang(i));
+                      const lx=cx+(r+28)*Math.cos(ang(i));
+                      const ly=cy+(r+28)*Math.sin(ang(i));
                       const cosA=Math.cos(ang(i));
                       const anchor=cosA>0.2?"start":cosA<-0.2?"end":"middle";
-                      // Split label into max 2 lines of ~10 chars
-                      const words=a.label.split(/[\s\-/]+/);
-                      const lines=[];
-                      let cur="";
-                      words.forEach(w=>{if((cur+" "+w).trim().length>10&&cur){lines.push(cur.trim());cur=w;}else{cur=(cur+" "+w).trim();}});
-                      if(cur)lines.push(cur);
+                      const short=a.label.length>12?a.label.substring(0,11)+"…":a.label;
                       return (
-                        <text key={i} textAnchor={anchor} fontSize="8" fill={C.grayLight} fontFamily="inherit">
-                          {lines.map((l,li)=><tspan key={li} x={lx} dy={li===0?(-(lines.length-1)*5):10}>{l}</tspan>)}
+                        <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8.5" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
+                          {short}
                         </text>
                       );
                     })}
@@ -1894,14 +1884,13 @@ export default function Teamchemie({user,onLogout}) {
                                   const lx = cx + (r+18)*Math.cos(angle(i));
                                   const ly = cy + (r+18)*Math.sin(angle(i));
                                   const words = a.label.split(" ");
-                                  const anchor=Math.cos(angle(i))>0.3?"start":Math.cos(angle(i))<-0.3?"end":"middle";
+                                  const cosA=Math.cos(angle(i));
+                                  const anchor=cosA>0.2?"start":cosA<-0.2?"end":"middle";
+                                  const short=a.label.length>12?a.label.substring(0,11)+"…":a.label;
                                   return (
                                     <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle"
-                                      fontSize="7.5" fill={C.grayLight} fontFamily="inherit">
-                                      {words.length===1
-                                        ? <tspan>{words[0]}</tspan>
-                                        : words.map((w,wi)=><tspan key={wi} x={lx} dy={wi===0?0:8}>{w}</tspan>)
-                                      }
+                                      fontSize="7.5" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
+                                      {short}
                                     </text>
                                   );
                                 })}
