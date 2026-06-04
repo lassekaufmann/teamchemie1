@@ -1006,6 +1006,69 @@ export default function Teamchemie({user,onLogout}) {
             </Card>
           )}
 
+          {/* ── VERGLEICH RADAR ── */}
+          <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
+          <Card style={{marginBottom:14}}>
+            {(()=>{
+              const attrs = TRAINER_ATTRIBUTES;
+              const n = attrs.length;
+              const cx=120,cy=120,r=85;
+              const trainerVals = attrs.map(a=>((trainerAttributes[dp.uid]||{})[a.id]||0)/10);
+              const playerVals  = attrs.map(a=>((dp.selfRating||{})[a.id]||0)/10);
+              const hasData = trainerVals.some(v=>v>0)||playerVals.some(v=>v>0);
+              const ang = i=>(Math.PI*2*i/n)-Math.PI/2;
+              const px = (v,i)=>cx+v*r*Math.cos(ang(i));
+              const py = (v,i)=>cy+v*r*Math.sin(ang(i));
+              const gPts = v=>attrs.map((_,i)=>`${px(v,i)},${py(v,i)}`).join(" ");
+              const tPts = attrs.map((_,i)=>`${px(trainerVals[i],i)},${py(trainerVals[i],i)}`).join(" ");
+              const pPts = attrs.map((_,i)=>`${px(playerVals[i],i)},${py(playerVals[i],i)}`).join(" ");
+              return (
+                <div>
+                  <div style={{display:"flex",gap:16,marginBottom:8,justifyContent:"center"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:12,height:3,borderRadius:2,background:C.accent}}/> Trainer</div>
+                    <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText,opacity:0.8}}/> Spieler</div>
+                  </div>
+                  {!hasData&&<div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"12px 0"}}>Noch keine Bewertungen – vergib zuerst deine Noten</div>}
+                  <svg viewBox="0 0 240 240" style={{width:"100%",maxWidth:260,display:"block",margin:"0 auto"}}>
+                    {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
+                    {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
+                    {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
+                    {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
+                    {attrs.map((a,i)=>{
+                      const lx=cx+(r+20)*Math.cos(ang(i));
+                      const ly=cy+(r+20)*Math.sin(ang(i));
+                      const words=a.label.split(" ");
+                      return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="7.5" fill={C.gray} fontFamily="inherit">{words[0]}</text>;
+                    })}
+                    {trainerVals.map((v,i)=>v>0&&<circle key={i} cx={px(v,i)} cy={py(v,i)} r="2.5" fill={C.accent}/>)}
+                    {playerVals.map((v,i)=>v>0&&<circle key={i} cx={px(v,i)} cy={py(v,i)} r="2.5" fill={C.greenText}/>)}
+                  </svg>
+                  {hasData&&(
+                    <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:3}}>
+                      {attrs.map(a=>{
+                        const tv=(trainerAttributes[dp.uid]||{})[a.id]||0;
+                        const pv=(dp.selfRating||{})[a.id]||0;
+                        if(!tv&&!pv) return null;
+                        const diff=tv-pv;
+                        return (
+                          <div key={a.id} style={{display:"flex",alignItems:"center",padding:"3px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                            <span style={{color:C.gray,fontSize:10,flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.label}</span>
+                            <span style={{color:C.accent,fontSize:11,fontWeight:700,width:22,textAlign:"right",flexShrink:0}}>{tv||"–"}</span>
+                            <span style={{color:C.grayDark,fontSize:9,width:14,textAlign:"center",flexShrink:0}}>vs</span>
+                            <span style={{color:C.greenText,fontSize:11,fontWeight:700,width:22,flexShrink:0}}>{pv||"–"}</span>
+                            {tv>0&&pv>0&&<span style={{fontSize:10,fontWeight:700,width:28,textAlign:"right",flexShrink:0,color:Math.abs(diff)>=3?C.error:Math.abs(diff)>=2?C.yellowText:"rgba(255,255,255,0.2)"}}>
+                              {diff>0?`+${diff}`:diff===0?"=":diff}
+                            </span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </Card>
+
           {/* ── TRAINER BEWERTUNG ── */}
           <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
 
