@@ -53,29 +53,63 @@ const TACTIC_FORMATION = {
 const ROLE_LABELS = ["TW","LV","IV L","IV R","RV","LM","ZM","ZM R","RM","ST L","ST R"];
 
 const STRENGTHS_LIST = [
-  {id:"abschluss",    label:"Abschluss"},
-  {id:"flanken",      label:"Flanken"},
-  {id:"standards",    label:"Standards"},
-  {id:"elfmeter",     label:"Elfmeter"},
-  {id:"dribbling",    label:"Dribbling"},
-  {id:"passspiel",    label:"Passspiel"},
-  {id:"kopfball",     label:"Kopfball"},
-  {id:"zweikampf",    label:"Zweikampf"},
-  {id:"schnelligkeit",label:"Schnelligkeit"},
-  {id:"ausdauer",     label:"Ausdauer"},
-  {id:"fuehrung",     label:"Führung"},
-  {id:"intelligenz",  label:"Spielintelligenz"},
+  {id:"technik",          label:"Technik"},
+  {id:"passspiel",        label:"Passspiel"},
+  {id:"abschluss",        label:"Abschluss"},
+  {id:"zweikampf",        label:"Zweikampfstärke"},
+  {id:"spieltempo",       label:"Spieltempo"},
+  {id:"kreativitaet",     label:"Kreativität"},
+  {id:"spielverstaendnis",label:"Spielverständnis"},
+  {id:"offensiv",         label:"Offensivverhalten"},
+  {id:"defensiv",         label:"Defensivverhalten"},
+  {id:"umschalt",         label:"Umschaltverhalten"},
+];
+
+const POSITIONS = [
+  {id:"TW",  label:"Torwart (TW)",           sub:"Hüter des Tores, Spielaufbau von hinten."},
+  {id:"LAV", label:"Linker Außenverteidiger", sub:"Defensive Außenbahn links, unterstützt Angriffe."},
+  {id:"LIV", label:"Linker Innenverteidiger",sub:"Absicherung der Abwehrkette links."},
+  {id:"RIV", label:"Rechter Innenverteidiger",sub:"Absicherung der Abwehrkette rechts."},
+  {id:"RAV", label:"Rechter Außenverteidiger",sub:"Defensive Außenbahn rechts, unterstützt Angriffe."},
+  {id:"LWB", label:"Linker Wingback",        sub:"Offensiver Außenverteidiger links, viel Laufarbeit."},
+  {id:"RWB", label:"Rechter Wingback",       sub:"Offensiver Außenverteidiger rechts, viel Laufarbeit."},
+  {id:"DM",  label:"Defensives Mittelfeld",  sub:"Absicherung vor der Abwehr, Ballgewinn."},
+  {id:"ZM",  label:"Zentrales Mittelfeld",   sub:"Schaltzentrale, verbindet Abwehr und Angriff."},
+  {id:"LM",  label:"Linkes Mittelfeld",      sub:"Breite links, Verbindung zwischen Abwehr und Sturm."},
+  {id:"RM",  label:"Rechtes Mittelfeld",     sub:"Breite rechts, Verbindung zwischen Abwehr und Sturm."},
+  {id:"OM",  label:"Offensives Mittelfeld",  sub:"Kreativzentrum, Spielmacher hinter den Stürmern."},
+  {id:"LA",  label:"Linker Flügel",          sub:"Schneller Angreifer auf der linken Außenbahn."},
+  {id:"RA",  label:"Rechter Flügel",         sub:"Schneller Angreifer auf der rechten Außenbahn."},
+  {id:"HM",  label:"Halbspieler Links",      sub:"Zwischen Außenbahn und Zentrum, taktisch flexibel."},
+  {id:"HR",  label:"Halbspieler Rechts",     sub:"Zwischen Außenbahn und Zentrum, taktisch flexibel."},
+  {id:"MS",  label:"Mittelstürmer",          sub:"Torjäger im Zentrum, Zielspieler für Zuspiele."},
+  {id:"HS",  label:"Hängende Spitze",        sub:"Stürmer der zurückfällt und Räume schafft."},
+  {id:"LF",  label:"Linker Flügelstürmer",   sub:"Torgefährlicher Angreifer auf Links."},
+  {id:"RF",  label:"Rechter Flügelstürmer",  sub:"Torgefährlicher Angreifer auf Rechts."},
 ];
 
 const TRAINER_ATTRIBUTES = [
-  {id:"leistungsniveau", label:"Aktuelles Leistungsniveau",  sub:"Sportliche & taktische Qualität im Hier und Jetzt"},
-  {id:"konstanz",        label:"Zuverlässigkeit & Konstanz", sub:"Stabile Leistungen ohne große Schwankungen"},
-  {id:"matchplan",       label:"Matchplan-Eignung",          sub:"Wie gut das Spielerprofil zum aktuellen Gegner passt"},
-  {id:"trainingseindruck",label:"Trainingseindruck",         sub:"Einsatz und Auftreten im letzten Training"},
-  {id:"formkurve",       label:"Formkurve",                  sub:"Entwicklung der Leistungen in den letzten Wochen"},
-  {id:"mentalitaet",     label:"Mentalität",                 sub:"Siegeswille, Zweikampfhärte und Einstellung"},
-  {id:"fitness",         label:"Fitness",                    sub:"Physische Verfassung und Belastbarkeit"},
-  {id:"teamdienlich",    label:"Teamdienlichkeit",           sub:"Körpersprache, Coaching auf dem Platz & Unterordnung"},
+  {id:"leistungsniveau",  label:"Leistungsniveau",       sub:"Derzeitige sportliche Leistungsfähigkeit im Vergleich zum eigenen Potenzial und Teamniveau."},
+  {id:"konstanz",         label:"Zuverlässigkeit",       sub:"Regelmäßige und verlässliche Leistungen in Training und Spiel."},
+  {id:"trainingseindruck",label:"Trainingseindruck",     sub:"Qualität, Einsatz und Fokus während der Trainingseinheiten."},
+  {id:"mentalitaet",      label:"Mentalität",            sub:"Einstellung, Disziplin, Ehrgeiz und Umgang mit Herausforderungen."},
+  {id:"konzentration",    label:"Konzentration",         sub:"Fähigkeit, über längere Zeit aufmerksam und fokussiert zu bleiben."},
+  {id:"fitness",          label:"Fitnesszustand",        sub:"Aktuelle körperliche Verfassung hinsichtlich Ausdauer, Belastbarkeit und Frische."},
+  {id:"teamdienlich",     label:"Teamdienlichkeit",      sub:"Bereitschaft, für das Team zu arbeiten und gemeinsame Ziele über persönliche Interessen zu stellen."},
+  {id:"rollenverstaendnis",label:"Rollenverständnis",   sub:"Verständnis der eigenen Aufgabe und Umsetzung der Anforderungen innerhalb des Teamsystems."},
+];
+
+const SKILL_ATTRIBUTES = [
+  {id:"technik",          label:"Technik",               sub:"Qualität der Ballkontrolle, Ballmitnahme und technischen Ausführung."},
+  {id:"passspiel",        label:"Passspiel",             sub:"Präzision, Timing und Entscheidungsfindung bei Pässen."},
+  {id:"abschluss",        label:"Abschluss",             sub:"Konzentration und Präzision beim Torschuss."},
+  {id:"zweikampf",        label:"Zweikampfstärke",       sub:"Fähigkeit, direkte Duelle offensiv und defensiv erfolgreich zu führen."},
+  {id:"spieltempo",       label:"Spieltempo",            sub:"Geschwindigkeit von Entscheidungen und Spielaktionen."},
+  {id:"kreativitaet",     label:"Kreativität",           sub:"Fähigkeit, unerwartete und spielöffnende Lösungen zu finden."},
+  {id:"spielverstaendnis",label:"Spielverständnis",     sub:"Erkennen von Spielsituationen und Treffen sinnvoller Entscheidungen."},
+  {id:"offensiv",         label:"Offensivverhalten",     sub:"Beitrag zur Chancen- und Torerarbeitung."},
+  {id:"defensiv",         label:"Defensivverhalten",     sub:"Verhalten gegen den Ball, Zweikampfführung und Defensivarbeit."},
+  {id:"umschalt",         label:"Umschaltverhalten",     sub:"Reaktion nach Ballgewinn oder Ballverlust."},
 ];
 
 // Infotexte für Spieler-Eingaben
@@ -590,6 +624,7 @@ export default function Teamchemie({user,onLogout}) {
   const [myNote,setMyNote]         = useState("");
   const [myStrengths,setMyStrengths] = useState([]);
   const [mySelfRating,setMySelfRating] = useState({});
+  const [mySelfSkills,setMySelfSkills] = useState({});
   const [myFoot,setMyFoot]         = useState("");
   const [myFormation,setMyFormation] = useState("");
   const [myPartners,setMyPartners] = useState([]);
@@ -610,6 +645,7 @@ export default function Teamchemie({user,onLogout}) {
   const [customTacticNote,setCustomTacticNote] = useState("");
   const [customTacticBase,setCustomTacticBase] = useState(1);
   const [trainerAttributes,setTrainerAttributes] = useState({});
+  const [trainerSkills,setTrainerSkills] = useState({});
   const [trainerStrengths,setTrainerStrengths] = useState({});
   const [swipeStartX,setSwipeStartX] = useState(null);
   const [swipeStartY,setSwipeStartY] = useState(null);
@@ -641,6 +677,7 @@ export default function Teamchemie({user,onLogout}) {
         strongFoot: d.data().strongFoot  || "",
         attendance: d.data().attendance  || null,
         selfRating: d.data().selfRating  || {},
+        selfSkills: d.data().selfSkills  || {},
         isPlaceholder: false,
       }));
       const slots = Array.from({length:11},(_,i)=>real[i]||{
@@ -802,7 +839,7 @@ export default function Teamchemie({user,onLogout}) {
     if (user?.uid) {
       updateDoc(doc(db,"users",user.uid),{
         fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,
-        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,wishFormation:myFormation,selfRating:mySelfRating,
+        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,wishFormation:myFormation,selfRating:mySelfRating,selfSkills:mySelfSkills,
       }).catch(console.error);
     }
     if (myAttendance) setAttendance(prev=>({...prev,[user?.uid]:myAttendance}));
@@ -1113,24 +1150,94 @@ export default function Teamchemie({user,onLogout}) {
             </div>
           </Card>
 
-          {/* Position ändern */}
-          <Card style={{marginBottom:14}}>
-            <Label>Position im Team ändern</Label>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-              {ROLE_LABELS.map((label,i)=>{
-                const isCurrent = order[i]===dp.id;
-                return (
-                  <button key={i} onClick={()=>{if(!isCurrent){const o=[...order];const from=o.indexOf(dp.id);const dis=o[i];if(from!==-1)o[from]=dis;o[i]=dp.id;setOrder(o);showNotif(`${dp.name.split(" ")[0]} → ${label}`);}}}
-                    style={{padding:"5px 10px",borderRadius:20,cursor:isCurrent?"default":"pointer",fontSize:11,fontFamily:"inherit",
-                      border:`1px solid ${isCurrent?C.greenText:C.border}`,
-                      background:isCurrent?"rgba(74,200,200,0.15)":"transparent",
-                      color:isCurrent?C.greenText:C.gray}}>
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
+          {/* Lieblingsposition anzeigen (read-only) */}
+          {dp.wishRole && (
+            <Card style={{marginBottom:14}}>
+              <Label>Lieblingsposition</Label>
+              {(()=>{
+                const pos = POSITIONS.find(p=>p.id===dp.wishRole);
+                return pos ? (
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:40,height:40,borderRadius:8,background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{color:C.accent,fontSize:11,fontWeight:700}}>{pos.id}</span>
+                    </div>
+                    <div>
+                      <div style={{color:C.white,fontSize:13,fontWeight:600}}>{pos.label}</div>
+                      <div style={{color:C.grayDark,fontSize:11,marginTop:2}}>{pos.sub}</div>
+                    </div>
+                  </div>
+                ) : <div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishRole}</div>;
+              })()}
+            </Card>
+          )}
+
+          {/* Spielerische Stärken Radar */}
+          {(()=>{
+            const attrs = SKILL_ATTRIBUTES;
+            const n = attrs.length;
+            const cx=130,cy=130,r=95;
+            const trainerVals = attrs.map(a=>((trainerSkills[dp.uid]||{})[a.id]||0)/10);
+            const playerVals  = attrs.map(a=>((dp.selfSkills||{})[a.id]||0)/10);
+            const hasData = trainerVals.some(v=>v>0)||playerVals.some(v=>v>0);
+            const ang = i=>(Math.PI*2*i/n)-Math.PI/2;
+            const px2 = (v,i)=>cx+v*r*Math.cos(ang(i));
+            const py2 = (v,i)=>cy+v*r*Math.sin(ang(i));
+            const gPts = v=>attrs.map((_,i)=>`${px2(v,i)},${py2(v,i)}`).join(" ");
+            const tPts = attrs.map((_,i)=>`${px2(trainerVals[i],i)},${py2(trainerVals[i],i)}`).join(" ");
+            const pPts = attrs.map((_,i)=>`${px2(playerVals[i],i)},${py2(playerVals[i],i)}`).join(" ");
+            return (
+              <>
+                <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spielerische Stärken</div>
+                <Card style={{marginBottom:14}}>
+                  <div style={{display:"flex",gap:16,marginBottom:8,justifyContent:"center"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:12,height:3,borderRadius:2,background:C.accent}}/> Trainer</div>
+                    <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText}}/> Spieler</div>
+                  </div>
+                  {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"8px 0"}}>Noch keine Stärken-Bewertung vorhanden</div>}
+                  <svg viewBox="0 0 260 260" style={{width:"100%",maxWidth:280,display:"block",margin:"0 auto"}}>
+                    {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
+                    {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px2(1,i)} y2={py2(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
+                    {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
+                    {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
+                    {attrs.map((a,i)=>{
+                      const lx=cx+(r+22)*Math.cos(ang(i));
+                      const ly=cy+(r+22)*Math.sin(ang(i));
+                      return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="8" fill={C.gray} fontFamily="inherit">{a.label.split(" ")[0]}</text>;
+                    })}
+                    {trainerVals.map((v,i)=>v>0&&<circle key={i} cx={px2(v,i)} cy={py2(v,i)} r="2.5" fill={C.accent}/>)}
+                    {playerVals.map((v,i)=>v>0&&<circle key={i} cx={px2(v,i)} cy={py2(v,i)} r="2.5" fill={C.greenText}/>)}
+                  </svg>
+
+                  {/* Trainer Skill Bewertung */}
+                  <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:8}}>
+                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:10}}>Trainer-Bewertung Stärken</div>
+                    {SKILL_ATTRIBUTES.map(attr=>{
+                      const val=(trainerSkills[dp.uid]||{})[attr.id]||0;
+                      const pv=(dp.selfSkills||{})[attr.id]||0;
+                      return (
+                        <div key={attr.id} style={{marginBottom:10}}>
+                          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                            <span style={{color:C.gray,fontSize:11}}>{attr.label} <InfoBtn text={attr.sub}/></span>
+                            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                              {pv>0&&<span style={{color:C.greenText,fontSize:10}}>S:{pv}</span>}
+                              <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                            </div>
+                          </div>
+                          <div style={{display:"flex",gap:3}}>
+                            {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                              <button key={n} onClick={()=>setTrainerSkills(prev=>({...prev,[dp.uid]:{...(prev[dp.uid]||{}),[attr.id]:n}}))}
+                                style={{flex:1,height:20,borderRadius:3,border:"none",cursor:"pointer",
+                                  background:n<=val?(n>=8?C.greenText:n>=5?C.yellowText:C.accent):"rgba(200,74,255,0.1)"}}/>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              </>
+            );
+          })()}
 
           {/* Direktchat */}
           <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Direktchat</div>
@@ -1982,23 +2089,46 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label info={PLAYER_INFOS.wishRole}>Wunschposition</Label>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {["Torwart","Innenverteidiger","Außenverteidiger","Defensives MF","Zentrales MF","Offensives MF","Außenbahn","Stürmer"].map(pos=>(
-                      <Pill key={pos} active={myWish===pos} onClick={()=>setMyWish(pos)}>{pos}</Pill>
+                  <Label info={PLAYER_INFOS.wishRole}>Lieblingsposition</Label>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                    {POSITIONS.map(pos=>(
+                      <button key={pos.id} onClick={()=>setMyWish(pos.id)}
+                        style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+                          border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,
+                          background:myWish===pos.id?C.accentDim:"transparent"}}>
+                        <div style={{width:34,height:34,borderRadius:8,background:myWish===pos.id?C.accentDim:"rgba(255,255,255,0.04)",border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                          <span style={{color:myWish===pos.id?C.accent:C.gray,fontSize:9,fontWeight:700}}>{pos.id}</span>
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{color:myWish===pos.id?C.accent:C.white,fontSize:12,fontWeight:600}}>{pos.label}</div>
+                          <div style={{color:C.grayDark,fontSize:10,marginTop:1}}>{pos.sub}</div>
+                        </div>
+                        {myWish===pos.id && <span style={{color:C.accent,fontSize:13,flexShrink:0}}>✓</span>}
+                      </button>
                     ))}
                   </div>
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label info={PLAYER_INFOS.strengths}>Meine Stärken</Label>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {STRENGTHS_LIST.map(s=>(
-                      <Pill key={s.id} active={myStrengths.includes(s.id)} onClick={()=>setMyStrengths(prev=>prev.includes(s.id)?prev.filter(x=>x!==s.id):[...prev,s.id])}>
-                        {s.label}
-                      </Pill>
-                    ))}
-                  </div>
+                  <Label info={PLAYER_INFOS.strengths}>Spielerische Stärken</Label>
+                  {SKILL_ATTRIBUTES.map(attr=>{
+                    const val = mySelfSkills[attr.id]||0;
+                    return (
+                      <div key={attr.id} style={{marginBottom:10}}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                          <span style={{color:C.gray,fontSize:11}}>{attr.label} <InfoBtn text={attr.sub}/></span>
+                          <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                        </div>
+                        <div style={{display:"flex",gap:3}}>
+                          {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                            <button key={n} onClick={()=>setMySelfSkills(prev=>({...prev,[attr.id]:n}))}
+                              style={{flex:1,height:18,borderRadius:3,border:"none",cursor:"pointer",
+                                background:n<=val?(n>=8?C.greenText:n>=5?C.yellowText:C.accent):"rgba(200,74,255,0.1)"}}/>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </Card>
 
                 <Card style={{marginBottom:10}}>
