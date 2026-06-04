@@ -373,7 +373,7 @@ const DEFAULT_CORNER_POSITIONS = [
   {x:30,y:45},{x:50,y:45},{x:70,y:45},              // Absicherung
 ];
 
-function CornerField({positions,setPositions,players,order,side,type}) {
+function CornerField({positions,setPositions,players,order,side,type,goalkeeperUid}) {
   const fieldRef = useRef(null);
   const [dragging,setDragging] = useState(null);
   const dragMoved = useRef(false);
@@ -422,19 +422,20 @@ function CornerField({positions,setPositions,players,order,side,type}) {
         const player=players?players.find(p=>p.id===pid):null;
         const isPlaceholder=!player||player.isPlaceholder;
         const isDragging=dragging===idx;
+        const isGK=goalkeeperUid&&player&&player.uid===goalkeeperUid;
         return (
           <div key={idx}
             onMouseDown={e=>onDown(e,idx)} onTouchStart={e=>onDown(e,idx)}
             style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:isDragging?10:3,cursor:"grab",transition:isDragging?"none":"left 0.2s,top 0.2s"}}>
             <div style={{
-              width:28,height:28,borderRadius:"50%",
-              background:isDragging?C.accent:isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
-              border:`2px solid ${isDragging?C.accent:isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
+              width:28,height:28,borderRadius:isGK?"20%":"50%",
+              background:isDragging?C.accent:isGK?"#e0b040":isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
+              border:`2px solid ${isDragging?C.accent:isGK?"#ffd060":isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              boxShadow:isDragging?`0 0 16px ${C.accent}`:`0 0 5px rgba(200,74,255,0.3)`,
+              boxShadow:isDragging?`0 0 16px ${C.accent}`:isGK?`0 0 8px #e0b040`:`0 0 5px rgba(200,74,255,0.3)`,
             }}>
-              <span style={{color:isDragging?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800}}>{player?.number||idx+1}</span>
-              {!isPlaceholder&&<span style={{color:isDragging?C.bg:"rgba(255,255,255,0.55)",fontSize:6,fontWeight:600}}>{player.name.split(" ")[0].slice(0,4)}</span>}
+              <span style={{color:isDragging?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800}}>{isGK?"TW":player?.number||idx+1}</span>
+              {!isPlaceholder&&!isGK&&<span style={{color:isDragging?C.bg:"rgba(255,255,255,0.55)",fontSize:6,fontWeight:600}}>{player.name.split(" ")[0].slice(0,4)}</span>}
             </div>
           </div>
         );
@@ -812,13 +813,36 @@ export default function Teamchemie({user,onLogout}) {
     return ()=>{ window.removeEventListener("online",goOnline); window.removeEventListener("offline",goOffline); };
   },[]);
 
-  // Init Offensiv/Defensiv/Ecken Positionen wenn Taktik wechselt
+  // Wenn TW gesetzt wird: Spieler auf TW-Position setzen (idx 0 = erster Slot = TW)
+  useEffect(()=>{
+    if (!goalkeeperSlot || !players.length) return;
+    const gkPlayer = players.find(p=>p.uid===goalkeeperSlot);
+    if (!gkPlayer) return;
+    const gkIdx = order.indexOf(gkPlayer.id);
+    if (gkIdx === 0) return;
+    const newOrder = [...order];
+    const oldSlot0 = newOrder[0];
+    newOrder[0] = gkPlayer.id;
+    if (gkIdx !== -1) newOrder[gkIdx] = oldSlot0;
+    setOrder(newOrder);
+    // Snap TW to goalkeeper position (x:50, y:91 = im unteren Strafraum)
+    const snapGK = (prev) => {
+      if (!prev || !prev.length) return prev;
+      const updated = [...prev];
+      updated[0] = {...updated[0], x:50, y:91};
+      return updated;
+    };
+    setTrainerPositions(snapGK);
+    setPosOffensiv(snapGK);
+    setPosDefensiv(snapGK);
+  },[goalkeeperSlot]);
   useEffect(()=>{    setTrainerPositions(positions.map(p=>({...p})));
     setPosOffensiv(positions.map(p=>({...p,y:Math.max(4,p.y-8)})));
     setPosDefensiv(positions.map(p=>({...p,y:Math.min(96,p.y+8)})));
     const defaultCorner = [
-      {x:8,y:8},{x:30,y:20},{x:50,y:25},{x:70,y:20},{x:85,y:15},
-      {x:20,y:35},{x:40,y:35},{x:60,y:35},{x:75,y:35},{x:45,y:50},{x:50,y:90},
+      {x:50,y:91}, // TW – immer im Tor
+      {x:30,y:20},{x:50,y:25},{x:70,y:20},{x:85,y:15},
+      {x:20,y:35},{x:40,y:35},{x:60,y:35},{x:75,y:35},{x:45,y:50},{x:50,y:65},
     ];
     setCornerOffL(defaultCorner.map(p=>({...p})));
     setCornerOffR(defaultCorner.map(p=>({...p,x:100-p.x})));
@@ -1092,10 +1116,18 @@ export default function Teamchemie({user,onLogout}) {
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+20)*Math.cos(ang(i));
-                      const ly=cy+(r+20)*Math.sin(ang(i));
-                      const words=a.label.split(" ");
-                      return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="7.5" fill={C.gray} fontFamily="inherit">{words[0]}</text>;
+                      const lx=cx+(r+24)*Math.cos(ang(i));
+                      const ly=cy+(r+24)*Math.sin(ang(i));
+                      const words=a.label.split(/[\s/]+/);
+                      const anchor=Math.cos(ang(i))>0.3?"start":Math.cos(ang(i))<-0.3?"end":"middle";
+                      return (
+                        <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8" fill={C.grayLight} fontFamily="inherit">
+                          {words.length===1
+                            ? <tspan>{words[0]}</tspan>
+                            : words.map((w,wi)=><tspan key={wi} x={lx} dy={wi===0?0:9}>{w}</tspan>)
+                          }
+                        </text>
+                      );
                     })}
                     {trainerVals.map((v,i)=>v>0&&<circle key={i} cx={px(v,i)} cy={py(v,i)} r="2.5" fill={C.accent}/>)}
                     {playerVals.map((v,i)=>v>0&&<circle key={i} cx={px(v,i)} cy={py(v,i)} r="2.5" fill={C.greenText}/>)}
@@ -1207,9 +1239,18 @@ export default function Teamchemie({user,onLogout}) {
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+22)*Math.cos(ang(i));
-                      const ly=cy+(r+22)*Math.sin(ang(i));
-                      return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="8" fill={C.gray} fontFamily="inherit">{a.label.split(" ")[0]}</text>;
+                      const lx=cx+(r+26)*Math.cos(ang(i));
+                      const ly=cy+(r+26)*Math.sin(ang(i));
+                      const words=a.label.split(/[\s/]+/);
+                      const anchor=Math.cos(ang(i))>0.3?"start":Math.cos(ang(i))<-0.3?"end":"middle";
+                      return (
+                        <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8" fill={C.grayLight} fontFamily="inherit">
+                          {words.length===1
+                            ? <tspan>{words[0]}</tspan>
+                            : words.map((w,wi)=><tspan key={wi} x={lx} dy={wi===0?0:9}>{w}</tspan>)
+                          }
+                        </text>
+                      );
                     })}
                     {trainerVals.map((v,i)=>v>0&&<circle key={i} cx={px2(v,i)} cy={py2(v,i)} r="2.5" fill={C.accent}/>)}
                     {playerVals.map((v,i)=>v>0&&<circle key={i} cx={px2(v,i)} cy={py2(v,i)} r="2.5" fill={C.greenText}/>)}
@@ -1619,6 +1660,7 @@ export default function Teamchemie({user,onLogout}) {
                           players={players} order={order}
                           side={cornerSide}
                           type={trainerFieldView==="eckeAngriff"?"angriff":"abwehr"}
+                          goalkeeperUid={goalkeeperSlot}
                         />
                       </>
                     )}
@@ -1835,10 +1877,14 @@ export default function Teamchemie({user,onLogout}) {
                                   const lx = cx + (r+18)*Math.cos(angle(i));
                                   const ly = cy + (r+18)*Math.sin(angle(i));
                                   const words = a.label.split(" ");
+                                  const anchor=Math.cos(angle(i))>0.3?"start":Math.cos(angle(i))<-0.3?"end":"middle";
                                   return (
-                                    <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
-                                      fontSize="7" fill={C.gray} fontFamily="inherit">
-                                      {words.slice(0,2).join(" ")}
+                                    <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle"
+                                      fontSize="7.5" fill={C.grayLight} fontFamily="inherit">
+                                      {words.length===1
+                                        ? <tspan>{words[0]}</tspan>
+                                        : words.map((w,wi)=><tspan key={wi} x={lx} dy={wi===0?0:8}>{w}</tspan>)
+                                      }
                                     </text>
                                   );
                                 })}
@@ -2097,29 +2143,8 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 <Card style={{marginBottom:10}}>
-                  <Label info={PLAYER_INFOS.wishRole}>Lieblingsposition</Label>
-                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                    {POSITIONS.map(pos=>(
-                      <button key={pos.id} onClick={()=>setMyWish(pos.id)}
-                        style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",textAlign:"left",
-                          border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,
-                          background:myWish===pos.id?C.accentDim:"transparent"}}>
-                        <div style={{width:34,height:34,borderRadius:8,background:myWish===pos.id?C.accentDim:"rgba(255,255,255,0.04)",border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                          <span style={{color:myWish===pos.id?C.accent:C.gray,fontSize:9,fontWeight:700}}>{pos.id}</span>
-                        </div>
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{color:myWish===pos.id?C.accent:C.white,fontSize:12,fontWeight:600}}>{pos.label}</div>
-                          <div style={{color:C.grayDark,fontSize:10,marginTop:1}}>{pos.sub}</div>
-                        </div>
-                        {myWish===pos.id && <span style={{color:C.accent,fontSize:13,flexShrink:0}}>✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                </Card>
-
-                <Card style={{marginBottom:10}}>
-                  <Label info={PLAYER_INFOS.strengths}>Spielerische Stärken</Label>
-                  {SKILL_ATTRIBUTES.map(attr=>{
+                  <Label info={PLAYER_INFOS.strengths}>Spielerische Stärken {myWish==="TW"&&<span style={{color:"#e0b040",fontSize:9}}>(Torwart)</span>}</Label>
+                  {(myWish==="TW" ? GK_SKILL_ATTRIBUTES : SKILL_ATTRIBUTES).map(attr=>{
                     const val = mySelfSkills[attr.id]||0;
                     return (
                       <div key={attr.id} style={{marginBottom:10}}>
@@ -2141,7 +2166,7 @@ export default function Teamchemie({user,onLogout}) {
 
                 <Card style={{marginBottom:10}}>
                   <Label info="Bewerte dich selbst in den 8 Kriterien. Der Trainer sieht seine Einschätzung daneben – so könnt ihr Unterschiede besprechen.">Selbsteinschätzung</Label>
-                  {TRAINER_ATTRIBUTES.map(attr=>{
+                  {(myWish==="TW" ? GK_SKILL_ATTRIBUTES : TRAINER_ATTRIBUTES).map(attr=>{
                     const val = mySelfRating[attr.id]||0;
                     return (
                       <div key={attr.id} style={{marginBottom:12}}>
@@ -2185,6 +2210,27 @@ export default function Teamchemie({user,onLogout}) {
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {ALL_TACTICS.map(t=>(
                       <Pill key={t.id} active={myFormation===t.name} onClick={()=>setMyFormation(t.name)}>{t.name}</Pill>
+                    ))}
+                  </div>
+                </Card>
+
+                <Card style={{marginBottom:10}}>
+                  <Label info={PLAYER_INFOS.wishRole}>Lieblingsposition</Label>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                    {POSITIONS.map(pos=>(
+                      <button key={pos.id} onClick={()=>setMyWish(pos.id)}
+                        style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+                          border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,
+                          background:myWish===pos.id?C.accentDim:"transparent"}}>
+                        <div style={{width:34,height:34,borderRadius:8,background:myWish===pos.id?C.accentDim:"rgba(255,255,255,0.04)",border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                          <span style={{color:myWish===pos.id?C.accent:C.gray,fontSize:9,fontWeight:700}}>{pos.id}</span>
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{color:myWish===pos.id?C.accent:C.white,fontSize:12,fontWeight:600}}>{pos.label}</div>
+                          <div style={{color:C.grayDark,fontSize:10,marginTop:1}}>{pos.sub}</div>
+                        </div>
+                        {myWish===pos.id && <span style={{color:C.accent,fontSize:13,flexShrink:0}}>✓</span>}
+                      </button>
                     ))}
                   </div>
                 </Card>
@@ -2311,6 +2357,7 @@ export default function Teamchemie({user,onLogout}) {
                           players={players} order={order}
                           side={cornerSide}
                           type={playerFieldView==="eckeAngriff"?"angriff":"abwehr"}
+                          goalkeeperUid={goalkeeperSlot}
                         />
                       </>
                     )}
@@ -2427,4 +2474,3 @@ export default function Teamchemie({user,onLogout}) {
     </div>
   );
 }
- 
