@@ -65,7 +65,16 @@ const STRENGTHS_LIST = [
   {id:"umschalt",         label:"Umschaltverhalten"},
 ];
 
-const POSITIONS = [
+const GK_SKILL_ATTRIBUTES = [
+  {id:"technik",       label:"Technik",              sub:"Ballkontrolle, Koordination, saubere Ausführung."},
+  {id:"passspiel",     label:"Passspiel",             sub:"Genauigkeit bei kurzen und langen Pässen, Spielaufbau."},
+  {id:"reflex",        label:"Reflex / Reaktion",     sub:"Schnelle Reaktion auf Schüsse aus kurzer Distanz."},
+  {id:"stellungsspiel",label:"Stellungsspiel",        sub:"Richtige Positionierung im Tor und im Strafraum."},
+  {id:"fangsicherheit",label:"Fangsicherheit",        sub:"Bälle sicher fangen oder kontrolliert abwehren."},
+  {id:"eins_gegen_eins",label:"1-gegen-1",            sub:"Entscheidung und Ausführung beim Herauslaufen gegen Angreifer."},
+  {id:"strafraum",     label:"Strafraumbeherrschung", sub:"Flanken und hohe Bälle sicher abfangen, Präsenz im Strafraum."},
+  {id:"fuehrung",      label:"Führungsqualität",      sub:"Kommunikation mit der Abwehr, Organisieren der Mannschaft."},
+];
   {id:"TW",  label:"Torwart (TW)",           sub:"Hüter des Tores, Spielaufbau von hinten."},
   {id:"LAV", label:"Linker Außenverteidiger", sub:"Defensive Außenbahn links, unterstützt Angriffe."},
   {id:"LIV", label:"Linker Innenverteidiger",sub:"Absicherung der Abwehrkette links."},
@@ -211,7 +220,7 @@ function TabBtn({label,active,onClick}) {
 }
 
 // ── SPIELFELD ────────────────────────────────────────────
-function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label,mentalitaet,myUid,onLongPress}) {
+function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,label,mentalitaet,myUid,onLongPress,goalkeeperUid}) {
   const fieldRef = useRef(null);
   const [dragging,setDragging] = useState(null);
   const dragMoved = useRef(false);
@@ -321,6 +330,7 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
         const isSelected = editMode && swapFirst===idx;
         const isDragging = dragging===idx;
         const isMe = myUid && player && player.uid===myUid;
+        const isGK = goalkeeperUid && player && player.uid===goalkeeperUid;
         // Convert from percentage (0-100) to new coordinate system
         const leftPct = pos.x + "%";
         const topPct  = pos.y + "%";
@@ -331,14 +341,14 @@ function Field({positions,setPositions,order,players,editMode,swapFirst,onTap,la
             style={{position:"absolute",left:`${pos.x}%`,top:`${pos.y}%`,transform:"translate(-50%,-50%)",zIndex:isDragging?10:3,
               cursor:editMode?"grab":"default",transition:isDragging?"none":"left 0.3s ease,top 0.3s ease"}}>
             <div style={{
-              width:30,height:30,borderRadius:"50%",
-              background:isSelected||isDragging?C.accent:isMe?"#c84aff":isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
-              border:`2px solid ${isSelected||isDragging?C.accent:isMe?"#ff88ff":isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
+              width:30,height:30,borderRadius:isGK?"20%":"50%",
+              background:isSelected||isDragging?C.accent:isMe?"#c84aff":isGK?"#e0b040":isPlaceholder?"rgba(255,255,255,0.03)":"#14143a",
+              border:`2px solid ${isSelected||isDragging?C.accent:isMe?"#ff88ff":isGK?"#ffd060":isPlaceholder?"rgba(200,74,255,0.12)":"rgba(200,74,255,0.7)"}`,
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              boxShadow:isDragging?`0 0 20px ${C.accent}`:isSelected?`0 0 12px ${C.accent}`:isMe?`0 0 10px #ff88ff, 0 0 22px rgba(200,74,255,0.6)`:isPlaceholder?"none":`0 0 6px rgba(200,74,255,0.4)`,
+              boxShadow:isDragging?`0 0 20px ${C.accent}`:isSelected?`0 0 12px ${C.accent}`:isMe?`0 0 10px #ff88ff, 0 0 22px rgba(200,74,255,0.6)`:isGK?`0 0 10px #e0b040, 0 0 20px rgba(224,176,64,0.4)`:isPlaceholder?"none":`0 0 6px rgba(200,74,255,0.4)`,
             }}>
               <span style={{color:isSelected||isDragging?C.bg:isPlaceholder?"rgba(200,74,255,0.2)":C.white,fontSize:8,fontWeight:800,lineHeight:1}}>
-                {player?.number||idx+1}
+                {isGK?"TW":player?.number||idx+1}
               </span>
               {!isPlaceholder && (
                 <span style={{color:isSelected||isDragging?C.bg:isMe?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.55)",fontSize:6,lineHeight:1.2,fontWeight:600}}>
@@ -646,6 +656,7 @@ export default function Teamchemie({user,onLogout}) {
   const [customTacticBase,setCustomTacticBase] = useState(1);
   const [trainerAttributes,setTrainerAttributes] = useState({});
   const [trainerSkills,setTrainerSkills] = useState({});
+  const [goalkeeperSlot,setGoalkeeperSlot] = useState(null); // player uid who is TW
   const [trainerStrengths,setTrainerStrengths] = useState({});
   const [swipeStartX,setSwipeStartX] = useState(null);
   const [swipeStartY,setSwipeStartY] = useState(null);
@@ -925,8 +936,8 @@ export default function Teamchemie({user,onLogout}) {
 
           {/* Spieler Header */}
           <div style={{background:C.surface,borderRadius:16,padding:16,marginBottom:14,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:14}}>
-            <div style={{width:56,height:56,borderRadius:"50%",background:C.accentDim,border:`2px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:22,color:C.accent,flexShrink:0}}>
-              {dp.number}
+            <div style={{width:56,height:56,borderRadius:goalkeeperSlot===dp.uid?"22%":"50%",background:goalkeeperSlot===dp.uid?"rgba(224,176,64,0.2)":C.accentDim,border:`2px solid ${goalkeeperSlot===dp.uid?"#ffd060":C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:22,color:goalkeeperSlot===dp.uid?"#e0b040":C.accent,flexShrink:0}}>
+              {goalkeeperSlot===dp.uid?"TW":dp.number}
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:18,fontWeight:800,color:C.white}}>{dp.name}</div>
@@ -935,6 +946,13 @@ export default function Teamchemie({user,onLogout}) {
                 <span style={{display:"inline-block",marginTop:4,background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>
               )}
             </div>
+            <button onClick={()=>setGoalkeeperSlot(prev=>prev===dp.uid?null:dp.uid)}
+              style={{background:goalkeeperSlot===dp.uid?"rgba(224,176,64,0.15)":"transparent",
+                border:`1px solid ${goalkeeperSlot===dp.uid?"#ffd060":C.border}`,
+                borderRadius:10,color:goalkeeperSlot===dp.uid?"#e0b040":C.gray,
+                padding:"6px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700,flexShrink:0}}>
+              {goalkeeperSlot===dp.uid?"TW ✓":"Als TW"}
+            </button>
           </div>
 
           {/* ── AKTUELLE INFOS ── */}
@@ -1131,26 +1149,9 @@ export default function Teamchemie({user,onLogout}) {
             })}
           </Card>
 
-          {/* Trainer Stärken vergeben */}
-          <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
-            <Label>Stärken vom Trainer vergeben</Label>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-              {STRENGTHS_LIST.map(s=>{
-                const active = (trainerStrengths[dp.uid]||[]).includes(s.id);
-                return (
-                  <button key={s.id} onClick={()=>setTrainerStrengths(prev=>{const cur=prev[dp.uid]||[];return {...prev,[dp.uid]:active?cur.filter(x=>x!==s.id):[...cur,s.id]};})}
-                    style={{padding:"4px 10px",borderRadius:20,cursor:"pointer",fontSize:11,fontFamily:"inherit",
-                      border:`1px solid ${active?C.accentBorder:C.border}`,
-                      background:active?C.accentDim:"transparent",
-                      color:active?C.accent:C.gray}}>
-                    {s.label}
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
+          {/* Trainer Stärken vergeben – ENTFERNT, jetzt im Stärken-Radar */}
 
-          {/* Lieblingsposition anzeigen (read-only) */}
+          {/* Lieblingsposition anzeigen (read-only) – nach Aktuelle Infos */}
           {dp.wishRole && (
             <Card style={{marginBottom:14}}>
               <Label>Lieblingsposition</Label>
@@ -1173,7 +1174,8 @@ export default function Teamchemie({user,onLogout}) {
 
           {/* Spielerische Stärken Radar */}
           {(()=>{
-            const attrs = SKILL_ATTRIBUTES;
+            const isGK = goalkeeperSlot===dp.uid;
+            const attrs = isGK ? GK_SKILL_ATTRIBUTES : SKILL_ATTRIBUTES;
             const n = attrs.length;
             const cx=130,cy=130,r=95;
             const trainerVals = attrs.map(a=>((trainerSkills[dp.uid]||{})[a.id]||0)/10);
@@ -1187,7 +1189,10 @@ export default function Teamchemie({user,onLogout}) {
             const pPts = attrs.map((_,i)=>`${px2(playerVals[i],i)},${py2(playerVals[i],i)}`).join(" ");
             return (
               <>
-                <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spielerische Stärken</div>
+                <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center",gap:8}}>
+                  Spielerische Stärken
+                  {isGK && <span style={{background:"rgba(224,176,64,0.15)",border:"1px solid #e0b040",borderRadius:20,padding:"2px 8px",color:"#e0b040",fontSize:10,fontWeight:700}}>Torwart-Kriterien</span>}
+                </div>
                 <Card style={{marginBottom:14}}>
                   <div style={{display:"flex",gap:16,marginBottom:8,justifyContent:"center"}}>
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:12,height:3,borderRadius:2,background:C.accent}}/> Trainer</div>
@@ -1544,6 +1549,7 @@ export default function Teamchemie({user,onLogout}) {
                           swapFirst={fieldEditMode?swapFirst:null}
                           onTap={fieldEditMode?handleFieldTap:null}
                           mentalitaet={trainerFieldView==="grund"?mentalität:undefined}
+                          goalkeeperUid={goalkeeperSlot}
                           onLongPress={idx=>{
                             const pid=order[idx];
                             const p=players.find(pl=>pl.id===pid&&!pl.isPlaceholder);
@@ -2277,9 +2283,9 @@ export default function Teamchemie({user,onLogout}) {
                       <div style={{width:60}}/>
                     </div>
 
-                    {playerFieldView==="grund" && <Field positions={trainerPositions||positions} order={order} players={players} editMode={false} mentalitaet={mentalität} myUid={user?.uid}/>}
-                    {playerFieldView==="offensiv" && <Field positions={posOffensiv||positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} editMode={false} myUid={user?.uid}/>}
-                    {playerFieldView==="defensiv" && <Field positions={posDefensiv||positions.map(p=>({...p,y:Math.min(96,p.y+8)}))} order={order} players={players} editMode={false} myUid={user?.uid}/> }
+                    {playerFieldView==="grund" && <Field positions={trainerPositions||positions} order={order} players={players} editMode={false} mentalitaet={mentalität} myUid={user?.uid} goalkeeperUid={goalkeeperSlot}/>}
+                    {playerFieldView==="offensiv" && <Field positions={posOffensiv||positions.map(p=>({...p,y:Math.max(4,p.y-8)}))} order={order} players={players} editMode={false} myUid={user?.uid} goalkeeperUid={goalkeeperSlot}/>}
+                    {playerFieldView==="defensiv" && <Field positions={posDefensiv||positions.map(p=>({...p,y:Math.min(96,p.y+8)}))} order={order} players={players} editMode={false} myUid={user?.uid} goalkeeperUid={goalkeeperSlot}/> }
                     {(playerFieldView==="eckeAngriff"||playerFieldView==="eckeAbwehr") && (
                       <>
                         <div style={{display:"flex",gap:8,marginBottom:10}}>
