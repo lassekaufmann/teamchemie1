@@ -835,19 +835,28 @@ export default function Teamchemie({user,onLogout}) {
     setTrainerPositions(snapGK);
     setPosOffensiv(snapGK);
     setPosDefensiv(snapGK);
+    setCornerOffL(snapGK);
+    setCornerOffR(snapGK);
+    setCornerDefL(snapGK);
+    setCornerDefR(snapGK);
   },[goalkeeperSlot]);
   useEffect(()=>{    setTrainerPositions(positions.map(p=>({...p})));
     setPosOffensiv(positions.map(p=>({...p,y:Math.max(4,p.y-8)})));
     setPosDefensiv(positions.map(p=>({...p,y:Math.min(96,p.y+8)})));
-    const defaultCorner = [
-      {x:50,y:91}, // TW – immer im Tor
+    const cornerOff = [
+      {x:50,y:91}, // TW im unteren Tor (Angriff: gegnerische Hälfte oben)
       {x:30,y:20},{x:50,y:25},{x:70,y:20},{x:85,y:15},
       {x:20,y:35},{x:40,y:35},{x:60,y:35},{x:75,y:35},{x:45,y:50},{x:50,y:65},
     ];
-    setCornerOffL(defaultCorner.map(p=>({...p})));
-    setCornerOffR(defaultCorner.map(p=>({...p,x:100-p.x})));
-    setCornerDefL(defaultCorner.map(p=>({...p,y:100-p.y})));
-    setCornerDefR(defaultCorner.map(p=>({...p,x:100-p.x,y:100-p.y})));
+    const cornerDef = [
+      {x:50,y:91}, // TW immer im unteren Sechzehner (eigenes Tor)
+      {x:30,y:80},{x:50,y:85},{x:70,y:80},{x:85,y:75},
+      {x:20,y:65},{x:40,y:65},{x:60,y:65},{x:75,y:65},{x:45,y:55},{x:50,y:45},
+    ];
+    setCornerOffL(cornerOff.map(p=>({...p})));
+    setCornerOffR(cornerOff.map(p=>({...p,x:100-p.x})));
+    setCornerDefL(cornerDef.map(p=>({...p})));
+    setCornerDefR(cornerDef.map(p=>({...p,x:100-p.x})));
   },[tactic.id]);
 
   async function sendChat(){
@@ -1110,22 +1119,25 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText,opacity:0.8}}/> Spieler</div>
                   </div>
                   {!hasData&&<div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"12px 0"}}>Noch keine Bewertungen – vergib zuerst deine Noten</div>}
-                  <svg viewBox="0 0 240 240" style={{width:"100%",maxWidth:260,display:"block",margin:"0 auto"}}>
+                  <svg viewBox="-30 -30 310 310" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
                     {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
                     {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+24)*Math.cos(ang(i));
-                      const ly=cy+(r+24)*Math.sin(ang(i));
-                      const words=a.label.split(/[\s/]+/);
-                      const anchor=Math.cos(ang(i))>0.3?"start":Math.cos(ang(i))<-0.3?"end":"middle";
+                      const lx=cx+(r+30)*Math.cos(ang(i));
+                      const ly=cy+(r+30)*Math.sin(ang(i));
+                      const cosA=Math.cos(ang(i));
+                      const anchor=cosA>0.2?"start":cosA<-0.2?"end":"middle";
+                      // Split label into max 2 lines of ~10 chars
+                      const words=a.label.split(/[\s\-/]+/);
+                      const lines=[];
+                      let cur="";
+                      words.forEach(w=>{if((cur+" "+w).trim().length>10&&cur){lines.push(cur.trim());cur=w;}else{cur=(cur+" "+w).trim();}});
+                      if(cur)lines.push(cur);
                       return (
-                        <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8" fill={C.grayLight} fontFamily="inherit">
-                          {words.length===1
-                            ? <tspan>{words[0]}</tspan>
-                            : words.map((w,wi)=><tspan key={wi} x={lx} dy={wi===0?0:9}>{w}</tspan>)
-                          }
+                        <text key={i} textAnchor={anchor} fontSize="8" fill={C.grayLight} fontFamily="inherit">
+                          {lines.map((l,li)=><tspan key={li} x={lx} dy={li===0?(-(lines.length-1)*5):10}>{l}</tspan>)}
                         </text>
                       );
                     })}
@@ -1233,22 +1245,25 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText}}/> Spieler</div>
                   </div>
                   {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"8px 0"}}>Noch keine Stärken-Bewertung vorhanden</div>}
-                  <svg viewBox="0 0 260 260" style={{width:"100%",maxWidth:280,display:"block",margin:"0 auto"}}>
+                  <svg viewBox="-30 -30 330 330" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
                     {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
                     {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px2(1,i)} y2={py2(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+26)*Math.cos(ang(i));
-                      const ly=cy+(r+26)*Math.sin(ang(i));
-                      const words=a.label.split(/[\s/]+/);
-                      const anchor=Math.cos(ang(i))>0.3?"start":Math.cos(ang(i))<-0.3?"end":"middle";
+                      const lx=cx+(r+30)*Math.cos(ang(i));
+                      const ly=cy+(r+30)*Math.sin(ang(i));
+                      const cosA=Math.cos(ang(i));
+                      const anchor=cosA>0.2?"start":cosA<-0.2?"end":"middle";
+                      // Split label into max 2 lines of ~10 chars
+                      const words=a.label.split(/[\s\-/]+/);
+                      const lines=[];
+                      let cur="";
+                      words.forEach(w=>{if((cur+" "+w).trim().length>10&&cur){lines.push(cur.trim());cur=w;}else{cur=(cur+" "+w).trim();}});
+                      if(cur)lines.push(cur);
                       return (
-                        <text key={i} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8" fill={C.grayLight} fontFamily="inherit">
-                          {words.length===1
-                            ? <tspan>{words[0]}</tspan>
-                            : words.map((w,wi)=><tspan key={wi} x={lx} dy={wi===0?0:9}>{w}</tspan>)
-                          }
+                        <text key={i} textAnchor={anchor} fontSize="8" fill={C.grayLight} fontFamily="inherit">
+                          {lines.map((l,li)=><tspan key={li} x={lx} dy={li===0?(-(lines.length-1)*5):10}>{l}</tspan>)}
                         </text>
                       );
                     })}
@@ -1258,8 +1273,10 @@ export default function Teamchemie({user,onLogout}) {
 
                   {/* Trainer Skill Bewertung */}
                   <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:8}}>
-                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:10}}>Trainer-Bewertung Stärken</div>
-                    {SKILL_ATTRIBUTES.map(attr=>{
+                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:10}}>
+                      Trainer-Bewertung Stärken {isGK&&<span style={{color:"#e0b040",fontSize:9}}>(TW)</span>}
+                    </div>
+                    {attrs.map(attr=>{
                       const val=(trainerSkills[dp.uid]||{})[attr.id]||0;
                       const pv=(dp.selfSkills||{})[attr.id]||0;
                       return (
