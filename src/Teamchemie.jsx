@@ -589,6 +589,7 @@ export default function Teamchemie({user,onLogout}) {
   const [myWish,setMyWish]         = useState("");
   const [myNote,setMyNote]         = useState("");
   const [myStrengths,setMyStrengths] = useState([]);
+  const [mySelfRating,setMySelfRating] = useState({});
   const [myFoot,setMyFoot]         = useState("");
   const [myFormation,setMyFormation] = useState("");
   const [myPartners,setMyPartners] = useState([]);
@@ -639,6 +640,7 @@ export default function Teamchemie({user,onLogout}) {
         strengths:  d.data().strengths   || [],
         strongFoot: d.data().strongFoot  || "",
         attendance: d.data().attendance  || null,
+        selfRating: d.data().selfRating  || {},
         isPlaceholder: false,
       }));
       const slots = Array.from({length:11},(_,i)=>real[i]||{
@@ -800,7 +802,7 @@ export default function Teamchemie({user,onLogout}) {
     if (user?.uid) {
       updateDoc(doc(db,"users",user.uid),{
         fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,
-        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,wishFormation:myFormation,
+        partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,wishFormation:myFormation,selfRating:mySelfRating,
       }).catch(console.error);
     }
     if (myAttendance) setAttendance(prev=>({...prev,[user?.uid]:myAttendance}));
@@ -1614,6 +1616,86 @@ export default function Teamchemie({user,onLogout}) {
                       {dp.strongFoot && <Card style={{marginBottom:10}}><Label>Starker Fuß</Label><div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.strongFoot}</div></Card>}
 
                       {/* Trainer Bewertung */}
+                      {/* Radar Chart */}
+                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
+                      <Card style={{marginBottom:14}}>
+                        {(()=>{
+                          const attrs = TRAINER_ATTRIBUTES;
+                          const n = attrs.length;
+                          const cx = 120, cy = 120, r = 90;
+                          const trainerVals = attrs.map(a=>((trainerAttributes[dp.uid]||{})[a.id]||0)/10);
+                          const playerVals  = attrs.map(a=>((dp.selfRating||{})[a.id]||0)/10);
+                          const hasData = trainerVals.some(v=>v>0) || playerVals.some(v=>v>0);
+                          const angle = (i) => (Math.PI*2*i/n) - Math.PI/2;
+                          const px = (val,i) => cx + val*r*Math.cos(angle(i));
+                          const py = (val,i) => cy + val*r*Math.sin(angle(i));
+                          const gridPts = (val) => attrs.map((_,i)=>`${px(val,i)},${py(val,i)}`).join(" ");
+                          const trainerPts = attrs.map((_,i)=>`${px(trainerVals[i],i)},${py(trainerVals[i],i)}`).join(" ");
+                          const playerPts  = attrs.map((_,i)=>`${px(playerVals[i],i)},${py(playerVals[i],i)}`).join(" ");
+                          return (
+                            <div>
+                              <div style={{display:"flex",gap:16,marginBottom:10,justifyContent:"center"}}>
+                                <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:12,height:3,borderRadius:2,background:C.accent}}/> Trainer</div>
+                                <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText}}/> Spieler</div>
+                              </div>
+                              {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"10px 0"}}>Noch keine Bewertungen vorhanden</div>}
+                              <svg viewBox="0 0 240 240" style={{width:"100%",maxWidth:280,display:"block",margin:"0 auto"}}>
+                                {/* Grid */}
+                                {[0.25,0.5,0.75,1].map(v=>(
+                                  <polygon key={v} points={gridPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>
+                                ))}
+                                {/* Achsen */}
+                                {attrs.map((_,i)=>(
+                                  <line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.1)" strokeWidth="0.8"/>
+                                ))}
+                                {/* Trainer Fläche */}
+                                {trainerVals.some(v=>v>0) && <polygon points={trainerPts} fill="rgba(200,74,255,0.15)" stroke={C.accent} strokeWidth="1.5"/>}
+                                {/* Spieler Fläche */}
+                                {playerVals.some(v=>v>0)  && <polygon points={playerPts}  fill="rgba(74,200,200,0.1)"  stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
+                                {/* Labels */}
+                                {attrs.map((a,i)=>{
+                                  const lx = cx + (r+18)*Math.cos(angle(i));
+                                  const ly = cy + (r+18)*Math.sin(angle(i));
+                                  const words = a.label.split(" ");
+                                  return (
+                                    <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
+                                      fontSize="7" fill={C.gray} fontFamily="inherit">
+                                      {words.slice(0,2).join(" ")}
+                                    </text>
+                                  );
+                                })}
+                                {/* Datenpunkte Trainer */}
+                                {trainerVals.map((v,i)=>v>0&&<circle key={i} cx={px(v,i)} cy={py(v,i)} r="3" fill={C.accent}/>)}
+                                {/* Datenpunkte Spieler */}
+                                {playerVals.map((v,i)=>v>0&&<circle key={i} cx={px(v,i)} cy={py(v,i)} r="3" fill={C.greenText}/>)}
+                              </svg>
+                              {/* Abweichungen */}
+                              {hasData && (
+                                <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4}}>
+                                  {attrs.map(a=>{
+                                    const tv = (trainerAttributes[dp.uid]||{})[a.id]||0;
+                                    const pv = (dp.selfRating||{})[a.id]||0;
+                                    if (!tv && !pv) return null;
+                                    const diff = tv - pv;
+                                    return (
+                                      <div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"3px 0",borderBottom:`1px solid rgba(255,255,255,0.05)`}}>
+                                        <span style={{color:C.gray,fontSize:10,flex:1}}>{a.label}</span>
+                                        <span style={{color:C.accent,fontSize:10,fontWeight:700,width:24,textAlign:"right"}}>{tv||"–"}</span>
+                                        <span style={{color:C.grayDark,fontSize:9,width:16,textAlign:"center"}}>vs</span>
+                                        <span style={{color:C.greenText,fontSize:10,fontWeight:700,width:24}}>{pv||"–"}</span>
+                                        {tv>0&&pv>0&&<span style={{fontSize:10,fontWeight:700,width:32,textAlign:"right",color:Math.abs(diff)>=3?C.error:Math.abs(diff)>=2?C.yellowText:C.grayDark}}>
+                                          {diff>0?`+${diff}`:diff<0?`${diff}`:"="}
+                                        </span>}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </Card>
+
                       <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
                       <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
                         {TRAINER_ATTRIBUTES.map(attr=>{
@@ -1854,6 +1936,28 @@ export default function Teamchemie({user,onLogout}) {
                       </Pill>
                     ))}
                   </div>
+                </Card>
+
+                <Card style={{marginBottom:10}}>
+                  <Label info="Bewerte dich selbst in den 8 Kriterien. Der Trainer sieht seine Einschätzung daneben – so könnt ihr Unterschiede besprechen.">Selbsteinschätzung</Label>
+                  {TRAINER_ATTRIBUTES.map(attr=>{
+                    const val = mySelfRating[attr.id]||0;
+                    return (
+                      <div key={attr.id} style={{marginBottom:12}}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                          <span style={{color:C.gray,fontSize:11}}>{attr.label}</span>
+                          <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                        </div>
+                        <div style={{display:"flex",gap:3}}>
+                          {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                            <button key={n} onClick={()=>setMySelfRating(prev=>({...prev,[attr.id]:n}))}
+                              style={{flex:1,height:18,borderRadius:3,border:"none",cursor:"pointer",
+                                background:n<=val?(n>=8?C.greenText:n>=5?C.yellowText:C.accent):"rgba(200,74,255,0.1)"}}/>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </Card>
 
                 <Card style={{marginBottom:10}}>
