@@ -76,7 +76,8 @@ const GK_SKILL_ATTRIBUTES = [
   {id:"fuehrung",      label:"Führungsqualität",      sub:"Kommunikation mit der Abwehr, Organisieren der Mannschaft."},
 ];
 
-const POSITIONS = [           sub:"Hüter des Tores, Spielaufbau von hinten."},
+const POSITIONS = [
+  {id:"TW",  label:"Torwart (TW)",           sub:"Hüter des Tores, Spielaufbau von hinten."},
   {id:"LAV", label:"Linker Außenverteidiger", sub:"Defensive Außenbahn links, unterstützt Angriffe."},
   {id:"LIV", label:"Linker Innenverteidiger",sub:"Absicherung der Abwehrkette links."},
   {id:"RIV", label:"Rechter Innenverteidiger",sub:"Absicherung der Abwehrkette rechts."},
