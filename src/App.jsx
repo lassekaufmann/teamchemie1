@@ -107,12 +107,35 @@ export default function App() {
   const [user,    setUser]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
     // Splash mindestens 1.8s zeigen
     const t = setTimeout(() => setShowSplash(false), 1800);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    // PWA install prompt listener
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+    }
+    setInstallPrompt(null);
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -131,5 +154,33 @@ export default function App() {
 
   if (loading || showSplash) return <SplashScreen/>;
   if (!user) return <LoginScreen onLogin={setUser}/>;
-  return <Teamchemie user={user} onLogout={async()=>{await signOut(auth);setUser(null);}}/>;
+  
+  return (
+    <>
+      {showInstallBanner && installPrompt && (
+        <div style={{
+          position:"fixed",top:0,left:0,right:0,zIndex:9999,
+          background:"rgba(200,74,255,0.95)",padding:"12px 16px",
+          display:"flex",alignItems:"center",justifyContent:"space-between",
+          boxShadow:"0 2px 8px rgba(0,0,0,0.3)"
+        }}>
+          <div style={{flex:1,color:"#ffffff",fontSize:13,fontWeight:600}}>
+            App installieren
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setShowInstallBanner(false)} style={{
+              background:"transparent",border:"none",color:"#ffffff",
+              cursor:"pointer",fontSize:13,fontWeight:600,padding:"4px 12px"
+            }}>Ablehnen</button>
+            <button onClick={handleInstallClick} style={{
+              background:"#ffffff",border:"none",color:"#c84aff",
+              cursor:"pointer",fontSize:13,fontWeight:700,padding:"6px 16px",
+              borderRadius:6
+            }}>Installieren</button>
+          </div>
+        </div>
+      )}
+      <Teamchemie user={user} onLogout={async()=>{await signOut(auth);setUser(null);}}/>
+    </>
+  );
 }

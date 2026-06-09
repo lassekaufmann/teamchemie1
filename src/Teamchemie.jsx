@@ -577,18 +577,8 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
               <div style={{textAlign:"center"}}><div style={{color:C.grayDark,fontSize:18,fontWeight:800}}>{players.length-attendCount-maybeCount-absentCount}</div><div style={{color:C.grayDark,fontSize:9}}>Offen</div></div>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>{
-                setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));
-                showNotif(ev.released?"Termin ausgeblendet":"Termin für Spieler freigegeben");
-              }} style={{
-                flex:1,
-                background:ev.released?"rgba(74,200,200,0.12)":C.surface2,
-                border:`1px solid ${ev.released?C.greenText:C.border}`,
-                borderRadius:8,color:ev.released?C.greenText:C.gray,
-                padding:"9px",cursor:"pointer",fontSize:12,
-                fontFamily:"inherit",fontWeight:700,
-                display:"flex",alignItems:"center",justifyContent:"center",gap:6,
-              }}>
+              {isSpiel && isTrainer && <button onClick={()=>{setMatchStatFormSpieltagId(ev.id);setShowMatchStats(true);}} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"9px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>📊 Statistiken</button>}
+              <button onClick={()=>{setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));showNotif(ev.released?"Termin ausgeblendet":"Termin für Spieler freigegeben");}} style={{flex:1,background:ev.released?"rgba(74,200,200,0.12)":C.surface2,border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"9px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                 <div style={{width:28,height:16,borderRadius:8,background:ev.released?"#4ac8c8":"rgba(255,255,255,0.1)",position:"relative",flexShrink:0,transition:"background 0.2s"}}>
                   <div style={{width:12,height:12,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:ev.released?14:2,transition:"left 0.2s"}}/>
                 </div>
@@ -667,6 +657,13 @@ export default function Teamchemie({user,onLogout}) {
   const [confirmRemove,setConfirmRemove] = useState(null);
   const [playerMenu,setPlayerMenu] = useState(null);
   const [standards,setStandards]   = useState({elfmeter:null,freistossDirekt:null,freistossIndirekt:null,eckeLinks:null,eckeRechts:null});
+  const [showMatchStats,setShowMatchStats] = useState(false);
+  const [matchStatFormSpieltagId,setMatchStatFormSpieltagId] = useState(null);
+  const [matchStatFormData,setMatchStatFormData] = useState({});
+  const [matchStatsSaved,setMatchStatsSaved] = useState({});
+  const [showPlayerComparison,setShowPlayerComparison] = useState(false);
+  const [comparisonPlayer1Id,setComparisonPlayer1Id] = useState(null);
+  const [comparisonPlayer2Id,setComparisonPlayer2Id] = useState(null);
 
   const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
   const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
