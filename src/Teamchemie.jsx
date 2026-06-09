@@ -689,9 +689,7 @@ export default function Teamchemie({user,onLogout}) {
     }
   };
 
-  const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
-  const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
-
+  
   // Firebase: Spieler laden
   useEffect(()=>{
     if (!user?.teamCode) return;
