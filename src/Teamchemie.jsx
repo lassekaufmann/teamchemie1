@@ -1897,7 +1897,6 @@ export default function Teamchemie({user,onLogout}) {
                                 {attrs.map((a,i)=>{
                                   const lx = cx + (r+38)*Math.cos(angle(i));
                                   const ly = cy + (r+38)*Math.sin(angle(i));
-                                  const words = a.label.split(" ");
                                   const cosA=Math.cos(angle(i));
                                   const anchor=cosA>0.15?"start":cosA<-0.15?"end":"middle";
                                   const words=a.label.split(" ");
