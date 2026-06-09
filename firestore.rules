@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ── USERS COLLECTION ──
+    match /users/{uid} {
+      // Jeder Nutzer kann sein eigenes Dokument lesen und schreiben
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      
+      // Trainer können alle Spieler im gleichen Team lesen
+      allow read: if request.auth != null &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == resource.data.teamCode &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer';
+    }
+
+    // ── TEAMS COLLECTION (inkl. Subcollections) ──
+    match /teams/{teamCode} {
+      // Alle authentifizierten Nutzer mit passendem teamCode können lesen
+      allow read: if request.auth != null &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == teamCode;
+      
+      // Nur Trainer können schreiben
+      allow write: if request.auth != null &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer' &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == teamCode;
+      
+      // Match Statistics: Spielstatistiken pro Spieltag
+      match /matchStats/{spieltagId} {
+        // Alle Nutzer im Team können lesen
+        allow read: if request.auth != null &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == teamCode;
+        
+        // Nur Trainer können schreiben
+        allow write: if request.auth != null &&
+                        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer' &&
+                        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == teamCode;
+        
+        match /{playerId} {
+          // Alle Nutzer im Team können lesen
+          allow read: if request.auth != null &&
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == teamCode;
+          
+          // Nur Trainer können schreiben
+          allow write: if request.auth != null &&
+                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer' &&
+                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == teamCode;
+        }
+      }
+    }
+
+    // ── CHATS COLLECTION ──
+    // chatId format: {teamCode}_{playerUid}
+    match /chats/{chatId} {
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null &&
+                              (
+                                // Der Spieler kann seinen eigenen Chat lesen/schreiben
+                                request.auth.uid == chatId.split('_')[1] ||
+                                // Der Trainer des Teams kann alle Chats des Teams lesen/schreiben
+                                (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamCode == chatId.split('_')[0] &&
+                                 get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer')
+                              );
+      }
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
