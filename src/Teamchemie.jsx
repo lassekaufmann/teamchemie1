@@ -2455,6 +2455,93 @@ export default function Teamchemie({user,onLogout}) {
           </>
         )}
 
+        {/* Match Statistics Modal */}
+        {showMatchStats && (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(4px)"}}>
+            <div style={{background:C.surface,borderRadius:16,maxWidth:440,width:"calc(100% - 32px)",maxHeight:"85vh",overflowY:"auto",border:`1px solid ${C.border}`,padding:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div style={{color:C.white,fontSize:18,fontWeight:700}}>📊 Spielstatistiken</div>
+                <button onClick={()=>{setShowMatchStats(false);setMatchStatFormData({});}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0}}>✕</button>
+              </div>
+
+              <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                {players.filter(p=>!p.isPlaceholder).map(player=>(
+                  <div key={player.uid||player.id} style={{background:C.surface2,borderRadius:12,padding:12,border:`1px solid ${C.border}`}}>
+                    <div style={{color:C.white,fontSize:13,fontWeight:600,marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{width:32,height:32,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",color:C.accent,fontWeight:700,fontSize:12}}>
+                        {player.number}
+                      </span>
+                      {player.name}
+                    </div>
+
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                      {/* Tore */}
+                      <div>
+                        <label style={{display:"block",color:C.gray,fontSize:10,fontWeight:600,marginBottom:4}}>Tore</label>
+                        <input type="number" min="0" max="10" value={matchStatFormData[player.uid||player.id]?.goals||0} onChange={e=>{
+                          const pid = player.uid||player.id;
+                          setMatchStatFormData(prev=>({...prev,[pid]:{...prev[pid]||{},goals:parseInt(e.target.value)||0}}));
+                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"8px",fontSize:12,fontFamily:"inherit",boxSizing:"border-box"}}/>
+                      </div>
+
+                      {/* Assists */}
+                      <div>
+                        <label style={{display:"block",color:C.gray,fontSize:10,fontWeight:600,marginBottom:4}}>Assists</label>
+                        <input type="number" min="0" max="10" value={matchStatFormData[player.uid||player.id]?.assists||0} onChange={e=>{
+                          const pid = player.uid||player.id;
+                          setMatchStatFormData(prev=>({...prev,[pid]:{...prev[pid]||{},assists:parseInt(e.target.value)||0}}));
+                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"8px",fontSize:12,fontFamily:"inherit",boxSizing:"border-box"}}/>
+                      </div>
+
+                      {/* Spielnote */}
+                      <div>
+                        <label style={{display:"block",color:C.gray,fontSize:10,fontWeight:600,marginBottom:4}}>Note</label>
+                        <select value={matchStatFormData[player.uid||player.id]?.note||0} onChange={e=>{
+                          const pid = player.uid||player.id;
+                          setMatchStatFormData(prev=>({...prev,[pid]:{...prev[pid]||{},note:parseInt(e.target.value)||0}}));
+                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"8px",fontSize:12,fontFamily:"inherit",boxSizing:"border-box"}}>
+                          <option value={0}>–</option>
+                          <option value={1}>1 (sehr gut)</option>
+                          <option value={2}>2 (gut)</option>
+                          <option value={3}>3 (befriedigend)</option>
+                          <option value={4}>4 (ausreichend)</option>
+                          <option value={5}>5 (mangelhaft)</option>
+                          <option value={6}>6 (ungenügend)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{display:"flex",gap:10,marginTop:20}}>
+                <button onClick={()=>{setShowMatchStats(false);setMatchStatFormData({});}} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                  Abbrechen
+                </button>
+                <button onClick={async ()=>{
+                  try {
+                    for (const [playerId,stats] of Object.entries(matchStatFormData)) {
+                      if (stats.goals>0||stats.assists>0||stats.note>0) {
+                        await setDoc(
+                          doc(db,`teams/${user.teamCode}/matchStats/${matchStatFormSpieltagId}/${playerId}`),
+                          {playerId,...stats,timestamp:new Date().toISOString()}
+                        );
+                      }
+                    }
+                    showNotif("Spielstatistiken gespeichert!");
+                    setShowMatchStats(false);
+                    setMatchStatFormData({});
+                  } catch(e) {
+                    showNotif("Fehler beim Speichern");
+                  }
+                }} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                  Speichern
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Offline Banner */}
         {isOffline && (
           <div style={{position:"fixed",top:0,left:0,right:0,background:"#cc8800",zIndex:999,padding:"8px 16px",textAlign:"center",fontSize:12,fontWeight:600,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
