@@ -1119,26 +1119,27 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText,opacity:0.8}}/> Spieler</div>
                   </div>
                   {!hasData&&<div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"12px 0"}}>Noch keine Bewertungen – vergib zuerst deine Noten</div>}
-                  <svg viewBox="-55 -55 360 360" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
+                  <svg viewBox="-70 -70 400 400" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
                     {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
                     {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+38)*Math.cos(ang(i));
-                      const ly=cy+(r+38)*Math.sin(ang(i));
                       const cosA=Math.cos(ang(i));
                       const sinA=Math.sin(ang(i));
-                      const anchor=cosA>0.15?"start":cosA<-0.15?"end":"middle";
-                      const words=a.label.split(" ");
-                      // max 2 lines
-                      const mid=Math.ceil(words.length/2);
-                      const line1=words.slice(0,mid).join(" ");
-                      const line2=words.slice(mid).join(" ");
+                      const labelRadius = r + 42;
+                      const lx = cx + labelRadius * cosA;
+                      const ly = cy + labelRadius * sinA;
+                      const anchor = cosA > 0.3 ? "start" : cosA < -0.3 ? "end" : "middle";
+                      const words = a.label.split(" ");
+                      const mid = Math.ceil(words.length/2);
+                      const line1 = words.slice(0, mid).join(" ");
+                      const line2 = words.slice(mid).join(" ");
+                      const yOffset = sinA > 0.4 ? 4 : sinA < -0.4 ? -4 : 0;
                       return (
-                        <text key={i} x={lx} y={line2?ly-5:ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
+                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="9" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
                           <tspan x={lx} dy="0">{line1}</tspan>
-                          {line2&&<tspan x={lx} dy="10">{line2}</tspan>}
+                          {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
                         </text>
                       );
                     })}
@@ -1246,26 +1247,27 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText}}/> Spieler</div>
                   </div>
                   {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"8px 0"}}>Noch keine Stärken-Bewertung vorhanden</div>}
-                  <svg viewBox="-55 -55 380 380" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
+                  <svg viewBox="-70 -70 420 420" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
                     {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
                     {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px2(1,i)} y2={py2(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
                     {trainerVals.some(v=>v>0)&&<polygon points={tPts} fill="rgba(200,74,255,0.18)" stroke={C.accent} strokeWidth="1.5"/>}
                     {playerVals.some(v=>v>0) &&<polygon points={pPts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                     {attrs.map((a,i)=>{
-                      const lx=cx+(r+38)*Math.cos(ang(i));
-                      const ly=cy+(r+38)*Math.sin(ang(i));
                       const cosA=Math.cos(ang(i));
                       const sinA=Math.sin(ang(i));
-                      const anchor=cosA>0.15?"start":cosA<-0.15?"end":"middle";
-                      const words=a.label.split(" ");
-                      // max 2 lines
-                      const mid=Math.ceil(words.length/2);
-                      const line1=words.slice(0,mid).join(" ");
-                      const line2=words.slice(mid).join(" ");
+                      const labelRadius = r + 42;
+                      const lx = cx + labelRadius * cosA;
+                      const ly = cy + labelRadius * sinA;
+                      const anchor = cosA > 0.3 ? "start" : cosA < -0.3 ? "end" : "middle";
+                      const words = a.label.split(" ");
+                      const mid = Math.ceil(words.length/2);
+                      const line1 = words.slice(0, mid).join(" ");
+                      const line2 = words.slice(mid).join(" ");
+                      const yOffset = sinA > 0.4 ? 4 : sinA < -0.4 ? -4 : 0;
                       return (
-                        <text key={i} x={lx} y={line2?ly-5:ly} textAnchor={anchor} dominantBaseline="middle" fontSize="8" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
+                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="9" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
                           <tspan x={lx} dy="0">{line1}</tspan>
-                          {line2&&<tspan x={lx} dy="10">{line2}</tspan>}
+                          {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
                         </text>
                       );
                     })}
