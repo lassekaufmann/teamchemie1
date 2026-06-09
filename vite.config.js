@@ -6,9 +6,19 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      manifest: true,
+      manifest: {
+        name: 'Teamchemie',
+        short_name: 'Teamchemie',
+        description: 'Die Mannschaft optimal aufstellen – Taktik, Kommunikation & Spielerchemie',
+        start_url: '/',
+        display: 'standalone',
+        theme_color: '#c84aff',
+        background_color: '#12122a',
+        orientation: 'portrait-primary',
+        icons: [], // Icons können später hinzugefügt werden
+      },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
