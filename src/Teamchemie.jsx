@@ -2063,7 +2063,12 @@ export default function Teamchemie({user,onLogout}) {
                     </div>
                   </Card>
 
-                  <Label>Mannschaft — {players.filter(p=>!p.isPlaceholder).length} Spieler</Label>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                    <Label>Mannschaft — {players.filter(p=>!p.isPlaceholder).length} Spieler</Label>
+                    <button onClick={()=>setShowPlayerComparison(true)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"6px 12px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700}}>
+                      🔄 Vergleichen
+                    </button>
+                  </div>
                   {players.filter(p=>!p.isPlaceholder).length===0 && (
                     <div style={{background:C.surface,borderRadius:12,padding:20,border:`1px solid ${C.border}`,textAlign:"center",marginBottom:10}}>
                       <div style={{color:C.gray,fontSize:13}}>Noch keine Spieler beigetreten</div>
@@ -2592,6 +2597,178 @@ export default function Teamchemie({user,onLogout}) {
                   Speichern
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Player Comparison Modal */}
+        {showPlayerComparison && (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(4px)"}}>
+            <div style={{background:C.surface,borderRadius:16,maxWidth:480,width:"calc(100% - 32px)",maxHeight:"90vh",overflowY:"auto",border:`1px solid ${C.border}`,padding:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div style={{color:C.white,fontSize:18,fontWeight:700}}>🔄 Spielervergleich</div>
+                <button onClick={()=>{setShowPlayerComparison(false);setComparisonPlayer1Id(null);setComparisonPlayer2Id(null);}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0}}>✕</button>
+              </div>
+
+              {(!comparisonPlayer1Id || !comparisonPlayer2Id) ? (
+                <div>
+                  <Label>Wähle zwei Spieler zum Vergleichen</Label>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {players.filter(p=>!p.isPlaceholder).map(player=>(
+                      <button key={player.uid||player.id} onClick={()=>{
+                        if (!comparisonPlayer1Id) {
+                          setComparisonPlayer1Id(player.uid||player.id);
+                        } else if (!comparisonPlayer2Id && (player.uid||player.id) !== comparisonPlayer1Id) {
+                          setComparisonPlayer2Id(player.uid||player.id);
+                        }
+                      }} style={{background:C.surface2,borderRadius:12,padding:"12px 14px",border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left"}}>
+                        <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,color:C.accent,flexShrink:0}}>
+                          {player.number}
+                        </div>
+                        <div style={{flex:1}}>
+                          <div style={{color:C.white,fontWeight:600,fontSize:13}}>{player.name}</div>
+                          <div style={{color:C.gray,fontSize:10}}>{player.wishRole||ROLE_LABELS[order.indexOf(player.id)]||"–"}</div>
+                        </div>
+                        <span style={{color:comparisonPlayer1Id===player.uid||player.id||comparisonPlayer2Id===player.uid||player.id?C.greenText:C.accent,fontSize:16}}>{comparisonPlayer1Id===player.uid||player.id||comparisonPlayer2Id===player.uid||player.id?"✓":"+"}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {/* Player Selection Bar */}
+                  <div style={{display:"flex",gap:8,marginBottom:20}}>
+                    <button onClick={()=>setComparisonPlayer1Id(null)} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>
+                      {players.find(p=>p.uid===comparisonPlayer1Id||p.id===comparisonPlayer1Id)?.name||"Spieler 1"}
+                    </button>
+                    <div style={{width:32,display:"flex",alignItems:"center",justifyContent:"center",color:C.gray}}>vs</div>
+                    <button onClick={()=>setComparisonPlayer2Id(null)} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>
+                      {players.find(p=>p.uid===comparisonPlayer2Id||p.id===comparisonPlayer2Id)?.name||"Spieler 2"}
+                    </button>
+                  </div>
+
+                  {/* Comparison Content */}
+                  {(()=>{
+                    const p1 = players.find(p=>p.uid===comparisonPlayer1Id||p.id===comparisonPlayer1Id);
+                    const p2 = players.find(p=>p.uid===comparisonPlayer2Id||p.id===comparisonPlayer2Id);
+                    if (!p1 || !p2) return null;
+
+                    return (
+                      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                        {/* Fitness */}
+                        <Card>
+                          <Label>Fitnesszustand</Label>
+                          <div style={{display:"flex",gap:12}}>
+                            <div style={{flex:1}}>
+                              <div style={{color:C.gray,fontSize:10,marginBottom:4}}>{p1.name.split(" ")[0]}</div>
+                              <div style={{color:p1.fitness>=80?C.greenText:p1.fitness>=60?C.yellowText:C.error,fontSize:16,fontWeight:800,marginBottom:4}}>{p1.fitness}%</div>
+                              <FitnessBar value={p1.fitness}/>
+                            </div>
+                            <div style={{flex:1}}>
+                              <div style={{color:C.gray,fontSize:10,marginBottom:4}}>{p2.name.split(" ")[0]}</div>
+                              <div style={{color:p2.fitness>=80?C.greenText:p2.fitness>=60?C.yellowText:C.error,fontSize:16,fontWeight:800,marginBottom:4}}>{p2.fitness}%</div>
+                              <FitnessBar value={p2.fitness}/>
+                            </div>
+                          </div>
+                        </Card>
+
+                        {/* Selbsteinschätzung Radar Overlay */}
+                        <Card>
+                          <Label>Selbsteinschätzung</Label>
+                          {(()=>{
+                            const attrs = TRAINER_ATTRIBUTES;
+                            const n = attrs.length;
+                            const cx=110,cy=110,r=75;
+                            const p1Vals = attrs.map(a=>((p1.selfRating||{})[a.id]||0)/10);
+                            const p2Vals = attrs.map(a=>((p2.selfRating||{})[a.id]||0)/10);
+                            const hasData = p1Vals.some(v=>v>0)||p2Vals.some(v=>v>0);
+                            const ang = i=>(Math.PI*2*i/n)-Math.PI/2;
+                            const px = (v,i)=>cx+v*r*Math.cos(ang(i));
+                            const py = (v,i)=>cy+v*r*Math.sin(ang(i));
+                            const gPts = v=>attrs.map((_,i)=>`${px(v,i)},${py(v,i)}`).join(" ");
+                            const p1Pts = attrs.map((_,i)=>`${px(p1Vals[i],i)},${py(p1Vals[i],i)}`).join(" ");
+                            const p2Pts = attrs.map((_,i)=>`${px(p2Vals[i],i)},${py(p2Vals[i],i)}`).join(" ");
+
+                            if (!hasData) return <div style={{color:C.grayDark,fontSize:12,textAlign:"center",padding:"10px 0"}}>Noch keine Selbsteinschätzung</div>;
+
+                            return (
+                              <div>
+                                <div style={{display:"flex",gap:12,marginBottom:10,justifyContent:"center"}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.accent}}><div style={{width:10,height:2,borderRadius:1,background:C.accent}}/> {p1.name.split(" ")[0]}</div>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.greenText}}><div style={{width:10,height:2,borderRadius:1,background:C.greenText}}/> {p2.name.split(" ")[0]}</div>
+                                </div>
+                                <svg viewBox="-60 -60 380 380" style={{width:"100%",maxWidth:260,display:"block",margin:"0 auto"}}>
+                                  {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
+                                  {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
+                                  {p1Vals.some(v=>v>0)&&<polygon points={p1Pts} fill="rgba(200,74,255,0.15)" stroke={C.accent} strokeWidth="1.5"/>}
+                                  {p2Vals.some(v=>v>0) &&<polygon points={p2Pts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="3,2"/>}
+                                  {attrs.map((a,i)=><text key={i} x={px(1.15,i)} y={py(1.15,i)} textAnchor="middle" dominantBaseline="middle" fontSize="7" fill={C.grayLight} fontFamily="inherit">{a.label.split(" ")[0]}</text>)}
+                                </svg>
+                              </div>
+                            );
+                          })()}
+                        </Card>
+
+                        {/* Trainer Attribute Vergleich */}
+                        <Card>
+                          <Label>Trainer-Bewertung</Label>
+                          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                            {TRAINER_ATTRIBUTES.map(attr=>{
+                              const v1=(trainerAttributes[p1.uid]||{})[attr.id]||0;
+                              const v2=(trainerAttributes[p2.uid]||{})[attr.id]||0;
+                              if (!v1 && !v2) return null;
+                              return (
+                                <div key={attr.id} style={{display:"flex",gap:10,alignItems:"center"}}>
+                                  <div style={{flex:1,textAlign:"right",paddingRight:8}}>
+                                    <div style={{color:C.gray,fontSize:10,marginBottom:2}}>{p1.name.split(" ")[0]}</div>
+                                    <div style={{color:v1>=8?C.greenText:v1>=5?C.yellowText:v1>0?C.accent:C.grayDark,fontSize:13,fontWeight:700}}>{v1||"–"}/10</div>
+                                  </div>
+                                  <div style={{textAlign:"center",fontSize:10,color:C.grayDark,minWidth:40}}>{attr.label.split(" ")[0]}</div>
+                                  <div style={{flex:1,textAlign:"left",paddingLeft:8}}>
+                                    <div style={{color:C.gray,fontSize:10,marginBottom:2}}>{p2.name.split(" ")[0]}</div>
+                                    <div style={{color:v2>=8?C.greenText:v2>=5?C.yellowText:v2>0?C.accent:C.grayDark,fontSize:13,fontWeight:700}}>{v2||"–"}/10</div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </Card>
+
+                        {/* Stärken */}
+                        <Card>
+                          <Label>Stärken</Label>
+                          <div style={{display:"flex",gap:10}}>
+                            <div style={{flex:1}}>
+                              <div style={{color:C.gray,fontSize:10,marginBottom:6,fontWeight:600}}>{p1.name.split(" ")[0]}</div>
+                              <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                                {(trainerStrengths[p1.uid]||[]).map(sid=>{
+                                  const s = STRENGTHS_LIST.find(x=>x.id===sid);
+                                  return s ? <span key={sid} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:16,padding:"2px 8px",color:C.accent,fontSize:9,fontWeight:600}}>{s.label}</span> : null;
+                                })}
+                                {(trainerStrengths[p1.uid]||[]).length===0 && <span style={{color:C.grayDark,fontSize:10}}>–</span>}
+                              </div>
+                            </div>
+                            <div style={{flex:1}}>
+                              <div style={{color:C.gray,fontSize:10,marginBottom:6,fontWeight:600}}>{p2.name.split(" ")[0]}</div>
+                              <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                                {(trainerStrengths[p2.uid]||[]).map(sid=>{
+                                  const s = STRENGTHS_LIST.find(x=>x.id===sid);
+                                  return s ? <span key={sid} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:16,padding:"2px 8px",color:C.accent,fontSize:9,fontWeight:600}}>{s.label}</span> : null;
+                                })}
+                                {(trainerStrengths[p2.uid]||[]).length===0 && <span style={{color:C.grayDark,fontSize:10}}>–</span>}
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      </div>
+                    );
+                  })()}
+
+                  <button onClick={()=>{setShowPlayerComparison(false);setComparisonPlayer1Id(null);setComparisonPlayer2Id(null);}} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:20}}>
+                    Schließen
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
