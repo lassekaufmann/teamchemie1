@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { db } from "./App.jsx";
-import { collection, onSnapshot, doc, setDoc, updateDoc, query, where, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, updateDoc, query, where, orderBy, getDocs } from "firebase/firestore";
 
 const C = {
   bg:"#12122a", surface:"#1a1a35", surface2:"#22224a",
@@ -664,6 +664,7 @@ export default function Teamchemie({user,onLogout}) {
   const [showPlayerComparison,setShowPlayerComparison] = useState(false);
   const [comparisonPlayer1Id,setComparisonPlayer1Id] = useState(null);
   const [comparisonPlayer2Id,setComparisonPlayer2Id] = useState(null);
+  const [seasonStats,setSeasonStats] = useState({});
 
   const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
   const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
@@ -798,6 +799,37 @@ export default function Teamchemie({user,onLogout}) {
       setChat(snap.docs.map(d=>({from:d.data().from,text:d.data().text,time:d.data().time})));
     });
   },[chatId]);
+
+  // Load season statistics for selected player
+  useEffect(()=>{
+    if (!detailId || !user?.teamCode) return;
+    const loadStats = async () => {
+      try {
+        const matchStatsRef = collection(db,`teams/${user.teamCode}/matchStats`);
+        const snapshot = await getDocs(matchStatsRef);
+        const playerStats = {totalGoals:0,totalAssists:0,grades:[],matchCount:0};
+        
+        snapshot.docs.forEach(doc=>{
+          const playersInMatch = Object.entries(doc.data()).filter(([key])=>key!=="timestamp"&&key!=="playerId");
+          playersInMatch.forEach(([playerId,stats])=>{
+            if ((playerId===detailId||(typeof detailId==="string"&&playerId===detailId))||(players.find(p=>p.uid===detailId||p.id===detailId)?.uid===playerId)) {
+              playerStats.totalGoals += stats.goals||0;
+              playerStats.totalAssists += stats.assists||0;
+              if (stats.note>0) playerStats.grades.push(stats.note);
+            }
+          });
+        });
+        
+        playerStats.matchCount = playerStats.grades.length;
+        playerStats.avgGrade = playerStats.grades.length>0 ? (playerStats.grades.reduce((a,b)=>a+b,0)/playerStats.grades.length).toFixed(2) : 0;
+        
+        setSeasonStats(prev=>({...prev,[detailId]:playerStats}));
+      } catch(e) {
+        console.log("Error loading season stats",e);
+      }
+    };
+    loadStats();
+  },[detailId,user?.teamCode]);
 
   function showNotif(msg){setNotif(msg);setTimeout(()=>setNotif(null),2200);}
 
@@ -986,6 +1018,28 @@ export default function Teamchemie({user,onLogout}) {
               {goalkeeperSlot===dp.uid?"TW ✓":"Als TW"}
             </button>
           </div>
+
+          {/* Saison-Statistiken */}
+          {isTrainer && (seasonStats[detailId]?.matchCount>0||seasonStats[detailId]?.totalGoals>0||seasonStats[detailId]?.totalAssists>0) && (
+            <Card style={{marginBottom:14,background:"rgba(200,74,255,0.08)",borderColor:"rgba(200,74,255,0.3)"}}>
+              <Label>Saisonstatistiken</Label>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                <div style={{textAlign:"center",paddingBottom:8,borderBottom:`1px solid rgba(200,74,255,0.15)`}}>
+                  <div style={{color:C.accent,fontSize:22,fontWeight:800}}>{seasonStats[detailId]?.totalGoals||0}</div>
+                  <div style={{color:C.gray,fontSize:11,marginTop:2}}>Tore</div>
+                </div>
+                <div style={{textAlign:"center",paddingBottom:8,borderBottom:`1px solid rgba(200,74,255,0.15)`}}>
+                  <div style={{color:C.greenText,fontSize:22,fontWeight:800}}>{seasonStats[detailId]?.totalAssists||0}</div>
+                  <div style={{color:C.gray,fontSize:11,marginTop:2}}>Assists</div>
+                </div>
+                <div style={{textAlign:"center",paddingBottom:8,borderBottom:`1px solid rgba(200,74,255,0.15)`}}>
+                  <div style={{color:seasonStats[detailId]?.avgGrade<=2?C.greenText:seasonStats[detailId]?.avgGrade<=4?C.yellowText:C.error,fontSize:22,fontWeight:800}}>{seasonStats[detailId]?.avgGrade||"–"}</div>
+                  <div style={{color:C.gray,fontSize:11,marginTop:2}}>Ø Note</div>
+                </div>
+              </div>
+              <div style={{color:C.grayDark,fontSize:10,marginTop:8,textAlign:"center"}}>in {seasonStats[detailId]?.matchCount||0} Match{seasonStats[detailId]?.matchCount!==1?"es":""}</div>
+            </Card>
+          )}
 
           {/* ── AKTUELLE INFOS ── */}
           <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Aktuelle Infos</div>
