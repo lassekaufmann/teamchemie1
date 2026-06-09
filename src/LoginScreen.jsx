@@ -25,6 +25,8 @@ export default function LoginScreen({ onLogin }) {
   const [teamCode, setTeamCode] = useState("");
   const [number,   setNumber]   = useState("");
   const [errors,   setErrors]   = useState({});
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const inputStyle = (err) => ({
     width:"100%",background:C.surface,border:`1px solid ${err?C.error:C.border}`,
@@ -89,6 +91,54 @@ export default function LoginScreen({ onLogin }) {
 
   const s = {minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",fontFamily:"'Segoe UI',system-ui,sans-serif"};
   const wrap = {width:"100%",maxWidth:420};
+
+  // Privacy Modal - check first
+  if (showPrivacyModal) {
+    return (
+      <div style={{...s,justifyContent:"center"}}>
+        <div style={{...wrap,maxHeight:"85vh",overflowY:"auto",background:C.surface,borderRadius:16,border:`1px solid ${C.border}`,padding:24}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+            <div style={{color:C.white,fontSize:18,fontWeight:700}}>Datenschutzerklärung</div>
+            <button onClick={()=>setShowPrivacyModal(false)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20}}>✕</button>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:14,fontSize:13,color:C.gray,lineHeight:1.6}}>
+            <div>
+              <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Verantwortlicher</div>
+              <div>Lasse Kaufmann, Frankfurt am Main<br/>lassekaufmann01@gmail.com</div>
+            </div>
+            <div>
+              <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Gespeicherte Daten</div>
+              <div>• Name und E-Mail-Adresse<br/>• Rolle (Trainer/Spieler)<br/>• Fitnessdaten und Spieler-Profile<br/>• Taktikdaten und Aufstellungen<br/>• Chat-Nachrichten zwischen Trainer und Spieler</div>
+            </div>
+            <div>
+              <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Zweck der Speicherung</div>
+              <div>Verwaltung und Optimierung von Mannschaftstraining und Spielerchemie</div>
+            </div>
+            <div>
+              <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Speicherort</div>
+              <div>Google Firebase (Cloud Firestore und Authentication)</div>
+            </div>
+            <div>
+              <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Weitergabe an Dritte</div>
+              <div>Keine Weitergabe an Dritte. Keine Verwendung für Werbezwecke.</div>
+            </div>
+            <div>
+              <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Datenlöschung</div>
+              <div>Du kannst dein Konto und alle deine Daten jederzeit löschen. Kontaktiere dafür: lassekaufmann01@gmail.com</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:10,marginTop:24}}>
+            <button onClick={()=>setShowPrivacyModal(false)} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:12,cursor:"pointer",fontFamily:"inherit",fontWeight:700}}>
+              Abbrechen
+            </button>
+            <button onClick={()=>{setPrivacyAccepted(true);setShowPrivacyModal(false);}} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:12,cursor:"pointer",fontFamily:"inherit",fontWeight:700}}>
+              Akzeptieren & Fortfahren
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (screen==="welcome") return (
     <div style={s}>
@@ -170,7 +220,13 @@ export default function LoginScreen({ onLogin }) {
           <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Trikotnummer</div>
           <input value={number} onChange={e=>setNumber(e.target.value)} placeholder="z.B. 10" type="number" style={inputStyle(false)}/>
         </>}
-        <button onClick={handleRegister} disabled={loading} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:16,opacity:loading?0.6:1}}>
+        <div style={{display:"flex",alignItems:"flex-start",gap:10,marginTop:14,marginBottom:14}}>
+          <input type="checkbox" checked={privacyAccepted} onChange={e=>setPrivacyAccepted(e.target.checked)} style={{width:18,height:18,marginTop:2,cursor:"pointer",accentColor:C.accent}}/>
+          <label style={{color:C.gray,fontSize:12,cursor:"pointer",flex:1,lineHeight:1.4}}>
+            Ich stimme der <span onClick={()=>setShowPrivacyModal(true)} style={{color:C.accent,textDecoration:"underline",cursor:"pointer"}}>Datenschutzerklärung</span> zu
+          </label>
+        </div>
+        <button onClick={handleRegister} disabled={loading||!privacyAccepted} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:loading||!privacyAccepted?"not-allowed":"pointer",fontFamily:"inherit",marginTop:16,opacity:(loading||!privacyAccepted)?0.5:1}}>
           {loading?"Laden...":role==="trainer"?"Als Trainer registrieren":"Als Spieler registrieren"}
         </button>
         <div style={{textAlign:"center",marginTop:16,color:C.gray,fontSize:13,paddingBottom:40}}>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { db } from "./App.jsx";
-import { collection, onSnapshot, doc, setDoc, updateDoc, query, where, orderBy, getDocs } from "firebase/firestore";
+import { getAuth, deleteUser } from "firebase/auth";
+import { collection, onSnapshot, doc, setDoc, updateDoc, query, where, orderBy, getDocs, deleteDoc } from "firebase/firestore";
 
 const C = {
   bg:"#12122a", surface:"#1a1a35", surface2:"#22224a",
@@ -665,6 +666,28 @@ export default function Teamchemie({user,onLogout}) {
   const [comparisonPlayer1Id,setComparisonPlayer1Id] = useState(null);
   const [comparisonPlayer2Id,setComparisonPlayer2Id] = useState(null);
   const [seasonStats,setSeasonStats] = useState({});
+  const [showPrivacyModal,setShowPrivacyModal] = useState(false);
+  const [confirmDeleteAccount,setConfirmDeleteAccount] = useState(false);
+
+  const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
+  const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
+
+  // Delete account function
+  const deleteAccount = async () => {
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        await deleteDoc(doc(db,"users",currentUser.uid));
+        await deleteUser(currentUser);
+        showNotif("Konto gelöscht");
+        setTimeout(() => onLogout(), 500);
+      }
+    } catch(err) {
+      showNotif("Fehler beim Löschen des Kontos");
+      console.error(err);
+    }
+  };
 
   const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
   const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
@@ -1483,9 +1506,76 @@ export default function Teamchemie({user,onLogout}) {
               <div style={{padding:"13px 0",borderBottom:`1px solid ${C.border}`}}>
                 <span style={{color:C.grayLight,fontSize:13}}>App-Version 1.0.0</span>
               </div>
-              <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:20}}>
+              <button onClick={()=>setShowPrivacyModal(true)} style={{width:"100%",background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.grayLight,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:14}}>
+                📋 Datenschutzerklärung
+              </button>
+              <button onClick={()=>setConfirmDeleteAccount(true)} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid rgba(187,51,51,0.3)`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:10}}>
+                🗑️ Konto löschen
+              </button>
+              <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:10}}>
                 Abmelden
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Privacy Modal */}
+        {showPrivacyModal && (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)"}}>
+            <div style={{background:C.surface,borderRadius:16,maxWidth:440,width:"calc(100% - 32px)",maxHeight:"85vh",overflowY:"auto",border:`1px solid ${C.border}`,padding:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div style={{color:C.white,fontSize:18,fontWeight:700}}>Datenschutzerklärung</div>
+                <button onClick={()=>setShowPrivacyModal(false)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0}}>✕</button>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:14,fontSize:13,color:C.gray,lineHeight:1.6}}>
+                <div>
+                  <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Verantwortlicher</div>
+                  <div>Lasse Kaufmann, Frankfurt am Main<br/>lassekaufmann01@gmail.com</div>
+                </div>
+                <div>
+                  <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Gespeicherte Daten</div>
+                  <div>• Name und E-Mail-Adresse<br/>• Rolle (Trainer/Spieler)<br/>• Fitnessdaten und Spieler-Profile<br/>• Taktikdaten und Aufstellungen<br/>• Chat-Nachrichten zwischen Trainer und Spieler</div>
+                </div>
+                <div>
+                  <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Zweck der Speicherung</div>
+                  <div>Verwaltung und Optimierung von Mannschaftstraining und Spielerchemie</div>
+                </div>
+                <div>
+                  <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Speicherort</div>
+                  <div>Google Firebase (Cloud Firestore und Authentication)</div>
+                </div>
+                <div>
+                  <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Weitergabe an Dritte</div>
+                  <div>Keine Weitergabe an Dritte. Keine Verwendung für Werbezwecke.</div>
+                </div>
+                <div>
+                  <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Datenlöschung</div>
+                  <div>Du kannst dein Konto und alle deine Daten jederzeit löschen. Kontaktiere dafür: lassekaufmann01@gmail.com</div>
+                </div>
+              </div>
+              <button onClick={()=>setShowPrivacyModal(false)} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:20}}>
+                Verstanden
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Account Confirmation */}
+        {confirmDeleteAccount && (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
+            <div style={{background:C.surface2,borderRadius:16,padding:24,maxWidth:340,width:"100%",border:`1px solid ${C.borderHi}`}}>
+              <div style={{color:C.white,fontSize:16,fontWeight:700,marginBottom:8}}>Konto löschen?</div>
+              <div style={{color:C.gray,fontSize:13,lineHeight:1.6,marginBottom:20}}>
+                Dies löscht deinen Account und alle deine Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={()=>setConfirmDeleteAccount(false)} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}}>
+                  Abbrechen
+                </button>
+                <button onClick={deleteAccount} style={{flex:1,background:C.error,border:`1px solid ${C.error}`,borderRadius:8,color:"#fff",padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}}>
+                  Ja, löschen
+                </button>
+              </div>
             </div>
           </div>
         )}
