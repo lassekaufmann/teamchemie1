@@ -1329,7 +1329,7 @@ export default function Teamchemie({user,onLogout}) {
           </Card>
 
           {/* ── TRAINER BEWERTUNG ── */}
-          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:8}}>Trainer-Bewertung Charakter</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung Charakter</div>
 
           <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
             {TRAINER_ATTRIBUTES.map(attr=>{
@@ -1408,7 +1408,7 @@ export default function Teamchemie({user,onLogout}) {
                   </svg>
 
                   {/* Trainer Skill Bewertung */}
-                  <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:8}}>
+                  <div style={{marginTop:8}}>
                     <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>
                       Trainer-Bewertung Spielstärke {isGK&&<span style={{color:"#e0b040",fontSize:9}}>(TW)</span>}
                     </div>
@@ -2169,7 +2169,7 @@ export default function Teamchemie({user,onLogout}) {
                         })()}
                       </Card>
 
-                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:8}}>Trainer-Bewertung Charakter</div>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung Charakter</div>
                       <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
                         {TRAINER_ATTRIBUTES.map(attr=>{
                           const val=(trainerAttributes[dp.uid]||{})[attr.id]||0;
