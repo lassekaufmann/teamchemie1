@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore, doc, getDoc, enableIndexedDbPersistence } from "firebase/firestore";
 import LoginScreen from "./LoginScreen.jsx";
 import Teamchemie from "./Teamchemie.jsx";
@@ -17,6 +17,9 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db   = getFirestore(app);
+
+// Anmeldung dauerhaft speichern, damit Nutzer nicht bei jedem Start erneut Email/Passwort eingeben müssen
+setPersistence(auth, browserLocalPersistence).catch(console.error);
 
 // Offline-Support: Daten werden lokal gecacht
 enableIndexedDbPersistence(db).catch(err=>{

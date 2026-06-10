@@ -171,15 +171,17 @@ export default function LoginScreen({ onLogin }) {
         <button onClick={()=>setScreen("welcome")} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:20,padding:0}}>← Zurück</button>
         <div style={{color:C.white,fontSize:26,fontWeight:800,marginBottom:6}}>Willkommen zurück</div>
         <div style={{color:C.gray,fontSize:14,marginBottom:24}}>Melde dich bei deinem Team an</div>
-        <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>E-Mail</div>
-        <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="deine@email.de" type="email" style={inputStyle(errors.email)}/>
-        {errors.email&&<div style={{color:C.error,fontSize:11,marginBottom:8}}>{errors.email}</div>}
-        <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6,marginTop:8}}>Passwort</div>
-        <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" type="password" style={inputStyle(errors.password)}/>
-        {errors.password&&<div style={{color:C.error,fontSize:11,marginBottom:8}}>{errors.password}</div>}
-        <button onClick={handleLogin} disabled={loading} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:16,opacity:loading?0.6:1}}>
-          {loading?"Laden...":"Anmelden"}
-        </button>
+        <form onSubmit={e=>{e.preventDefault();handleLogin();}}>
+          <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>E-Mail</div>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="deine@email.de" type="email" name="email" autoComplete="email" style={inputStyle(errors.email)}/>
+          {errors.email&&<div style={{color:C.error,fontSize:11,marginBottom:8}}>{errors.email}</div>}
+          <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6,marginTop:8}}>Passwort</div>
+          <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" type="password" name="password" autoComplete="current-password" style={inputStyle(errors.password)}/>
+          {errors.password&&<div style={{color:C.error,fontSize:11,marginBottom:8}}>{errors.password}</div>}
+          <button type="submit" disabled={loading} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:16,opacity:loading?0.6:1}}>
+            {loading?"Laden...":"Anmelden"}
+          </button>
+        </form>
         <div style={{textAlign:"center",marginTop:16,color:C.gray,fontSize:13}}>
           Noch kein Konto? <span onClick={()=>setScreen("register")} style={{color:C.accent,cursor:"pointer"}}>Registrieren</span>
         </div>
@@ -201,10 +203,11 @@ export default function LoginScreen({ onLogin }) {
             </div>
           ))}
         </div>
-        {[["Name","text",name,setName,errors.name],["E-Mail","email",email,setEmail,errors.email],["Passwort","password",password,setPassword,errors.password]].map(([label,type,val,set,err])=>(
+        <form onSubmit={e=>{e.preventDefault();if(privacyAccepted)handleRegister();}}>
+        {[["Name","text",name,setName,errors.name,"name"],["E-Mail","email",email,setEmail,errors.email,"email"],["Passwort","password",password,setPassword,errors.password,"new-password"]].map(([label,type,val,set,err,autoComplete])=>(
           <div key={label}>
             <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{label}</div>
-            <input value={val} onChange={e=>set(e.target.value)} type={type} placeholder={label} style={inputStyle(err)}/>
+            <input value={val} onChange={e=>set(e.target.value)} type={type} name={autoComplete} autoComplete={autoComplete} placeholder={label} style={inputStyle(err)}/>
             {err&&<div style={{color:C.error,fontSize:11,marginBottom:8}}>{err}</div>}
           </div>
         ))}
@@ -226,9 +229,10 @@ export default function LoginScreen({ onLogin }) {
             Ich stimme der <span onClick={()=>setShowPrivacyModal(true)} style={{color:C.accent,textDecoration:"underline",cursor:"pointer"}}>Datenschutzerklärung</span> zu
           </label>
         </div>
-        <button onClick={handleRegister} disabled={loading||!privacyAccepted} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:loading||!privacyAccepted?"not-allowed":"pointer",fontFamily:"inherit",marginTop:16,opacity:(loading||!privacyAccepted)?0.5:1}}>
+        <button type="submit" disabled={loading||!privacyAccepted} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:14,fontSize:14,fontWeight:700,cursor:loading||!privacyAccepted?"not-allowed":"pointer",fontFamily:"inherit",marginTop:16,opacity:(loading||!privacyAccepted)?0.5:1}}>
           {loading?"Laden...":role==="trainer"?"Als Trainer registrieren":"Als Spieler registrieren"}
         </button>
+        </form>
         <div style={{textAlign:"center",marginTop:16,color:C.gray,fontSize:13,paddingBottom:40}}>
           Bereits registriert? <span onClick={()=>setScreen("login")} style={{color:C.accent,cursor:"pointer"}}>Anmelden</span>
         </div>
