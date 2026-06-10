@@ -135,6 +135,7 @@ const PLAYER_INFOS = {
   foot:         "Welcher Fuß ist dein stärkerer? Wichtig für Flügelpositionen und Standards.",
   partners:     "Mit wem harmonierst du auf dem Platz besonders gut? Der Trainer kann euch zusammen einplanen.",
   note:         "Hast du etwas Wichtiges mitzuteilen? Z.B. Verletzung, persönliche Situation oder taktischer Wunsch.",
+  statusShared: "Wenn aktiviert, sieht dein Trainer deinen aktuellen Status (Fitness, Wünsche, Verfügbarkeit) für die Aufstellungsplanung.",
 };
 
 const INIT_PLAYERS = Array.from({length:11},(_,i)=>({
@@ -645,6 +646,7 @@ export default function Teamchemie({user,onLogout}) {
   const [newSpieltagForm,setNewSpieltagForm] = useState({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1});
   const [attendance,setAttendance] = useState({});
   const [myAttendance,setMyAttendance] = useState(null);
+  const [statusShared,setStatusShared] = useState(user?.statusShared || false);
   const [myFitness,setMyFitness]   = useState(85);
   const [myFokus,setMyFokus]       = useState(50);
   const [myWish,setMyWish]         = useState("");
@@ -734,6 +736,7 @@ export default function Teamchemie({user,onLogout}) {
         attendance: d.data().attendance  || null,
         selfRating: d.data().selfRating  || {},
         selfSkills: d.data().selfSkills  || {},
+        statusShared: d.data().statusShared || false,
         isPlaceholder: false,
       }));
       const slots = Array.from({length:11},(_,i)=>real[i]||{
@@ -960,10 +963,31 @@ export default function Teamchemie({user,onLogout}) {
       updateDoc(doc(db,"users",user.uid),{
         fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,
         partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,wishFormation:myFormation,selfRating:mySelfRating,selfSkills:mySelfSkills,
+        statusShared:true,
       }).catch(console.error);
     }
     if (myAttendance) setAttendance(prev=>({...prev,[user?.uid]:myAttendance}));
+    setStatusShared(true);
     showNotif("Status an Trainer übermittelt");
+  }
+
+  function toggleStatusShared(){
+    const next = !statusShared;
+    setStatusShared(next);
+    if (user?.uid) {
+      if (next) {
+        updateDoc(doc(db,"users",user.uid),{
+          fitness:myFitness,ruhe:myFokus>50,note:myNote,wishRole:myWish,
+          partners:myPartners,strengths:myStrengths,strongFoot:myFoot,attendance:myAttendance,wishFormation:myFormation,selfRating:mySelfRating,selfSkills:mySelfSkills,
+          statusShared:true,
+        }).catch(console.error);
+        if (myAttendance) setAttendance(prev=>({...prev,[user?.uid]:myAttendance}));
+        showNotif("Status wird mit Trainer geteilt");
+      } else {
+        updateDoc(doc(db,"users",user.uid),{statusShared:false}).catch(console.error);
+        showNotif("Status-Freigabe deaktiviert");
+      }
+    }
   }
 
   function handleFieldTap(idx){
@@ -1051,9 +1075,12 @@ export default function Teamchemie({user,onLogout}) {
             <div style={{flex:1}}>
               <div style={{fontSize:18,fontWeight:800,color:C.white}}>{dp.name}</div>
               <div style={{color:C.gray,fontSize:14,marginTop:2}}>{ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
-              {att && attCfg[att] && (
-                <span style={{display:"inline-block",marginTop:4,background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>
-              )}
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
+                {att && attCfg[att] && (
+                  <span style={{display:"inline-block",background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>
+                )}
+                <span style={{display:"inline-block",background:dp.statusShared?"rgba(74,200,200,0.12)":"rgba(255,255,255,0.05)",border:`1px solid ${dp.statusShared?C.greenText:C.border}`,borderRadius:20,padding:"2px 10px",color:dp.statusShared?C.greenText:C.grayDark,fontSize:11,fontWeight:600}}>{dp.statusShared?"Status ✓":"Status offen"}</span>
+              </div>
             </div>
             <button onClick={()=>setGoalkeeperSlot(prev=>prev===dp.uid?null:dp.uid)}
               style={{background:goalkeeperSlot===dp.uid?"rgba(224,176,64,0.15)":"transparent",
@@ -1976,7 +2003,10 @@ export default function Teamchemie({user,onLogout}) {
                         <div style={{flex:1}}>
                           <div style={{fontSize:18,fontWeight:800,color:C.white}}>{dp.name}</div>
                           <div style={{color:C.gray,fontSize:14,marginTop:2}}>{ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
-                          {att && attCfg[att] && <span style={{display:"inline-block",marginTop:4,background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>}
+                          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
+                            {att && attCfg[att] && <span style={{display:"inline-block",background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>}
+                            <span style={{display:"inline-block",background:dp.statusShared?"rgba(74,200,200,0.12)":"rgba(255,255,255,0.05)",border:`1px solid ${dp.statusShared?C.greenText:C.border}`,borderRadius:20,padding:"2px 10px",color:dp.statusShared?C.greenText:C.grayDark,fontSize:11,fontWeight:600}}>{dp.statusShared?"Status ✓":"Status offen"}</span>
+                          </div>
                         </div>
                       </div>
 
@@ -2215,6 +2245,7 @@ export default function Teamchemie({user,onLogout}) {
                         </div>
                         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
                           {att && attCfg[att] && <span style={{background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}55`,borderRadius:20,padding:"2px 8px",color:attCfg[att].c,fontSize:10,fontWeight:600}}>{attCfg[att].l}</span>}
+                          <span style={{background:p.statusShared?"rgba(74,200,200,0.12)":"rgba(255,255,255,0.05)",border:`1px solid ${p.statusShared?C.greenText:C.border}`,borderRadius:20,padding:"2px 8px",color:p.statusShared?C.greenText:C.grayDark,fontSize:10,fontWeight:600}}>{p.statusShared?"Status ✓":"Status offen"}</span>
                           <span style={{color:C.accent,fontSize:18,lineHeight:1}}>›</span>
                         </div>
                       </div>
@@ -2280,6 +2311,20 @@ export default function Teamchemie({user,onLogout}) {
                 </>
               ) : (
               <>
+                <Card style={{marginBottom:14,borderColor:statusShared?C.border:C.accentBorder}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                    <div>
+                      <div style={{color:C.white,fontWeight:700,fontSize:14}}>Status an Trainer melden <InfoBtn text={PLAYER_INFOS.statusShared}/></div>
+                      <div style={{color:statusShared?C.greenText:C.yellowText,fontSize:14,marginTop:2}}>
+                        {statusShared?"Dein Status wird geteilt":"Dein Status ist noch nicht abgeschickt"}
+                      </div>
+                    </div>
+                    <button onClick={toggleStatusShared} style={{background:statusShared?"rgba(74,200,200,0.12)":C.surface2,border:`1px solid ${statusShared?C.greenText:C.border}`,borderRadius:20,padding:0,cursor:"pointer",width:50,height:28,position:"relative",flexShrink:0}}>
+                      <div style={{width:22,height:22,borderRadius:"50%",background:statusShared?"#4ac8c8":"#888",position:"absolute",top:2,left:statusShared?25:3,transition:"left 0.2s"}}/>
+                    </button>
+                  </div>
+                </Card>
+
                 {spieltage.filter(ev=>ev.released).length>0 ? (
                   <Card style={{marginBottom:14}}>
                     <Label>Termine vom Trainer</Label>
