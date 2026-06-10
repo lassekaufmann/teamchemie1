@@ -1250,7 +1250,7 @@ export default function Teamchemie({user,onLogout}) {
                     {attrs.map((a,i)=>{
                       const cosA=Math.cos(ang(i));
                       const sinA=Math.sin(ang(i));
-                      const labelRadius = r + 42;
+                      const labelRadius = r + 46;
                       const lx = cx + labelRadius * cosA;
                       const ly = cy + labelRadius * sinA;
                       const anchor = cosA > 0.3 ? "start" : cosA < -0.3 ? "end" : "middle";
@@ -1260,7 +1260,7 @@ export default function Teamchemie({user,onLogout}) {
                       const line2 = words.slice(mid).join(" ");
                       const yOffset = sinA > 0.4 ? 4 : sinA < -0.4 ? -4 : 0;
                       return (
-                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="10" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
+                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="15" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
                           <tspan x={lx} dy="0">{line1}</tspan>
                           {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
                         </text>
@@ -1378,7 +1378,7 @@ export default function Teamchemie({user,onLogout}) {
                     {attrs.map((a,i)=>{
                       const cosA=Math.cos(ang(i));
                       const sinA=Math.sin(ang(i));
-                      const labelRadius = r + 42;
+                      const labelRadius = r + 46;
                       const lx = cx + labelRadius * cosA;
                       const ly = cy + labelRadius * sinA;
                       const anchor = cosA > 0.3 ? "start" : cosA < -0.3 ? "end" : "middle";
@@ -1388,7 +1388,7 @@ export default function Teamchemie({user,onLogout}) {
                       const line2 = words.slice(mid).join(" ");
                       const yOffset = sinA > 0.4 ? 4 : sinA < -0.4 ? -4 : 0;
                       return (
-                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="10" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
+                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="16" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
                           <tspan x={lx} dy="0">{line1}</tspan>
                           {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
                         </text>
@@ -2094,8 +2094,8 @@ export default function Teamchemie({user,onLogout}) {
                                 {playerVals.some(v=>v>0)  && <polygon points={playerPts}  fill="rgba(74,200,200,0.1)"  stroke={C.greenText} strokeWidth="1.5" strokeDasharray="4,2"/>}
                                 {/* Labels */}
                                 {attrs.map((a,i)=>{
-                                  const lx = cx + (r+38)*Math.cos(angle(i));
-                                  const ly = cy + (r+38)*Math.sin(angle(i));
+                                  const lx = cx + (r+42)*Math.cos(angle(i));
+                                  const ly = cy + (r+42)*Math.sin(angle(i));
                                   const cosA=Math.cos(angle(i));
                                   const anchor=cosA>0.15?"start":cosA<-0.15?"end":"middle";
                                   const words=a.label.split(" ");
@@ -2104,7 +2104,7 @@ export default function Teamchemie({user,onLogout}) {
                                   const line2=words.slice(mid).join(" ");
                                   return (
                                     <text key={i} x={lx} y={line2?ly-5:ly} textAnchor={anchor} dominantBaseline="middle"
-                                      fontSize="9" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
+                                      fontSize="14" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
                                       <tspan x={lx} dy="0">{line1}</tspan>
                                       {line2&&<tspan x={lx} dy="9">{line2}</tspan>}
                                     </text>
@@ -2882,7 +2882,7 @@ export default function Teamchemie({user,onLogout}) {
                                   {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
                                   {p1Vals.some(v=>v>0)&&<polygon points={p1Pts} fill="rgba(200,74,255,0.15)" stroke={C.accent} strokeWidth="1.5"/>}
                                   {p2Vals.some(v=>v>0) &&<polygon points={p2Pts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="3,2"/>}
-                                  {attrs.map((a,i)=><text key={i} x={px(1.15,i)} y={py(1.15,i)} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill={C.grayLight} fontFamily="inherit">{a.label.split(" ")[0]}</text>)}
+                                  {attrs.map((a,i)=><text key={i} x={px(1.25,i)} y={py(1.25,i)} textAnchor="middle" dominantBaseline="middle" fontSize="16" fill={C.grayLight} fontFamily="inherit">{a.label.split(" ")[0]}</text>)}
                                 </svg>
                               </div>
                             );
