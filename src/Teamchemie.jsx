@@ -706,6 +706,8 @@ export default function Teamchemie({user,onLogout}) {
   const [seasonStats,setSeasonStats] = useState({});
   const [showPrivacyModal,setShowPrivacyModal] = useState(false);
   const [confirmDeleteAccount,setConfirmDeleteAccount] = useState(false);
+  const [opponentNotes,setOpponentNotes]           = useState("");
+  const [freistossPositions,setFreistossPositions] = useState(DEFAULT_CORNER_POSITIONS);
 
   const formKey   = tactic.custom ? (tactic.baseFormation||"4-4-2") : (TACTIC_FORMATION[tactic.id]||"4-4-2");
   const positions = FORMATIONS[formKey]||FORMATIONS["4-4-2"];
@@ -799,6 +801,8 @@ export default function Teamchemie({user,onLogout}) {
         if (d.standards)    setStandards(d.standards);
         if (d.spieltage)    setSpieltage(d.spieltage);
         if (d.mentalitaet!==undefined) setMentalität(d.mentalitaet);
+        if (d.opponentNotes!==undefined) setOpponentNotes(d.opponentNotes);
+        if (d.freistossPositions) setFreistossPositions(d.freistossPositions);
         return;
       }
       // Trainer lädt alles
@@ -822,6 +826,9 @@ export default function Teamchemie({user,onLogout}) {
       if (d.standards) setStandards(d.standards);
       // Kalender
       if (d.spieltage) setSpieltage(d.spieltage);
+      // Notizen zum Gegner & Freistoßtaktik
+      if (d.opponentNotes!==undefined) setOpponentNotes(d.opponentNotes);
+      if (d.freistossPositions) setFreistossPositions(d.freistossPositions);
     });
   },[user?.teamCode]);
 
@@ -843,12 +850,15 @@ export default function Teamchemie({user,onLogout}) {
         mentalitaet:  mentalität,
         standards,
         spieltage,
+        opponentNotes: opponentNotes||"",
+        freistossPositions: freistossPositions||DEFAULT_CORNER_POSITIONS,
       }).catch(e=>{ setFirebaseError("Speichern fehlgeschlagen – prüfe deine Verbindung"); setTimeout(()=>setFirebaseError(null),4000); });
     }, 1200);
     return ()=>clearTimeout(timer);
   },[order, trainerPositions, posOffensiv, posDefensiv,
      cornerOffL, cornerOffR, cornerDefL, cornerDefR,
-     tactic.id, customTactics, mentalität, standards, spieltage]);
+     tactic.id, customTactics, mentalität, standards, spieltage,
+     opponentNotes, freistossPositions]);
 
   // Firebase: Chat – für Spieler fix, für Trainer dynamisch je nach ausgewähltem Spieler
   const chatPlayerUid = isTrainer ? players.find(p=>p.uid===chatPartnerId||p.id===chatPartnerId)?.uid : user?.uid;
@@ -1687,6 +1697,8 @@ export default function Teamchemie({user,onLogout}) {
                         {id:"defensiv",   label:"Defensiv",        color:C.defColor, x:0,   y:115, size:68},
                         {id:"eckeAngriff",label:"Ecke Angriff",   color:"#e0c040",  x:-115,y:-60, size:64},
                         {id:"eckeAbwehr", label:"Ecke Abwehr",    color:C.greenText,x:115, y:-60, size:64},
+                        {id:"gegnerNotizen",label:"Notizen Gegner",color:"#7090ff", x:-115,y:60,  size:64},
+                        {id:"freistoss",  label:"Freistoß",       color:"#ff5fa2", x:115, y:60,  size:64},
                       ].map(item=>(
                         <button key={item.id} onClick={()=>{setTrainerFieldView(item.id);setFieldEditMode(false);setSwapFirst(null);}}
                           style={{position:"absolute",top:"50%",left:"50%",width:item.size,height:item.size,borderRadius:"50%",
@@ -1774,7 +1786,9 @@ export default function Teamchemie({user,onLogout}) {
                         {trainerFieldView==="grund"?"Grundaufstellung":
                          trainerFieldView==="offensiv"?"Offensiv":
                          trainerFieldView==="defensiv"?"Defensiv":
-                         trainerFieldView==="eckeAngriff"?"Ecke Angriff":"Ecke Abwehr"}
+                         trainerFieldView==="eckeAngriff"?"Ecke Angriff":
+                         trainerFieldView==="eckeAbwehr"?"Ecke Abwehr":
+                         trainerFieldView==="gegnerNotizen"?"Notizen zum Gegner":"Freistoßtaktik"}
                       </div>
                       {(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
                         <button onClick={()=>{setFieldEditMode(p=>!p);setSwapFirst(null);}}
@@ -1782,7 +1796,7 @@ export default function Teamchemie({user,onLogout}) {
                           {fieldEditMode?"Fertig":"Bearbeiten"}
                         </button>
                       )}
-                      {(trainerFieldView==="eckeAngriff"||trainerFieldView==="eckeAbwehr") && (
+                      {!(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
                         <div style={{width:70}}/>
                       )}
                     </div>
@@ -1887,6 +1901,23 @@ export default function Teamchemie({user,onLogout}) {
                           goalkeeperUid={goalkeeperSlot}
                         />
                       </>
+                    )}
+
+                    {/* Notizen zum Gegner */}
+                    {trainerFieldView==="gegnerNotizen" && (
+                      <Card>
+                        <Label>Notizen zum Gegner</Label>
+                        <textarea value={opponentNotes} onChange={e=>setOpponentNotes(e.target.value)}
+                          placeholder="Spielsystem, Stärken/Schwächen, gefährliche Spieler..."
+                          rows={8}
+                          style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,color:C.white,padding:12,fontSize:14,fontFamily:"inherit",resize:"vertical"}}/>
+                      </Card>
+                    )}
+
+                    {/* Freistoßtaktik */}
+                    {trainerFieldView==="freistoss" && (
+                      <CornerField positions={freistossPositions} setPositions={setFreistossPositions}
+                        players={players} order={order} type="freistoss" goalkeeperUid={goalkeeperSlot}/>
                     )}
                   </>
                 )}
@@ -2534,6 +2565,8 @@ export default function Teamchemie({user,onLogout}) {
                             {id:"defensiv",   label:"Defensiv",      color:C.defColor, x:0,   y:115, size:68},
                             {id:"eckeAngriff",label:"Ecke Angriff",  color:"#e0c040",  x:-115,y:-60, size:64},
                             {id:"eckeAbwehr", label:"Ecke Abwehr",   color:C.greenText,x:115, y:-60, size:64},
+                            {id:"gegnerNotizen",label:"Notizen Gegner",color:"#7090ff",x:-115,y:60,  size:64},
+                            {id:"freistoss",  label:"Freistoß",      color:"#ff5fa2", x:115, y:60,  size:64},
                           ].map(item=>(
                             <button key={item.id} onClick={()=>setPlayerFieldView(item.id)}
                               style={{position:"absolute",top:"50%",left:"50%",width:item.size,height:item.size,borderRadius:"50%",
@@ -2589,7 +2622,9 @@ export default function Teamchemie({user,onLogout}) {
                         {playerFieldView==="grund"?"Aufstellung":
                          playerFieldView==="offensiv"?"Offensiv":
                          playerFieldView==="defensiv"?"Defensiv":
-                         playerFieldView==="eckeAngriff"?"Ecke Angriff":"Ecke Abwehr"}
+                         playerFieldView==="eckeAngriff"?"Ecke Angriff":
+                         playerFieldView==="eckeAbwehr"?"Ecke Abwehr":
+                         playerFieldView==="gegnerNotizen"?"Notizen zum Gegner":"Freistoßtaktik"}
                       </div>
                       <div style={{width:60}}/>
                     </div>
@@ -2623,6 +2658,20 @@ export default function Teamchemie({user,onLogout}) {
                           goalkeeperUid={goalkeeperSlot}
                         />
                       </>
+                    )}
+                    {playerFieldView==="gegnerNotizen" && (
+                      <Card>
+                        <Label>Notizen zum Gegner</Label>
+                        {opponentNotes ? (
+                          <div style={{color:C.white,fontSize:14,whiteSpace:"pre-wrap",lineHeight:1.6}}>{opponentNotes}</div>
+                        ) : (
+                          <div style={{color:C.grayDark,fontSize:14}}>Der Trainer hat noch keine Notizen hinterlegt</div>
+                        )}
+                      </Card>
+                    )}
+                    {playerFieldView==="freistoss" && (
+                      <CornerField positions={freistossPositions} setPositions={null}
+                        players={players} order={order} type="freistoss" goalkeeperUid={goalkeeperSlot}/>
                     )}
                   </>
                 )}
@@ -2839,6 +2888,41 @@ export default function Teamchemie({user,onLogout}) {
 
                     return (
                       <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                        {/* Vorlieben */}
+                        <Card>
+                          <Label>Vorlieben</Label>
+                          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                            {[
+                              {label:"Position",     v1:p1.wishRole,     v2:p2.wishRole},
+                              {label:"Formation",    v1:p1.wishFormation,v2:p2.wishFormation},
+                              {label:"Starker Fuß",  v1:p1.strongFoot,   v2:p2.strongFoot},
+                            ].map(row=>(
+                              <div key={row.label} style={{display:"flex",gap:10,alignItems:"center"}}>
+                                <div style={{flex:1,textAlign:"right",paddingRight:8,color:row.v1?C.white:C.grayDark,fontSize:13,fontWeight:row.v1?700:400}}>{row.v1||"–"}</div>
+                                <div style={{textAlign:"center",fontSize:10,color:C.grayDark,minWidth:70}}>{row.label}</div>
+                                <div style={{flex:1,textAlign:"left",paddingLeft:8,color:row.v2?C.white:C.grayDark,fontSize:13,fontWeight:row.v2?700:400}}>{row.v2||"–"}</div>
+                              </div>
+                            ))}
+                            <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                              <div style={{flex:1,display:"flex",flexWrap:"wrap",gap:4,justifyContent:"flex-end"}}>
+                                {(p1.partners||[]).map(pid=>{
+                                  const partner = players.find(pl=>pl.id===pid);
+                                  return partner ? <span key={pid} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 8px",color:C.grayLight,fontSize:11}}>{partner.name.split(" ")[0]}</span> : null;
+                                })}
+                                {(p1.partners||[]).length===0 && <span style={{color:C.grayDark,fontSize:13}}>–</span>}
+                              </div>
+                              <div style={{textAlign:"center",fontSize:10,color:C.grayDark,minWidth:70}}>Harmonie</div>
+                              <div style={{flex:1,display:"flex",flexWrap:"wrap",gap:4}}>
+                                {(p2.partners||[]).map(pid=>{
+                                  const partner = players.find(pl=>pl.id===pid);
+                                  return partner ? <span key={pid} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 8px",color:C.grayLight,fontSize:11}}>{partner.name.split(" ")[0]}</span> : null;
+                                })}
+                                {(p2.partners||[]).length===0 && <span style={{color:C.grayDark,fontSize:13}}>–</span>}
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+
                         {/* Fitness */}
                         <Card>
                           <Label>Fitnesszustand</Label>
@@ -2874,6 +2958,52 @@ export default function Teamchemie({user,onLogout}) {
                             const p2Pts = attrs.map((_,i)=>`${px(p2Vals[i],i)},${py(p2Vals[i],i)}`).join(" ");
 
                             if (!hasData) return <div style={{color:C.grayDark,fontSize:14,textAlign:"center",padding:"10px 0"}}>Noch keine Selbsteinschätzung</div>;
+
+                            return (
+                              <div>
+                                <div style={{display:"flex",gap:12,marginBottom:10,justifyContent:"center"}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:10,height:2,borderRadius:1,background:C.accent}}/> {p1.name.split(" ")[0]}</div>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:10,height:2,borderRadius:1,background:C.greenText}}/> {p2.name.split(" ")[0]}</div>
+                                </div>
+                                <svg viewBox="-60 -60 380 380" style={{width:"100%",maxWidth:260,display:"block",margin:"0 auto"}}>
+                                  {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
+                                  {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
+                                  {p1Vals.some(v=>v>0)&&<polygon points={p1Pts} fill="rgba(200,74,255,0.15)" stroke={C.accent} strokeWidth="1.5"/>}
+                                  {p2Vals.some(v=>v>0) &&<polygon points={p2Pts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="3,2"/>}
+                                  {attrs.map((a,i)=>{
+                                    const lx=px(1.25,i), ly=py(1.25,i);
+                                    const [line1,line2] = splitLabel(a.label);
+                                    return (
+                                      <text key={i} x={lx} y={line2?ly-8:ly} textAnchor="middle" dominantBaseline="middle" fontSize="16" fill={C.grayLight} fontFamily="inherit">
+                                        <tspan x={lx} dy="0">{line1}</tspan>
+                                        {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
+                                      </text>
+                                    );
+                                  })}
+                                </svg>
+                              </div>
+                            );
+                          })()}
+                        </Card>
+
+                        {/* Trainer-Bewertung Radar Overlay */}
+                        <Card>
+                          <Label>Trainer-Bewertung</Label>
+                          {(()=>{
+                            const attrs = TRAINER_ATTRIBUTES;
+                            const n = attrs.length;
+                            const cx=110,cy=110,r=75;
+                            const p1Vals = attrs.map(a=>((trainerAttributes[p1.uid]||{})[a.id]||0)/10);
+                            const p2Vals = attrs.map(a=>((trainerAttributes[p2.uid]||{})[a.id]||0)/10);
+                            const hasData = p1Vals.some(v=>v>0)||p2Vals.some(v=>v>0);
+                            const ang = i=>(Math.PI*2*i/n)-Math.PI/2;
+                            const px = (v,i)=>cx+v*r*Math.cos(ang(i));
+                            const py = (v,i)=>cy+v*r*Math.sin(ang(i));
+                            const gPts = v=>attrs.map((_,i)=>`${px(v,i)},${py(v,i)}`).join(" ");
+                            const p1Pts = attrs.map((_,i)=>`${px(p1Vals[i],i)},${py(p1Vals[i],i)}`).join(" ");
+                            const p2Pts = attrs.map((_,i)=>`${px(p2Vals[i],i)},${py(p2Vals[i],i)}`).join(" ");
+
+                            if (!hasData) return <div style={{color:C.grayDark,fontSize:14,textAlign:"center",padding:"10px 0"}}>Noch keine Trainer-Bewertung</div>;
 
                             return (
                               <div>
