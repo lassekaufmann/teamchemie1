@@ -1256,7 +1256,7 @@ export default function Teamchemie({user,onLogout}) {
           )}
 
           {/* ── VERGLEICH RADAR ── */}
-          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Soft Skills</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Charakter</div>
           <Card style={{marginBottom:14}}>
             {(()=>{
               const attrs = TRAINER_ATTRIBUTES;
@@ -1329,7 +1329,7 @@ export default function Teamchemie({user,onLogout}) {
           </Card>
 
           {/* ── TRAINER BEWERTUNG ── */}
-          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung Charakter</div>
 
           <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
             {TRAINER_ATTRIBUTES.map(attr=>{
@@ -1373,7 +1373,7 @@ export default function Teamchemie({user,onLogout}) {
             return (
               <>
                 <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center",gap:8}}>
-                  Hard Skills
+                  Spielstärke
                   {isGK && <span style={{background:"rgba(224,176,64,0.15)",border:"1px solid #e0b040",borderRadius:20,padding:"2px 8px",color:"#e0b040",fontSize:10,fontWeight:700}}>Torwart-Kriterien</span>}
                 </div>
                 <Card style={{marginBottom:14}}>
@@ -1410,7 +1410,7 @@ export default function Teamchemie({user,onLogout}) {
                   {/* Trainer Skill Bewertung */}
                   <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:8}}>
                     <div style={{color:C.gray,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:10}}>
-                      Trainer-Bewertung Stärken {isGK&&<span style={{color:"#e0b040",fontSize:9}}>(TW)</span>}
+                      Trainer-Bewertung Spielstärke {isGK&&<span style={{color:"#e0b040",fontSize:9}}>(TW)</span>}
                     </div>
                     {attrs.map(attr=>{
                       const val=(trainerSkills[dp.uid]||{})[attr.id]||0;
@@ -2087,7 +2087,7 @@ export default function Teamchemie({user,onLogout}) {
 
                       {/* Trainer Bewertung */}
                       {/* Radar Chart */}
-                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Soft Skills</div>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Charakter</div>
                       <Card style={{marginBottom:14}}>
                         {(()=>{
                           const attrs = TRAINER_ATTRIBUTES;
@@ -2169,7 +2169,7 @@ export default function Teamchemie({user,onLogout}) {
                         })()}
                       </Card>
 
-                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung Charakter</div>
                       <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
                         {TRAINER_ATTRIBUTES.map(attr=>{
                           const val=(trainerAttributes[dp.uid]||{})[attr.id]||0;
@@ -3024,9 +3024,9 @@ export default function Teamchemie({user,onLogout}) {
                           })()}
                         </Card>
 
-                        {/* Hard Skills Radar Overlay */}
+                        {/* Spielstärke Radar Overlay */}
                         <Card>
-                          <Label>Hard Skills</Label>
+                          <Label>Spielstärke</Label>
                           {(()=>{
                             const attrs = (goalkeeperSlot===p1.uid || goalkeeperSlot===p2.uid) ? GK_SKILL_ATTRIBUTES : SKILL_ATTRIBUTES;
                             const n = attrs.length;
