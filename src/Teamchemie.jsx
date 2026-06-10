@@ -1406,35 +1406,34 @@ export default function Teamchemie({user,onLogout}) {
                     {trainerVals.map((v,i)=>v>0&&<circle key={i} cx={px2(v,i)} cy={py2(v,i)} r="2.5" fill={C.accent}/>)}
                     {playerVals.map((v,i)=>v>0&&<circle key={i} cx={px2(v,i)} cy={py2(v,i)} r="2.5" fill={C.greenText}/>)}
                   </svg>
+                </Card>
 
-                  {/* Trainer Skill Bewertung */}
-                  <div style={{marginTop:8}}>
-                    <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>
-                      Trainer-Bewertung Spielstärke {isGK&&<span style={{color:"#e0b040",fontSize:9}}>(TW)</span>}
-                    </div>
-                    {attrs.map(attr=>{
-                      const val=(trainerSkills[dp.uid]||{})[attr.id]||0;
-                      const pv=(dp.selfSkills||{})[attr.id]||0;
-                      return (
-                        <div key={attr.id} style={{marginBottom:10}}>
-                          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                            <span style={{color:C.gray,fontSize:14}}>{attr.label} <InfoBtn text={attr.sub}/></span>
-                            <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                              {pv>0&&<span style={{color:C.greenText,fontSize:10}}>S:{pv}</span>}
-                              <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:14,fontWeight:700}}>{val||"–"}/10</span>
-                            </div>
-                          </div>
-                          <div style={{display:"flex",gap:3}}>
-                            {[1,2,3,4,5,6,7,8,9,10].map(n=>(
-                              <button key={n} onClick={()=>setTrainerSkills(prev=>({...prev,[dp.uid]:{...(prev[dp.uid]||{}),[attr.id]:n}}))}
-                                style={{flex:1,height:20,borderRadius:3,border:"none",cursor:"pointer",
-                                  background:n<=val?(n>=8?C.greenText:n>=5?C.yellowText:C.accent):"rgba(200,74,255,0.1)"}}/>
-                            ))}
+                <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>
+                  Trainer-Bewertung Spielstärke {isGK&&<span style={{color:"#e0b040",fontSize:9}}>(TW)</span>}
+                </div>
+                <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
+                  {attrs.map(attr=>{
+                    const val=(trainerSkills[dp.uid]||{})[attr.id]||0;
+                    const pv=(dp.selfSkills||{})[attr.id]||0;
+                    return (
+                      <div key={attr.id} style={{marginBottom:10}}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                          <span style={{color:C.gray,fontSize:14}}>{attr.label} <InfoBtn text={attr.sub}/></span>
+                          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                            {pv>0&&<span style={{color:C.greenText,fontSize:10}}>S:{pv}</span>}
+                            <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:14,fontWeight:700}}>{val||"–"}/10</span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div style={{display:"flex",gap:3}}>
+                          {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                            <button key={n} onClick={()=>setTrainerSkills(prev=>({...prev,[dp.uid]:{...(prev[dp.uid]||{}),[attr.id]:n}}))}
+                              style={{flex:1,height:20,borderRadius:3,border:"none",cursor:"pointer",
+                                background:n<=val?(n>=8?C.greenText:n>=5?C.yellowText:C.accent):"rgba(200,74,255,0.1)"}}/>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </Card>
               </>
             );
