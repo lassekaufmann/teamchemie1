@@ -1178,11 +1178,24 @@ export default function Teamchemie({user,onLogout}) {
           {/* ── SPIELER-PROFIL ── */}
           <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spieler-Profil</div>
 
-          {/* Wunschposition */}
+          {/* Lieblingsposition */}
           {dp.wishRole && (
             <Card style={{marginBottom:14}}>
-              <Label>Wunschposition</Label>
-              <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div>
+              <Label>Lieblingsposition</Label>
+              {(()=>{
+                const pos = POSITIONS.find(p=>p.id===dp.wishRole);
+                return pos ? (
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:40,height:40,borderRadius:8,background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{color:C.accent,fontSize:11,fontWeight:700}}>{pos.id}</span>
+                    </div>
+                    <div>
+                      <div style={{color:C.white,fontSize:14,fontWeight:600}}>{pos.label}</div>
+                      <div style={{color:C.grayDark,fontSize:11,marginTop:2}}>{pos.sub}</div>
+                    </div>
+                  </div>
+                ) : <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div>;
+              })()}
             </Card>
           )}
 
@@ -1243,7 +1256,7 @@ export default function Teamchemie({user,onLogout}) {
           )}
 
           {/* ── VERGLEICH RADAR ── */}
-          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Soft Skills</div>
           <Card style={{marginBottom:14}}>
             {(()=>{
               const attrs = TRAINER_ATTRIBUTES;
@@ -1342,27 +1355,6 @@ export default function Teamchemie({user,onLogout}) {
 
           {/* Trainer Stärken vergeben – ENTFERNT, jetzt im Stärken-Radar */}
 
-          {/* Lieblingsposition anzeigen (read-only) – nach Aktuelle Infos */}
-          {dp.wishRole && (
-            <Card style={{marginBottom:14}}>
-              <Label>Lieblingsposition</Label>
-              {(()=>{
-                const pos = POSITIONS.find(p=>p.id===dp.wishRole);
-                return pos ? (
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:40,height:40,borderRadius:8,background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{color:C.accent,fontSize:11,fontWeight:700}}>{pos.id}</span>
-                    </div>
-                    <div>
-                      <div style={{color:C.white,fontSize:14,fontWeight:600}}>{pos.label}</div>
-                      <div style={{color:C.grayDark,fontSize:11,marginTop:2}}>{pos.sub}</div>
-                    </div>
-                  </div>
-                ) : <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div>;
-              })()}
-            </Card>
-          )}
-
           {/* Spielerische Stärken Radar */}
           {(()=>{
             const isGK = goalkeeperSlot===dp.uid;
@@ -1381,7 +1373,7 @@ export default function Teamchemie({user,onLogout}) {
             return (
               <>
                 <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center",gap:8}}>
-                  Spielerische Stärken
+                  Hard Skills
                   {isGK && <span style={{background:"rgba(224,176,64,0.15)",border:"1px solid #e0b040",borderRadius:20,padding:"2px 8px",color:"#e0b040",fontSize:10,fontWeight:700}}>Torwart-Kriterien</span>}
                 </div>
                 <Card style={{marginBottom:14}}>
@@ -2095,7 +2087,7 @@ export default function Teamchemie({user,onLogout}) {
 
                       {/* Trainer Bewertung */}
                       {/* Radar Chart */}
-                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Soft Skills</div>
                       <Card style={{marginBottom:14}}>
                         {(()=>{
                           const attrs = TRAINER_ATTRIBUTES;
@@ -3004,6 +2996,52 @@ export default function Teamchemie({user,onLogout}) {
                             const p2Pts = attrs.map((_,i)=>`${px(p2Vals[i],i)},${py(p2Vals[i],i)}`).join(" ");
 
                             if (!hasData) return <div style={{color:C.grayDark,fontSize:14,textAlign:"center",padding:"10px 0"}}>Noch keine Trainer-Bewertung</div>;
+
+                            return (
+                              <div>
+                                <div style={{display:"flex",gap:12,marginBottom:10,justifyContent:"center"}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:10,height:2,borderRadius:1,background:C.accent}}/> {p1.name.split(" ")[0]}</div>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:10,height:2,borderRadius:1,background:C.greenText}}/> {p2.name.split(" ")[0]}</div>
+                                </div>
+                                <svg viewBox="-60 -60 380 380" style={{width:"100%",maxWidth:260,display:"block",margin:"0 auto"}}>
+                                  {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
+                                  {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
+                                  {p1Vals.some(v=>v>0)&&<polygon points={p1Pts} fill="rgba(200,74,255,0.15)" stroke={C.accent} strokeWidth="1.5"/>}
+                                  {p2Vals.some(v=>v>0) &&<polygon points={p2Pts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="3,2"/>}
+                                  {attrs.map((a,i)=>{
+                                    const lx=px(1.25,i), ly=py(1.25,i);
+                                    const [line1,line2] = splitLabel(a.label);
+                                    return (
+                                      <text key={i} x={lx} y={line2?ly-8:ly} textAnchor="middle" dominantBaseline="middle" fontSize="16" fill={C.grayLight} fontFamily="inherit">
+                                        <tspan x={lx} dy="0">{line1}</tspan>
+                                        {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
+                                      </text>
+                                    );
+                                  })}
+                                </svg>
+                              </div>
+                            );
+                          })()}
+                        </Card>
+
+                        {/* Hard Skills Radar Overlay */}
+                        <Card>
+                          <Label>Hard Skills</Label>
+                          {(()=>{
+                            const attrs = (goalkeeperSlot===p1.uid || goalkeeperSlot===p2.uid) ? GK_SKILL_ATTRIBUTES : SKILL_ATTRIBUTES;
+                            const n = attrs.length;
+                            const cx=110,cy=110,r=75;
+                            const p1Vals = attrs.map(a=>((trainerSkills[p1.uid]||{})[a.id]||0)/10);
+                            const p2Vals = attrs.map(a=>((trainerSkills[p2.uid]||{})[a.id]||0)/10);
+                            const hasData = p1Vals.some(v=>v>0)||p2Vals.some(v=>v>0);
+                            const ang = i=>(Math.PI*2*i/n)-Math.PI/2;
+                            const px = (v,i)=>cx+v*r*Math.cos(ang(i));
+                            const py = (v,i)=>cy+v*r*Math.sin(ang(i));
+                            const gPts = v=>attrs.map((_,i)=>`${px(v,i)},${py(v,i)}`).join(" ");
+                            const p1Pts = attrs.map((_,i)=>`${px(p1Vals[i],i)},${py(p1Vals[i],i)}`).join(" ");
+                            const p2Pts = attrs.map((_,i)=>`${px(p2Vals[i],i)},${py(p2Vals[i],i)}`).join(" ");
+
+                            if (!hasData) return <div style={{color:C.grayDark,fontSize:14,textAlign:"center",padding:"10px 0"}}>Noch keine Hard-Skills-Bewertung</div>;
 
                             return (
                               <div>
