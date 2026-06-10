@@ -144,11 +144,33 @@ const INIT_PLAYERS = Array.from({length:11},(_,i)=>({
 }));
 
 // ── HILFSKOMPONENTEN ─────────────────────────────────────
+function getInitials(name) {
+  const parts = (name||"").trim().split(/\s+/).filter(Boolean);
+  if (parts.length===0) return "?";
+  if (parts.length===1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+}
 function Card({children,style}) {
   return (
-    <div style={{background:C.surface,borderRadius:12,padding:14,border:`1px solid ${C.border}`,marginBottom:10,...style}}>
+    <div style={{background:C.surface,borderRadius:12,padding:14,border:`1px solid ${C.border}`,marginBottom:14,...style}}>
       {children}
     </div>
+  );
+}
+function SkeletonCard({lines=2}) {
+  const bar = (w,h=12)=>(
+    <div style={{width:w,height:h,borderRadius:6,background:"rgba(255,255,255,0.06)",animation:"tcPulse 1.4s ease infinite"}}/>
+  );
+  return (
+    <Card>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,0.06)",flexShrink:0,animation:"tcPulse 1.4s ease infinite"}}/>
+        <div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}>
+          {bar("60%",14)}
+          {lines>1 && bar("40%",11)}
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -167,7 +189,7 @@ function InfoBtn({text}) {
           <div onClick={()=>setOpen(false)} style={{position:"fixed",inset:0,zIndex:80}}/>
           <div style={{position:"absolute",left:0,top:"120%",zIndex:81,background:C.surface2,
             border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"10px 12px",
-            minWidth:220,maxWidth:280,fontSize:11,color:C.grayLight,lineHeight:1.6,
+            minWidth:220,maxWidth:280,fontSize:14,color:C.grayLight,lineHeight:1.6,
             boxShadow:"0 4px 20px rgba(0,0,0,0.5)"}}>
             {text}
           </div>
@@ -179,7 +201,7 @@ function InfoBtn({text}) {
 
 function Label({children,info}) {
   return (
-    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center"}}>
+    <div style={{color:C.gray,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center"}}>
       {children}
       {info && <InfoBtn text={info}/>}
     </div>
@@ -453,41 +475,41 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
       {!showNewSpieltag && (
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={()=>{setShowNewSpieltag("spiel");setNewSpieltagForm({datum:"",zeit:"",gegner:"",heimAuswärts:"heim",ort:"",notiz:"",tacticId:1});}}
-            style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
+            style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"14px",cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit"}}>
             Spiel eintragen
           </button>
           <button onClick={()=>{setShowNewSpieltag("training");setNewSpieltagForm({datum:"",zeit:"",ort:"",notiz:""});}}
-            style={{flex:1,background:"rgba(74,200,200,0.1)",border:"1px solid rgba(74,200,200,0.3)",borderRadius:10,color:C.greenText,padding:"12px",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>
+            style={{flex:1,background:"rgba(74,200,200,0.1)",border:"1px solid rgba(74,200,200,0.3)",borderRadius:10,color:C.greenText,padding:"14px",cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit"}}>
             Training eintragen
           </button>
         </div>
       )}
       {showNewSpieltag && (
         <div style={{background:C.surface,borderRadius:12,padding:16,border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.3)"}`,marginBottom:14}}>
-          <div style={{color:showNewSpieltag==="spiel"?C.accent:C.greenText,fontWeight:700,fontSize:13,marginBottom:14}}>
+          <div style={{color:showNewSpieltag==="spiel"?C.accent:C.greenText,fontWeight:700,fontSize:14,marginBottom:14}}>
             {showNewSpieltag==="spiel"?"Neues Spiel":"Neues Training"}
           </div>
           <div style={{display:"flex",gap:8,marginBottom:12}}>
             <div style={{flex:2}}>
               <Label>Datum</Label>
               <input type="date" value={newSpieltagForm.datum||""} onChange={e=>setNewSpieltagForm(p=>({...p,datum:e.target.value}))}
-                style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
+                style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
             </div>
             <div style={{flex:1}}>
               <Label>Uhrzeit</Label>
               <input type="time" value={newSpieltagForm.zeit||""} onChange={e=>setNewSpieltagForm(p=>({...p,zeit:e.target.value}))}
-                style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
+                style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box",colorScheme:"dark"}}/>
             </div>
           </div>
           {showNewSpieltag==="spiel" && (
             <>
               <Label>Gegner</Label>
               <input placeholder="z.B. FC Musterstadt" value={newSpieltagForm.gegner||""} onChange={e=>setNewSpieltagForm(p=>({...p,gegner:e.target.value}))}
-                style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+                style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
               <div style={{display:"flex",gap:8,marginBottom:12}}>
                 {["heim","auswärts"].map(v=>(
                   <button key={v} onClick={()=>setNewSpieltagForm(p=>({...p,heimAuswärts:v}))}
-                    style={{flex:1,padding:"9px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
+                    style={{flex:1,padding:"12px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                       border:`1px solid ${newSpieltagForm.heimAuswärts===v?C.accentBorder:C.border}`,
                       background:newSpieltagForm.heimAuswärts===v?C.accentDim:"transparent",
                       color:newSpieltagForm.heimAuswärts===v?C.accent:C.gray}}>
@@ -499,10 +521,10 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
           )}
           <Label>Ort</Label>
           <input placeholder="z.B. Sportplatz Hauptstraße 1" value={newSpieltagForm.ort||""} onChange={e=>setNewSpieltagForm(p=>({...p,ort:e.target.value}))}
-            style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+            style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
           <Label>Notizen</Label>
           <textarea value={newSpieltagForm.notiz||""} onChange={e=>setNewSpieltagForm(p=>({...p,notiz:e.target.value}))}
-            style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",resize:"none",height:70,outline:"none",boxSizing:"border-box",marginBottom:14}}/>
+            style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:14,fontFamily:"inherit",resize:"none",height:70,outline:"none",boxSizing:"border-box",marginBottom:14}}/>
           {showNewSpieltag==="spiel" && (
             <>
               <Label>Taktik</Label>
@@ -521,7 +543,7 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
           )}
           <div style={{display:"flex",gap:8}}>
             <button onClick={()=>setShowNewSpieltag(false)}
-              style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>
+              style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600}}>
               Abbrechen
             </button>
             <button onClick={()=>{
@@ -531,7 +553,7 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
               setSpieltage(prev=>[...prev,ev]);
               setShowNewSpieltag(false);
               showNotif(showNewSpieltag==="spiel"?`Spiel vs. ${ev.gegner} eingetragen`:"Training eingetragen");
-            }} style={{flex:1,background:showNewSpieltag==="spiel"?C.accentDim:"rgba(74,200,200,0.15)",border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.4)"}`,borderRadius:10,color:showNewSpieltag==="spiel"?C.accent:C.greenText,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
+            }} style={{flex:1,background:showNewSpieltag==="spiel"?C.accentDim:"rgba(74,200,200,0.15)",border:`1px solid ${showNewSpieltag==="spiel"?C.accentBorder:"rgba(74,200,200,0.4)"}`,borderRadius:10,color:showNewSpieltag==="spiel"?C.accent:C.greenText,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700}}>
               Speichern
             </button>
           </div>
@@ -539,8 +561,8 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
       )}
       {spieltage.length===0 && !showNewSpieltag && (
         <div style={{background:C.surface,borderRadius:12,padding:24,border:`1px solid ${C.border}`,textAlign:"center"}}>
-          <div style={{color:C.gray,fontSize:13,marginBottom:4}}>Noch keine Einträge</div>
-          <div style={{color:C.grayDark,fontSize:11}}>Trage dein nächstes Spiel oder Training ein</div>
+          <div style={{color:C.gray,fontSize:14,marginBottom:4}}>Noch keine Einträge</div>
+          <div style={{color:C.grayDark,fontSize:14}}>Trage dein nächstes Spiel oder Training ein</div>
         </div>
       )}
       {sorted.map(ev=>{
@@ -569,7 +591,7 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
                 </div>
               </div>
               <button onClick={()=>setSpieltage(prev=>prev.filter(s=>s.id!==ev.id))}
-                style={{background:"transparent",border:"none",color:C.grayDark,fontSize:16,cursor:"pointer",padding:"0 4px"}}>x</button>
+                style={{background:"transparent",border:"none",color:C.grayDark,fontSize:16,cursor:"pointer",padding:0,width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>x</button>
             </div>
             <div style={{display:"flex",gap:14,marginBottom:10,paddingTop:8,borderTop:`1px solid ${C.border}`}}>
               <div style={{textAlign:"center"}}><div style={{color:C.greenText,fontSize:18,fontWeight:800}}>{attendCount}</div><div style={{color:C.grayDark,fontSize:9}}>Dabei</div></div>
@@ -578,8 +600,8 @@ function SpieltagTab({spieltage,setSpieltage,showNewSpieltag,setShowNewSpieltag,
               <div style={{textAlign:"center"}}><div style={{color:C.grayDark,fontSize:18,fontWeight:800}}>{players.length-attendCount-maybeCount-absentCount}</div><div style={{color:C.grayDark,fontSize:9}}>Offen</div></div>
             </div>
             <div style={{display:"flex",gap:8}}>
-              {isSpiel && isTrainer && <button onClick={()=>{setMatchStatFormSpieltagId(ev.id);setShowMatchStats(true);}} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"9px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>📊 Statistiken</button>}
-              <button onClick={()=>{setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));showNotif(ev.released?"Termin ausgeblendet":"Termin für Spieler freigegeben");}} style={{flex:1,background:ev.released?"rgba(74,200,200,0.12)":C.surface2,border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"9px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+              {isSpiel && isTrainer && <button onClick={()=>{setMatchStatFormSpieltagId(ev.id);setShowMatchStats(true);}} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700}}>📊 Statistiken</button>}
+              <button onClick={()=>{setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,released:!s.released}:s));showNotif(ev.released?"Termin ausgeblendet":"Termin für Spieler freigegeben");}} style={{flex:1,background:ev.released?"rgba(74,200,200,0.12)":C.surface2,border:`1px solid ${ev.released?C.greenText:C.border}`,borderRadius:8,color:ev.released?C.greenText:C.gray,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                 <div style={{width:28,height:16,borderRadius:8,background:ev.released?"#4ac8c8":"rgba(255,255,255,0.1)",position:"relative",flexShrink:0,transition:"background 0.2s"}}>
                   <div style={{width:12,height:12,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:ev.released?14:2,transition:"left 0.2s"}}/>
                 </div>
@@ -614,6 +636,7 @@ export default function Teamchemie({user,onLogout}) {
   const [chat,setChat]             = useState([]);
   const [chatInput,setChatInput]   = useState("");
   const [notif,setNotif]           = useState(null);
+  const [dataLoaded,setDataLoaded] = useState(false);
   const [showSettings,setShowSettings] = useState(false);
   const [showImpressum,setShowImpressum] = useState(false);
   const [spieltage,setSpieltage]   = useState([]);
@@ -719,6 +742,7 @@ export default function Teamchemie({user,onLogout}) {
       });
       setPlayers(slots);
       setOrder(slots.map(p=>p.id));
+      setDataLoaded(true);
     });
   },[user?.teamCode]);
 
@@ -976,11 +1000,11 @@ export default function Teamchemie({user,onLogout}) {
     return (
       <div>
         <div style={{background:C.surface2,borderRadius:10,padding:10,maxHeight:300,overflowY:"auto",display:"flex",flexDirection:"column",gap:8,marginBottom:8,border:`1px solid ${C.border}`}}>
-          {chat.length===0 && <div style={{color:C.grayDark,fontSize:12,textAlign:"center",padding:"20px 0"}}>Noch keine Nachrichten</div>}
+          {chat.length===0 && <div style={{color:C.grayDark,fontSize:14,textAlign:"center",padding:"20px 0"}}>Noch keine Nachrichten</div>}
           {chat.map((m,i)=>(
             <div key={i} style={{display:"flex",justifyContent:m.from===(isTrainer?"trainer":"player")?"flex-end":"flex-start"}}>
               <div style={{maxWidth:"80%",background:m.from===(isTrainer?"trainer":"player")?C.accentDim:C.surface,border:`1px solid ${m.from===(isTrainer?"trainer":"player")?C.accentBorder:C.border}`,borderRadius:10,padding:"8px 12px"}}>
-                <div style={{color:C.white,fontSize:13}}>{m.text}</div>
+                <div style={{color:C.white,fontSize:14}}>{m.text}</div>
                 <div style={{color:C.grayDark,fontSize:10,marginTop:2,textAlign:"right"}}>{m.time}</div>
               </div>
             </div>
@@ -988,8 +1012,8 @@ export default function Teamchemie({user,onLogout}) {
         </div>
         <div style={{display:"flex",gap:8}}>
           <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendChat()}
-            placeholder="Nachricht..." style={{flex:1,background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"9px 12px",fontSize:13,fontFamily:"inherit",outline:"none"}}/>
-          <button onClick={sendChat} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"0 14px",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>Senden</button>
+            placeholder="Nachricht..." style={{flex:1,background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"12px",fontSize:14,fontFamily:"inherit",outline:"none"}}/>
+          <button onClick={sendChat} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"0 16px",cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit"}}>Senden</button>
         </div>
       </div>
     );
@@ -1002,8 +1026,8 @@ export default function Teamchemie({user,onLogout}) {
       return (
         <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',system-ui,sans-serif",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:14,padding:24}}>
           <div style={{color:C.gray,fontSize:14,textAlign:"center"}}>Spieler wird geladen...</div>
-          <div style={{color:C.grayDark,fontSize:12,textAlign:"center"}}>Stelle sicher dass der Spieler sich mit deinem Team-Code registriert hat.</div>
-          <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px 20px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:600}}>← Zurück</button>
+          <div style={{color:C.grayDark,fontSize:14,textAlign:"center"}}>Stelle sicher dass der Spieler sich mit deinem Team-Code registriert hat.</div>
+          <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px 20px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600}}>← Zurück</button>
         </div>
       );
     }
@@ -1015,18 +1039,18 @@ export default function Teamchemie({user,onLogout}) {
         <div style={{maxWidth:440,margin:"0 auto",padding:"20px 20px 40px"}}>
 
           {/* Header */}
-          <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:16,padding:0,display:"flex",alignItems:"center",gap:6}}>
+          <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:14,marginBottom:16,padding:"12px 0",display:"flex",alignItems:"center",gap:6}}>
             ← Zurück
           </button>
 
           {/* Spieler Header */}
           <div style={{background:C.surface,borderRadius:16,padding:16,marginBottom:14,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:14}}>
             <div style={{width:56,height:56,borderRadius:goalkeeperSlot===dp.uid?"22%":"50%",background:goalkeeperSlot===dp.uid?"rgba(224,176,64,0.2)":C.accentDim,border:`2px solid ${goalkeeperSlot===dp.uid?"#ffd060":C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:22,color:goalkeeperSlot===dp.uid?"#e0b040":C.accent,flexShrink:0}}>
-              {goalkeeperSlot===dp.uid?"TW":dp.number}
+              {goalkeeperSlot===dp.uid?"TW":getInitials(dp.name)}
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:18,fontWeight:800,color:C.white}}>{dp.name}</div>
-              <div style={{color:C.gray,fontSize:12,marginTop:2}}>{ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
+              <div style={{color:C.gray,fontSize:14,marginTop:2}}>{ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
               {att && attCfg[att] && (
                 <span style={{display:"inline-block",marginTop:4,background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>
               )}
@@ -1035,7 +1059,7 @@ export default function Teamchemie({user,onLogout}) {
               style={{background:goalkeeperSlot===dp.uid?"rgba(224,176,64,0.15)":"transparent",
                 border:`1px solid ${goalkeeperSlot===dp.uid?"#ffd060":C.border}`,
                 borderRadius:10,color:goalkeeperSlot===dp.uid?"#e0b040":C.gray,
-                padding:"6px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700,flexShrink:0}}>
+                padding:"12px 14px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700,flexShrink:0}}>
               {goalkeeperSlot===dp.uid?"TW ✓":"Als TW"}
             </button>
           </div>
@@ -1063,7 +1087,7 @@ export default function Teamchemie({user,onLogout}) {
           )}
 
           {/* ── AKTUELLE INFOS ── */}
-          <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Aktuelle Infos</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Aktuelle Infos</div>
 
           {/* Fitness + Stimmung nebeneinander */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
@@ -1074,16 +1098,16 @@ export default function Teamchemie({user,onLogout}) {
             </Card>
             <Card style={{marginBottom:0}}>
               <Label>Vor dem Spiel</Label>
-              <div style={{color:dp.ruhe?C.yellowText:C.greenText,fontSize:13,fontWeight:600,marginTop:4}}>{dp.ruhe?"Braucht Stille":"Fokussiert"}</div>
+              <div style={{color:dp.ruhe?C.yellowText:C.greenText,fontSize:14,fontWeight:600,marginTop:4}}>{dp.ruhe?"Braucht Stille":"Fokussiert"}</div>
               <div style={{color:C.grayDark,fontSize:10,marginTop:4}}>{dp.ruhe?"Ruhige Umgebung":"Bereit zum Anpfiff"}</div>
             </Card>
           </div>
 
           {/* Nachricht vom Spieler */}
           {dp.note && (
-            <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+            <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
               <Label info={PLAYER_INFOS.note}>Nachricht an Trainer</Label>
-              <div style={{color:C.grayLight,fontSize:13,fontStyle:"italic",lineHeight:1.5}}>"{dp.note}"</div>
+              <div style={{color:C.grayLight,fontSize:14,fontStyle:"italic",lineHeight:1.5}}>"{dp.note}"</div>
             </Card>
           )}
 
@@ -1093,7 +1117,7 @@ export default function Teamchemie({user,onLogout}) {
             <div style={{display:"flex",gap:8}}>
               {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Unsicher",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error}].map(opt=>(
                 <button key={opt.k} onClick={()=>{setAttendance(prev=>({...prev,[dp.uid||dp.id]:opt.k}));showNotif(`${dp.name.split(" ")[0]}: ${opt.l}`);}}
-                  style={{flex:1,padding:"8px 4px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600,
+                  style={{flex:1,padding:"14px 4px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                     border:`1px solid ${att===opt.k?opt.c:`${opt.c}44`}`,background:att===opt.k?`${opt.c}18`:"transparent",color:opt.c}}>
                   {opt.l}
                 </button>
@@ -1102,11 +1126,11 @@ export default function Teamchemie({user,onLogout}) {
           </Card>
 
           {/* ── SPIELER-PROFIL ── */}
-          <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spieler-Profil</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spieler-Profil</div>
 
           {/* Wunschposition */}
           {dp.wishRole && (
-            <Card style={{marginBottom:10}}>
+            <Card style={{marginBottom:14}}>
               <Label>Wunschposition</Label>
               <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div>
             </Card>
@@ -1114,7 +1138,7 @@ export default function Teamchemie({user,onLogout}) {
 
           {/* Stärken kombiniert */}
           {allStrengths.length>0 && (
-            <Card style={{marginBottom:10}}>
+            <Card style={{marginBottom:14}}>
               <Label>Stärken</Label>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {allStrengths.map(s=>{
@@ -1137,15 +1161,15 @@ export default function Teamchemie({user,onLogout}) {
 
           {/* Starker Fuß */}
           {dp.strongFoot && (
-            <Card style={{marginBottom:10}}>
+            <Card style={{marginBottom:14}}>
               <Label>Starker Fuß</Label>
-              <div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.strongFoot}</div>
+              <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.strongFoot}</div>
             </Card>
           )}
 
           {/* Harmonie */}
           {dp.partners && dp.partners.length>0 && (
-            <Card style={{marginBottom:10}}>
+            <Card style={{marginBottom:14}}>
               <Label>Harmonie mit</Label>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {dp.partners.map(pid=>{
@@ -1164,12 +1188,12 @@ export default function Teamchemie({user,onLogout}) {
           {dp.wishFormation && (
             <Card style={{marginBottom:14}}>
               <Label info={PLAYER_INFOS.formation}>Lieblingsformation</Label>
-              <div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishFormation}</div>
+              <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishFormation}</div>
             </Card>
           )}
 
           {/* ── VERGLEICH RADAR ── */}
-          <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
           <Card style={{marginBottom:14}}>
             {(()=>{
               const attrs = TRAINER_ATTRIBUTES;
@@ -1190,7 +1214,7 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:12,height:3,borderRadius:2,background:C.accent}}/> Trainer</div>
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText,opacity:0.8}}/> Spieler</div>
                   </div>
-                  {!hasData&&<div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"12px 0"}}>Noch keine Bewertungen – vergib zuerst deine Noten</div>}
+                  {!hasData&&<div style={{textAlign:"center",color:C.grayDark,fontSize:14,padding:"12px 0"}}>Noch keine Bewertungen – vergib zuerst deine Noten</div>}
                   <svg viewBox="-70 -70 400 400" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
                     {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
                     {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
@@ -1209,7 +1233,7 @@ export default function Teamchemie({user,onLogout}) {
                       const line2 = words.slice(mid).join(" ");
                       const yOffset = sinA > 0.4 ? 4 : sinA < -0.4 ? -4 : 0;
                       return (
-                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="9" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
+                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="10" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
                           <tspan x={lx} dy="0">{line1}</tspan>
                           {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
                         </text>
@@ -1245,16 +1269,16 @@ export default function Teamchemie({user,onLogout}) {
           </Card>
 
           {/* ── TRAINER BEWERTUNG ── */}
-          <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
 
-          <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+          <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
             {TRAINER_ATTRIBUTES.map(attr=>{
               const val = (trainerAttributes[dp.uid]||{})[attr.id]||0;
               return (
                 <div key={attr.id} style={{marginBottom:12}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                    <span style={{color:C.gray,fontSize:12}}>{attr.label} <InfoBtn text={attr.sub}/></span>
-                    <span style={{color:val>=8?C.greenText:val>=6?C.yellowText:val>0?C.error:C.grayDark,fontSize:12,fontWeight:700}}>{val||"–"}/10</span>
+                    <span style={{color:C.gray,fontSize:14}}>{attr.label} <InfoBtn text={attr.sub}/></span>
+                    <span style={{color:val>=8?C.greenText:val>=6?C.yellowText:val>0?C.error:C.grayDark,fontSize:14,fontWeight:700}}>{val||"–"}/10</span>
                   </div>
                   <div style={{display:"flex",gap:3}}>
                     {[1,2,3,4,5,6,7,8,9,10].map(n=>(
@@ -1283,11 +1307,11 @@ export default function Teamchemie({user,onLogout}) {
                       <span style={{color:C.accent,fontSize:11,fontWeight:700}}>{pos.id}</span>
                     </div>
                     <div>
-                      <div style={{color:C.white,fontSize:13,fontWeight:600}}>{pos.label}</div>
+                      <div style={{color:C.white,fontSize:14,fontWeight:600}}>{pos.label}</div>
                       <div style={{color:C.grayDark,fontSize:11,marginTop:2}}>{pos.sub}</div>
                     </div>
                   </div>
-                ) : <div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishRole}</div>;
+                ) : <div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div>;
               })()}
             </Card>
           )}
@@ -1309,7 +1333,7 @@ export default function Teamchemie({user,onLogout}) {
             const pPts = attrs.map((_,i)=>`${px2(playerVals[i],i)},${py2(playerVals[i],i)}`).join(" ");
             return (
               <>
-                <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center",gap:8}}>
+                <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8,display:"flex",alignItems:"center",gap:8}}>
                   Spielerische Stärken
                   {isGK && <span style={{background:"rgba(224,176,64,0.15)",border:"1px solid #e0b040",borderRadius:20,padding:"2px 8px",color:"#e0b040",fontSize:10,fontWeight:700}}>Torwart-Kriterien</span>}
                 </div>
@@ -1318,7 +1342,7 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:12,height:3,borderRadius:2,background:C.accent}}/> Trainer</div>
                     <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText}}/> Spieler</div>
                   </div>
-                  {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"8px 0"}}>Noch keine Stärken-Bewertung vorhanden</div>}
+                  {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:14,padding:"8px 0"}}>Noch keine Stärken-Bewertung vorhanden</div>}
                   <svg viewBox="-70 -70 420 420" style={{width:"100%",maxWidth:300,display:"block",margin:"0 auto"}}>
                     {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
                     {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px2(1,i)} y2={py2(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
@@ -1337,7 +1361,7 @@ export default function Teamchemie({user,onLogout}) {
                       const line2 = words.slice(mid).join(" ");
                       const yOffset = sinA > 0.4 ? 4 : sinA < -0.4 ? -4 : 0;
                       return (
-                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="9" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
+                        <text key={i} x={lx} y={line2 ? ly + yOffset - 5 : ly + yOffset} textAnchor={anchor} dominantBaseline="middle" fontSize="10" fill={C.grayLight} fontFamily="inherit" fontWeight="500" pointerEvents="none">
                           <tspan x={lx} dy="0">{line1}</tspan>
                           {line2 && <tspan x={lx} dy="1.2em">{line2}</tspan>}
                         </text>
@@ -1349,7 +1373,7 @@ export default function Teamchemie({user,onLogout}) {
 
                   {/* Trainer Skill Bewertung */}
                   <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:8}}>
-                    <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:10}}>
+                    <div style={{color:C.gray,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:10}}>
                       Trainer-Bewertung Stärken {isGK&&<span style={{color:"#e0b040",fontSize:9}}>(TW)</span>}
                     </div>
                     {attrs.map(attr=>{
@@ -1358,10 +1382,10 @@ export default function Teamchemie({user,onLogout}) {
                       return (
                         <div key={attr.id} style={{marginBottom:10}}>
                           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                            <span style={{color:C.gray,fontSize:11}}>{attr.label} <InfoBtn text={attr.sub}/></span>
+                            <span style={{color:C.gray,fontSize:14}}>{attr.label} <InfoBtn text={attr.sub}/></span>
                             <div style={{display:"flex",gap:8,alignItems:"center"}}>
                               {pv>0&&<span style={{color:C.greenText,fontSize:10}}>S:{pv}</span>}
-                              <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                              <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:14,fontWeight:700}}>{val||"–"}/10</span>
                             </div>
                           </div>
                           <div style={{display:"flex",gap:3}}>
@@ -1381,7 +1405,7 @@ export default function Teamchemie({user,onLogout}) {
           })()}
 
           {/* Direktchat */}
-          <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Direktchat</div>
+          <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Direktchat</div>
           <Card>
             {renderChat()}
           </Card>
@@ -1411,8 +1435,8 @@ export default function Teamchemie({user,onLogout}) {
               <span style={{color:C.accent,fontSize:13,fontWeight:800}}>{item.step}</span>
             </div>
             <div>
-              <div style={{color:C.white,fontWeight:600,fontSize:13}}>{item.title}</div>
-              <div style={{color:C.gray,fontSize:12,marginTop:3,lineHeight:1.5}}>{item.desc}</div>
+              <div style={{color:C.white,fontWeight:600,fontSize:14}}>{item.title}</div>
+              <div style={{color:C.gray,fontSize:14,marginTop:3,lineHeight:1.5}}>{item.desc}</div>
             </div>
           </div>
         ))}
@@ -1432,6 +1456,10 @@ export default function Teamchemie({user,onLogout}) {
       onTouchStart={e=>handleSwipeStart(e)}
       onTouchEnd={e=>handleSwipeEnd(e)}
     >
+      <style>{`
+        @keyframes tcTabIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes tcPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+      `}</style>
       <div style={{maxWidth:440,margin:"0 auto",padding:"20px 20px 90px"}}>
 
         {/* Header */}
@@ -1472,8 +1500,8 @@ export default function Teamchemie({user,onLogout}) {
               <Label>Account</Label>
               <div style={{background:C.surface2,borderRadius:12,padding:14,marginBottom:14,border:`1px solid ${C.border}`}}>
                 <div style={{color:C.white,fontWeight:700}}>{user?.name}</div>
-                <div style={{color:C.gray,fontSize:12,marginTop:2}}>{user?.email}</div>
-                <div style={{color:C.accent,fontSize:11,marginTop:4}}>{isTrainer?"Trainer":"Spieler"} · {user?.teamName}</div>
+                <div style={{color:C.gray,fontSize:14,marginTop:2}}>{user?.email}</div>
+                <div style={{color:C.accent,fontSize:14,marginTop:4}}>{isTrainer?"Trainer":"Spieler"} · {user?.teamName}</div>
               </div>
               {isTrainer && user?.teamCode && (
                 <div style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:14,marginBottom:14}}>
@@ -1481,19 +1509,19 @@ export default function Teamchemie({user,onLogout}) {
                   <div style={{color:C.accent,fontSize:28,fontWeight:900,letterSpacing:4,textAlign:"center",marginBottom:10}}>{user.teamCode}</div>
                   <a href={`https://wa.me/?text=${encodeURIComponent(`Tritt unserem Team auf Teamchemie bei!\n\n1. teamchemie1.vercel.app oeffnen\n2. Als Spieler registrieren\n3. Code eingeben: ${user.teamCode}`)}`}
                     target="_blank" rel="noopener noreferrer"
-                    style={{display:"block",background:"#25D366",borderRadius:10,color:"#fff",padding:"12px",fontSize:13,fontWeight:700,textAlign:"center",textDecoration:"none"}}>
+                    style={{display:"block",background:"#25D366",borderRadius:10,color:"#fff",padding:"12px",fontSize:14,fontWeight:700,textAlign:"center",textDecoration:"none"}}>
                     Per WhatsApp einladen
                   </a>
                 </div>
               )}
               <Label>Sonstiges</Label>
               <div onClick={()=>setShowImpressum(p=>!p)} style={{display:"flex",alignItems:"center",padding:"13px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
-                <span style={{color:C.grayLight,fontSize:13,flex:1}}>Impressum</span>
+                <span style={{color:C.grayLight,fontSize:14,flex:1}}>Impressum</span>
                 <span style={{color:C.grayDark}}>{showImpressum?"v":">"}</span>
               </div>
               {showImpressum && (
                 <div style={{background:C.surface2,borderRadius:10,padding:14,margin:"8px 0",border:`1px solid ${C.border}`}}>
-                  <div style={{color:C.gray,fontSize:12,lineHeight:1.9}}>
+                  <div style={{color:C.gray,fontSize:14,lineHeight:1.9}}>
                     <div style={{fontWeight:600,color:C.grayLight,marginBottom:4}}>Teamchemie</div>
                     <div>Lasse Kaufmann · Frankfurt am Main</div>
                     <div>lassekaufmann01@gmail.com</div>
@@ -1502,15 +1530,15 @@ export default function Teamchemie({user,onLogout}) {
                 </div>
               )}
               <div style={{padding:"13px 0",borderBottom:`1px solid ${C.border}`}}>
-                <span style={{color:C.grayLight,fontSize:13}}>App-Version 1.0.0</span>
+                <span style={{color:C.grayLight,fontSize:14}}>App-Version 1.0.0</span>
               </div>
-              <button onClick={()=>setShowPrivacyModal(true)} style={{width:"100%",background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.grayLight,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:14}}>
+              <button onClick={()=>setShowPrivacyModal(true)} style={{width:"100%",background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.grayLight,padding:"13px",cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit",marginTop:14}}>
                 📋 Datenschutzerklärung
               </button>
-              <button onClick={()=>setConfirmDeleteAccount(true)} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid rgba(187,51,51,0.3)`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:10}}>
+              <button onClick={()=>setConfirmDeleteAccount(true)} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid rgba(187,51,51,0.3)`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit",marginTop:10}}>
                 🗑️ Konto löschen
               </button>
-              <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",marginTop:10}}>
+              <button onClick={onLogout} style={{width:"100%",background:"rgba(187,51,51,0.1)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"13px",cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit",marginTop:10}}>
                 Abmelden
               </button>
             </div>
@@ -1523,9 +1551,9 @@ export default function Teamchemie({user,onLogout}) {
             <div style={{background:C.surface,borderRadius:16,maxWidth:440,width:"calc(100% - 32px)",maxHeight:"85vh",overflowY:"auto",border:`1px solid ${C.border}`,padding:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                 <div style={{color:C.white,fontSize:18,fontWeight:700}}>Datenschutzerklärung</div>
-                <button onClick={()=>setShowPrivacyModal(false)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0}}>✕</button>
+                <button onClick={()=>setShowPrivacyModal(false)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0,width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:14,fontSize:13,color:C.gray,lineHeight:1.6}}>
+              <div style={{display:"flex",flexDirection:"column",gap:14,fontSize:14,color:C.gray,lineHeight:1.6}}>
                 <div>
                   <div style={{color:C.white,fontWeight:700,marginBottom:6}}>Verantwortlicher</div>
                   <div>Lasse Kaufmann, Frankfurt am Main<br/>lassekaufmann01@gmail.com</div>
@@ -1551,7 +1579,7 @@ export default function Teamchemie({user,onLogout}) {
                   <div>Du kannst dein Konto und alle deine Daten jederzeit löschen. Kontaktiere dafür: lassekaufmann01@gmail.com</div>
                 </div>
               </div>
-              <button onClick={()=>setShowPrivacyModal(false)} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:20}}>
+              <button onClick={()=>setShowPrivacyModal(false)} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:20}}>
                 Verstanden
               </button>
             </div>
@@ -1563,14 +1591,14 @@ export default function Teamchemie({user,onLogout}) {
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
             <div style={{background:C.surface2,borderRadius:16,padding:24,maxWidth:340,width:"100%",border:`1px solid ${C.borderHi}`}}>
               <div style={{color:C.white,fontSize:16,fontWeight:700,marginBottom:8}}>Konto löschen?</div>
-              <div style={{color:C.gray,fontSize:13,lineHeight:1.6,marginBottom:20}}>
+              <div style={{color:C.gray,fontSize:14,lineHeight:1.6,marginBottom:20}}>
                 Dies löscht deinen Account und alle deine Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.
               </div>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>setConfirmDeleteAccount(false)} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}}>
+                <button onClick={()=>setConfirmDeleteAccount(false)} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600}}>
                   Abbrechen
                 </button>
-                <button onClick={deleteAccount} style={{flex:1,background:C.error,border:`1px solid ${C.error}`,borderRadius:8,color:"#fff",padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}}>
+                <button onClick={deleteAccount} style={{flex:1,background:C.error,border:`1px solid ${C.error}`,borderRadius:8,color:"#fff",padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600}}>
                   Ja, löschen
                 </button>
               </div>
@@ -1583,19 +1611,21 @@ export default function Teamchemie({user,onLogout}) {
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
             <div style={{background:C.surface2,borderRadius:16,padding:24,maxWidth:340,width:"100%",border:`1px solid ${C.borderHi}`}}>
               <div style={{color:C.white,fontSize:16,fontWeight:700,marginBottom:8}}>Spieler entfernen?</div>
-              <div style={{color:C.gray,fontSize:13,lineHeight:1.6,marginBottom:20}}>
+              <div style={{color:C.gray,fontSize:14,lineHeight:1.6,marginBottom:20}}>
                 Moechtest du <span style={{color:C.white,fontWeight:600}}>{confirmRemove.name}</span> wirklich entfernen?
               </div>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>setConfirmRemove(null)} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>Abbrechen</button>
+                <button onClick={()=>setConfirmRemove(null)} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit"}}>Abbrechen</button>
                 <button onClick={()=>{setPlayers(prev=>prev.filter(p=>p.id!==confirmRemove.id));setOrder(prev=>prev.filter(id=>id!==confirmRemove.id));setConfirmRemove(null);showNotif("Spieler entfernt");}}
-                  style={{flex:1,background:"rgba(187,51,51,0.15)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
+                  style={{flex:1,background:"rgba(187,51,51,0.15)",border:`1px solid ${C.error}`,borderRadius:10,color:C.error,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700}}>
                   Entfernen
                 </button>
               </div>
             </div>
           </div>
         )}
+
+        <div key={tab} style={{animation:"tcTabIn 0.2s ease"}}>
 
         {/* ── TRAINER ── */}
         {isTrainer && (
@@ -1605,8 +1635,8 @@ export default function Teamchemie({user,onLogout}) {
               <>
                 {trainerFieldView===null ? (
                   <>
-                    <div style={{color:C.accent,fontSize:12,textAlign:"center",marginBottom:4}}>Taktik: <span style={{color:C.white,fontWeight:600}}>{tactic.name}</span></div>
-                    <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginBottom:8}}>Bereich antippen zum Bearbeiten</div>
+                    <div style={{color:C.accent,fontSize:14,textAlign:"center",marginBottom:4}}>Taktik: <span style={{color:C.white,fontWeight:600}}>{tactic.name}</span></div>
+                    <div style={{color:C.grayDark,fontSize:14,textAlign:"center",marginBottom:8}}>Bereich antippen zum Bearbeiten</div>
                     <div style={{position:"relative",height:300,margin:"0 auto"}}>
                       {/* Orbit Bahnen */}
                       <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="-150 -150 300 300">
@@ -1646,7 +1676,7 @@ export default function Teamchemie({user,onLogout}) {
                           {key:"eckeRechts",        label:"Ecke Rechts"},
                         ].map(({key,label})=>(
                           <div key={key}>
-                            <div style={{color:C.gray,fontSize:10,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:5}}>{label}</div>
+                            <div style={{color:C.gray,fontSize:11,fontWeight:700,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:5}}>{label}</div>
                             <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
                               {players.filter(pl=>!pl.isPlaceholder).map(pl=>(
                                 <button key={pl.id} onClick={()=>setStandards(prev=>({...prev,[key]:standards[key]===pl.id?null:pl.id}))}
@@ -1667,8 +1697,8 @@ export default function Teamchemie({user,onLogout}) {
                     {/* Taktik teilen Toggle */}
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.surface,borderRadius:12,padding:"14px 16px",border:`1px solid ${tacticReleased?C.accentBorder:C.border}`,marginTop:10}}>
                       <div>
-                        <div style={{color:C.white,fontSize:13,fontWeight:600}}>Taktik mit Spielern teilen</div>
-                        <div style={{color:tacticReleased?C.greenText:C.grayDark,fontSize:11,marginTop:2}}>{tacticReleased?"Spieler sehen deine Taktik":"Taktik ist nicht geteilt"}</div>
+                        <div style={{color:C.white,fontSize:14,fontWeight:600}}>Taktik mit Spielern teilen</div>
+                        <div style={{color:tacticReleased?C.greenText:C.grayDark,fontSize:14,marginTop:2}}>{tacticReleased?"Spieler sehen deine Taktik":"Taktik ist nicht geteilt"}</div>
                       </div>
                       <button onClick={()=>{
                         const next = !tacticReleased;
@@ -1703,10 +1733,10 @@ export default function Teamchemie({user,onLogout}) {
                     {/* Header der Detail-Ansicht */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                       <button onClick={()=>{setTrainerFieldView(null);setSwapFirst(null);setFieldEditMode(false);}}
-                        style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                        style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:14,padding:"12px 0"}}>
                         zurück
                       </button>
-                      <div style={{color:C.white,fontSize:13,fontWeight:600}}>
+                      <div style={{color:C.white,fontSize:14,fontWeight:600}}>
                         {trainerFieldView==="grund"?"Grundaufstellung":
                          trainerFieldView==="offensiv"?"Offensiv":
                          trainerFieldView==="defensiv"?"Defensiv":
@@ -1714,7 +1744,7 @@ export default function Teamchemie({user,onLogout}) {
                       </div>
                       {(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
                         <button onClick={()=>{setFieldEditMode(p=>!p);setSwapFirst(null);}}
-                          style={{background:fieldEditMode?C.accentDim:"transparent",border:`1px solid ${fieldEditMode?C.accentBorder:C.border}`,borderRadius:8,color:fieldEditMode?C.accent:C.gray,padding:"5px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>
+                          style={{background:fieldEditMode?C.accentDim:"transparent",border:`1px solid ${fieldEditMode?C.accentBorder:C.border}`,borderRadius:8,color:fieldEditMode?C.accent:C.gray,padding:"12px 14px",cursor:"pointer",fontSize:14,fontFamily:"inherit"}}>
                           {fieldEditMode?"Fertig":"Bearbeiten"}
                         </button>
                       )}
@@ -1727,7 +1757,7 @@ export default function Teamchemie({user,onLogout}) {
                     {(trainerFieldView==="grund"||trainerFieldView==="offensiv"||trainerFieldView==="defensiv") && (
                       <>
                         {fieldEditMode && (
-                          <div style={{background:swapFirst!==null?"rgba(200,74,255,0.25)":C.accentDim,border:`1px solid ${swapFirst!==null?C.accent:C.accentBorder}`,borderRadius:8,padding:"8px 12px",marginBottom:8,fontSize:11,color:C.accent,display:"flex",alignItems:"center",gap:8,transition:"all 0.2s"}}>
+                          <div style={{background:swapFirst!==null?"rgba(200,74,255,0.25)":C.accentDim,border:`1px solid ${swapFirst!==null?C.accent:C.accentBorder}`,borderRadius:8,padding:"8px 12px",marginBottom:8,fontSize:14,color:C.accent,display:"flex",alignItems:"center",gap:8,transition:"all 0.2s"}}>
                             <div style={{width:8,height:8,borderRadius:"50%",background:swapFirst!==null?C.accent:"rgba(200,74,255,0.5)",flexShrink:0}}/>
                             {swapFirst!==null
                               ? `Spieler ${players.find(p=>p.id===order[swapFirst])?.name?.split(" ")[0]||""} ausgewählt – zweiten antippen zum Tauschen`
@@ -1764,7 +1794,7 @@ export default function Teamchemie({user,onLogout}) {
                           <div style={{background:C.surface,border:`1px solid ${C.accentBorder}`,borderRadius:12,padding:"12px 14px",marginTop:6,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}
                             onClick={()=>setHoveredPlayer(null)}>
                             <div>
-                              <div style={{color:C.white,fontWeight:700,fontSize:13,marginBottom:6}}>{hoveredPlayer.name}</div>
+                              <div style={{color:C.white,fontWeight:700,fontSize:14,marginBottom:6}}>{hoveredPlayer.name}</div>
                               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                                 {hoveredPlayer.strongFoot && <span style={{background:"rgba(255,255,255,0.07)",borderRadius:20,padding:"2px 9px",color:C.grayLight,fontSize:11}}>Fuß: {hoveredPlayer.strongFoot}</span>}
                                 {hoveredPlayer.wishRole && <span style={{background:C.accentDim,borderRadius:20,padding:"2px 9px",color:C.accent,fontSize:11}}>{hoveredPlayer.wishRole}</span>}
@@ -1788,7 +1818,7 @@ export default function Teamchemie({user,onLogout}) {
                               style={{width:"100%",accentColor:C.accent}}/>
                           </Card>
                         )}
-                        {!fieldEditMode && <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginTop:-6,marginBottom:8}}>Auf "Bearbeiten" tippen um Spieler zu verschieben</div>}
+                        {!fieldEditMode && <div style={{color:C.grayDark,fontSize:14,textAlign:"center",marginTop:-6,marginBottom:8}}>Auf "Bearbeiten" tippen um Spieler zu verschieben</div>}
                       </>
                     )}
 
@@ -1798,7 +1828,7 @@ export default function Teamchemie({user,onLogout}) {
                         <div style={{display:"flex",gap:8,marginBottom:10}}>
                           {["links","rechts"].map(s=>(
                             <button key={s} onClick={()=>setCornerSide(s)}
-                              style={{flex:1,padding:"8px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
+                              style={{flex:1,padding:"12px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                                 border:`1px solid ${cornerSide===s?C.accentBorder:C.border}`,
                                 background:cornerSide===s?C.accentDim:"transparent",
                                 color:cornerSide===s?C.accent:C.gray}}>
@@ -1840,10 +1870,10 @@ export default function Teamchemie({user,onLogout}) {
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                         <div>
                           <div style={{color:tactic.id===t.id?C.accent:C.white,fontWeight:700,fontSize:14}}>{t.name} {t.custom&&<span style={{color:C.greenText,fontSize:10,fontWeight:600}}>Eigene</span>}</div>
-                          <div style={{color:C.gray,fontSize:11,marginTop:2}}>{t.note}</div>
+                          <div style={{color:C.gray,fontSize:14,marginTop:2}}>{t.note}</div>
                         </div>
                         <div style={{display:"flex",alignItems:"center",gap:8}}>
-                          {t.custom && <button onClick={e=>{e.stopPropagation();setCustomTactics(prev=>prev.filter(x=>x.id!==t.id));if(tactic.id===t.id)setTactic(ALL_TACTICS[0]);}} style={{background:"transparent",border:"none",color:C.error,cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>x</button>}
+                          {t.custom && <button onClick={e=>{e.stopPropagation();setCustomTactics(prev=>prev.filter(x=>x.id!==t.id));if(tactic.id===t.id)setTactic(ALL_TACTICS[0]);}} style={{background:"transparent",border:"none",color:C.error,cursor:"pointer",fontSize:12,fontFamily:"inherit",padding:8,margin:-8}}>x</button>}
                           {tactic.id===t.id && <span style={{color:C.accent,fontSize:16,fontWeight:700}}>v</span>}
                         </div>
                       </div>
@@ -1854,18 +1884,18 @@ export default function Teamchemie({user,onLogout}) {
                 {/* Eigene Formation erstellen */}
                 {!showCustomTacticEditor ? (
                   <button onClick={()=>setShowCustomTacticEditor(true)}
-                    style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,color:C.grayLight,padding:"12px",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:12}}>
+                    style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,color:C.grayLight,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",marginBottom:12}}>
                     + Eigene Formation erstellen
                   </button>
                 ) : (
                   <div style={{background:C.surface,borderRadius:12,padding:16,border:`1px solid ${C.accentBorder}`,marginBottom:12}}>
-                    <div style={{color:C.accent,fontWeight:700,fontSize:13,marginBottom:12}}>Eigene Formation erstellen</div>
+                    <div style={{color:C.accent,fontWeight:700,fontSize:14,marginBottom:12}}>Eigene Formation erstellen</div>
                     <Label>Name der Formation</Label>
                     <input value={customTacticName} onChange={e=>setCustomTacticName(e.target.value)} placeholder="z.B. Mein 4-3-3"
-                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"12px",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
                     <Label>Taktikhinweis</Label>
                     <input value={customTacticNote} onChange={e=>setCustomTacticNote(e.target.value)} placeholder="z.B. Pressig, aggressives Pressing"
-                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+                      style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"12px",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
                     <Label>Basierend auf Formation</Label>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
                       {ALL_TACTICS.slice(0,8).map(t=>(
@@ -1880,7 +1910,7 @@ export default function Teamchemie({user,onLogout}) {
                     </div>
                     <div style={{display:"flex",gap:8}}>
                       <button onClick={()=>setShowCustomTacticEditor(false)}
-                        style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>
+                        style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.gray,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit"}}>
                         Abbrechen
                       </button>
                       <button onClick={()=>{
@@ -1896,14 +1926,14 @@ export default function Teamchemie({user,onLogout}) {
                         setCustomTacticName(""); setCustomTacticNote(""); setCustomTacticBase(1);
                         setShowCustomTacticEditor(false);
                         showNotif(`Formation "${newTactic.name}" erstellt`);
-                      }} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"11px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}}>
+                      }} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700}}>
                         Erstellen
                       </button>
                     </div>
                   </div>
                 )}
 
-                {tacticReleased && <div style={{color:C.greenText,fontSize:12,textAlign:"center",marginTop:8}}>Taktik freigegeben</div>}
+                {tacticReleased && <div style={{color:C.greenText,fontSize:14,textAlign:"center",marginTop:8}}>Taktik freigegeben</div>}
               </>
             )}
 
@@ -1928,7 +1958,7 @@ export default function Teamchemie({user,onLogout}) {
                   if (!dp) return (
                     <div style={{textAlign:"center",padding:"40px 0"}}>
                       <div style={{color:C.gray,marginBottom:12}}>Spieler wird geladen...</div>
-                      <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"8px 16px",cursor:"pointer",fontFamily:"inherit"}}>← Zurück</button>
+                      <button onClick={()=>setDetailId(null)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px 16px",cursor:"pointer",fontSize:14,fontFamily:"inherit"}}>← Zurück</button>
                     </div>
                   );
                   const att = attendance[dp.uid];
@@ -1936,22 +1966,22 @@ export default function Teamchemie({user,onLogout}) {
                   const allStrengths = [...new Set([...(dp.strengths||[]),...(trainerStrengths[dp.uid]||[])])];
                   return (
                     <>
-                      <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,marginBottom:16,padding:0}}>← Zurück</button>
+                      <button onClick={()=>setDetailId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:14,marginBottom:16,padding:"12px 0"}}>← Zurück</button>
 
                       {/* Spieler Header */}
                       <div style={{background:C.surface,borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:14}}>
                         <div style={{width:50,height:50,borderRadius:"50%",background:C.accentDim,border:`2px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:20,color:C.accent,flexShrink:0}}>
-                          {dp.number}
+                          {getInitials(dp.name)}
                         </div>
                         <div style={{flex:1}}>
                           <div style={{fontSize:18,fontWeight:800,color:C.white}}>{dp.name}</div>
-                          <div style={{color:C.gray,fontSize:12,marginTop:2}}>{ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
+                          <div style={{color:C.gray,fontSize:14,marginTop:2}}>{ROLE_LABELS[order.indexOf(dp.id)]||"–"}</div>
                           {att && attCfg[att] && <span style={{display:"inline-block",marginTop:4,background:`${attCfg[att].c}18`,border:`1px solid ${attCfg[att].c}44`,borderRadius:20,padding:"2px 10px",color:attCfg[att].c,fontSize:11,fontWeight:600}}>{attCfg[att].l}</span>}
                         </div>
                       </div>
 
                       {/* Aktuelle Infos */}
-                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Aktuelle Infos</div>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Aktuelle Infos</div>
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                         <Card style={{marginBottom:0}}>
                           <Label>Fitness</Label>
@@ -1960,13 +1990,13 @@ export default function Teamchemie({user,onLogout}) {
                         </Card>
                         <Card style={{marginBottom:0}}>
                           <Label>Stimmung</Label>
-                          <div style={{color:dp.ruhe?C.yellowText:C.greenText,fontSize:12,fontWeight:600,marginTop:4}}>{dp.ruhe?"Braucht Stille":"Fokussiert"}</div>
+                          <div style={{color:dp.ruhe?C.yellowText:C.greenText,fontSize:14,fontWeight:600,marginTop:4}}>{dp.ruhe?"Braucht Stille":"Fokussiert"}</div>
                         </Card>
                       </div>
 
-                      {dp.note && <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+                      {dp.note && <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
                         <Label>Nachricht</Label>
-                        <div style={{color:C.grayLight,fontSize:13,fontStyle:"italic",lineHeight:1.5}}>"{dp.note}"</div>
+                        <div style={{color:C.grayLight,fontSize:14,fontStyle:"italic",lineHeight:1.5}}>"{dp.note}"</div>
                       </Card>}
 
                       {/* Anwesenheit setzen */}
@@ -1975,7 +2005,7 @@ export default function Teamchemie({user,onLogout}) {
                         <div style={{display:"flex",gap:8}}>
                           {[{k:"ja",l:"Dabei",c:C.greenText},{k:"vielleicht",l:"Unsicher",c:C.yellowText},{k:"nein",l:"Fehlt",c:C.error}].map(opt=>(
                             <button key={opt.k} onClick={()=>{setAttendance(prev=>({...prev,[dp.uid]:opt.k}));showNotif(`${dp.name.split(" ")[0]}: ${opt.l}`);}}
-                              style={{flex:1,padding:"8px 4px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600,
+                              style={{flex:1,padding:"14px 4px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                                 border:`1px solid ${att===opt.k?opt.c:`${opt.c}44`}`,background:att===opt.k?`${opt.c}18`:"transparent",color:opt.c}}>
                               {opt.l}
                             </button>
@@ -1984,20 +2014,20 @@ export default function Teamchemie({user,onLogout}) {
                       </Card>
 
                       {/* Spielerprofil */}
-                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spielerprofil</div>
-                      {dp.wishRole && <Card style={{marginBottom:10}}><Label>Wunschposition</Label><div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div></Card>}
-                      {dp.wishFormation && <Card style={{marginBottom:10}}><Label info={PLAYER_INFOS.formation}>Lieblingsformation</Label><div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.wishFormation}</div></Card>}
-                      {allStrengths.length>0 && <Card style={{marginBottom:10}}>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Spielerprofil</div>
+                      {dp.wishRole && <Card style={{marginBottom:14}}><Label>Wunschposition</Label><div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishRole}</div></Card>}
+                      {dp.wishFormation && <Card style={{marginBottom:14}}><Label info={PLAYER_INFOS.formation}>Lieblingsformation</Label><div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.wishFormation}</div></Card>}
+                      {allStrengths.length>0 && <Card style={{marginBottom:14}}>
                         <Label>Stärken</Label>
                         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                           {allStrengths.map(s=>{const sl=STRENGTHS_LIST.find(x=>x.id===s);return <span key={s} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:20,padding:"3px 10px",color:C.accent,fontSize:11}}>{sl?.label||s}</span>;})}
                         </div>
                       </Card>}
-                      {dp.strongFoot && <Card style={{marginBottom:10}}><Label>Starker Fuß</Label><div style={{color:C.white,fontSize:13,fontWeight:600}}>{dp.strongFoot}</div></Card>}
+                      {dp.strongFoot && <Card style={{marginBottom:14}}><Label>Starker Fuß</Label><div style={{color:C.white,fontSize:14,fontWeight:600}}>{dp.strongFoot}</div></Card>}
 
                       {/* Trainer Bewertung */}
                       {/* Radar Chart */}
-                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Vergleich Trainer vs. Spieler</div>
                       <Card style={{marginBottom:14}}>
                         {(()=>{
                           const attrs = TRAINER_ATTRIBUTES;
@@ -2018,7 +2048,7 @@ export default function Teamchemie({user,onLogout}) {
                                 <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:12,height:3,borderRadius:2,background:C.accent}}/> Trainer</div>
                                 <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:12,height:3,borderRadius:2,background:C.greenText}}/> Spieler</div>
                               </div>
-                              {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:12,padding:"10px 0"}}>Noch keine Bewertungen vorhanden</div>}
+                              {!hasData && <div style={{textAlign:"center",color:C.grayDark,fontSize:14,padding:"10px 0"}}>Noch keine Bewertungen vorhanden</div>}
                               <svg viewBox="-50 -50 340 340" style={{width:"100%",maxWidth:280,display:"block",margin:"0 auto"}}>
                                 {/* Grid */}
                                 {[0.25,0.5,0.75,1].map(v=>(
@@ -2044,7 +2074,7 @@ export default function Teamchemie({user,onLogout}) {
                                   const line2=words.slice(mid).join(" ");
                                   return (
                                     <text key={i} x={lx} y={line2?ly-5:ly} textAnchor={anchor} dominantBaseline="middle"
-                                      fontSize="7.5" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
+                                      fontSize="9" fill={C.grayLight} fontFamily="inherit" fontWeight="500">
                                       <tspan x={lx} dy="0">{line1}</tspan>
                                       {line2&&<tspan x={lx} dy="9">{line2}</tspan>}
                                     </text>
@@ -2082,14 +2112,14 @@ export default function Teamchemie({user,onLogout}) {
                         })()}
                       </Card>
 
-                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
-                      <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Trainer-Bewertung (privat)</div>
+                      <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
                         {TRAINER_ATTRIBUTES.map(attr=>{
                           const val=(trainerAttributes[dp.uid]||{})[attr.id]||0;
                           return <div key={attr.id} style={{marginBottom:12}}>
                             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                              <span style={{color:C.gray,fontSize:12}}>{attr.label} <InfoBtn text={attr.sub}/></span>
-                              <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:12,fontWeight:700}}>{val||"–"}/10</span>
+                              <span style={{color:C.gray,fontSize:14}}>{attr.label} <InfoBtn text={attr.sub}/></span>
+                              <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:14,fontWeight:700}}>{val||"–"}/10</span>
                             </div>
                             <div style={{display:"flex",gap:3}}>
                               {[1,2,3,4,5,6,7,8,9,10].map(n=>(
@@ -2102,7 +2132,7 @@ export default function Teamchemie({user,onLogout}) {
                       </Card>
 
                       {/* Trainer Stärken */}
-                      <Card style={{marginBottom:10,borderColor:"rgba(200,74,255,0.25)"}}>
+                      <Card style={{marginBottom:14,borderColor:"rgba(200,74,255,0.25)"}}>
                         <Label>Stärken vom Trainer vergeben</Label>
                         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                           {STRENGTHS_LIST.map(s=>{
@@ -2126,7 +2156,7 @@ export default function Teamchemie({user,onLogout}) {
                       </Card>
 
                       {/* Chat */}
-                      <div style={{color:C.accent,fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Direktchat</div>
+                      <div style={{color:C.accent,fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>Direktchat</div>
                       <Card>{renderChat()}</Card>
                     </>
                   );
@@ -2153,14 +2183,21 @@ export default function Teamchemie({user,onLogout}) {
 
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                     <Label>Mannschaft — {players.filter(p=>!p.isPlaceholder).length} Spieler</Label>
-                    <button onClick={()=>setShowPlayerComparison(true)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"6px 12px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700}}>
+                    <button onClick={()=>setShowPlayerComparison(true)} style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px 14px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700}}>
                       🔄 Vergleichen
                     </button>
                   </div>
+                  {!dataLoaded ? (
+                    <>
+                      <SkeletonCard/>
+                      <SkeletonCard/>
+                      <SkeletonCard/>
+                    </>
+                  ) : <>
                   {players.filter(p=>!p.isPlaceholder).length===0 && (
-                    <div style={{background:C.surface,borderRadius:12,padding:20,border:`1px solid ${C.border}`,textAlign:"center",marginBottom:10}}>
-                      <div style={{color:C.gray,fontSize:13}}>Noch keine Spieler beigetreten</div>
-                      <div style={{color:C.grayDark,fontSize:11,marginTop:4}}>Team-Code teilen: {user?.teamCode}</div>
+                    <div style={{background:C.surface,borderRadius:12,padding:14,border:`1px solid ${C.border}`,textAlign:"center",marginBottom:10}}>
+                      <div style={{color:C.gray,fontSize:14}}>Noch keine Spieler beigetreten</div>
+                      <div style={{color:C.grayDark,fontSize:14,marginTop:4}}>Team-Code teilen: {user?.teamCode}</div>
                     </div>
                   )}
                   {players.filter(p=>!p.isPlaceholder).map(p=>{
@@ -2169,11 +2206,11 @@ export default function Teamchemie({user,onLogout}) {
                     return (
                       <div key={p.uid||p.id} onClick={()=>{setDetailId(p.uid||p.id);}} style={{background:C.surface,borderRadius:12,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
                         <div style={{width:40,height:40,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:15,color:C.accent,flexShrink:0}}>
-                          {p.number}
+                          {getInitials(p.name)}
                         </div>
                         <div style={{flex:1}}>
                           <div style={{color:C.white,fontWeight:600,fontSize:14}}>{p.name}</div>
-                          <div style={{color:C.gray,fontSize:11}}>{p.wishRole||ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
+                          <div style={{color:C.gray,fontSize:14}}>{p.wishRole||ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
                           <div style={{marginTop:4}}><FitnessBar value={p.fitness||85}/></div>
                         </div>
                         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
@@ -2183,6 +2220,7 @@ export default function Teamchemie({user,onLogout}) {
                       </div>
                     );
                   })}
+                  </>}
                 </>}
               </>
             )}
@@ -2197,23 +2235,23 @@ export default function Teamchemie({user,onLogout}) {
                       {players.filter(p=>!p.isPlaceholder).map(p=>(
                         <div key={p.uid||p.id} onClick={()=>setChatPartnerId(p.uid||p.id)}
                           style={{background:C.surface,borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",gap:12,border:`1px solid ${C.border}`,cursor:"pointer"}}>
-                          <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14,color:C.accent,flexShrink:0}}>{p.number}</div>
+                          <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14,color:C.accent,flexShrink:0}}>{getInitials(p.name)}</div>
                           <div style={{flex:1}}>
-                            <div style={{color:C.white,fontWeight:600,fontSize:13}}>{p.name}</div>
-                            <div style={{color:C.gray,fontSize:11}}>{p.wishRole||ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
+                            <div style={{color:C.white,fontWeight:600,fontSize:14}}>{p.name}</div>
+                            <div style={{color:C.gray,fontSize:14}}>{p.wishRole||ROLE_LABELS[order.indexOf(p.id)]||"–"}</div>
                           </div>
                           <span style={{color:C.accent,fontSize:18}}>›</span>
                         </div>
                       ))}
                       {players.filter(p=>!p.isPlaceholder).length===0 && (
-                        <div style={{color:C.gray,fontSize:13,textAlign:"center",padding:"20px 0"}}>Noch keine Spieler beigetreten</div>
+                        <div style={{color:C.gray,fontSize:14,textAlign:"center",padding:"20px 0"}}>Noch keine Spieler beigetreten</div>
                       )}
                     </div>
                   </>
                 ) : (
                   <>
                     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-                      <button onClick={()=>setChatPartnerId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                      <button onClick={()=>setChatPartnerId(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:14,padding:"12px 0"}}>
                         zurück
                       </button>
                       <div style={{color:C.white,fontWeight:700,fontSize:15}}>
@@ -2233,16 +2271,24 @@ export default function Teamchemie({user,onLogout}) {
           <>
             {/* Status */}
             {tab==="status" && (
+              !dataLoaded ? (
+                <>
+                  <SkeletonCard lines={1}/>
+                  <SkeletonCard/>
+                  <SkeletonCard/>
+                  <SkeletonCard lines={1}/>
+                </>
+              ) : (
               <>
                 {spieltage.filter(ev=>ev.released).length>0 ? (
-                  <Card style={{marginBottom:10}}>
+                  <Card style={{marginBottom:14}}>
                     <Label>Termine vom Trainer</Label>
                     {[...spieltage].filter(ev=>ev.released).sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"12:00"))-new Date(b.datum+"T"+(b.zeit||"12:00"))).map(ev=>{
                       const isSpiel = ev.type==="spiel";
                       const color = isSpiel?C.accent:C.greenText;
                       const myAtt = (ev.attendance||{})[user?.uid];
                       return (
-                        <div key={ev.id} style={{background:C.surface2,borderRadius:10,padding:"12px",marginBottom:8,border:`1px solid ${C.border}`}}>
+                        <div key={ev.id} style={{background:C.surface2,borderRadius:10,padding:"12px 14px",marginBottom:8,border:`1px solid ${C.border}`}}>
                           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                             <span style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:20,padding:"2px 8px",fontSize:10,fontWeight:700,color,flexShrink:0}}>
                               {isSpiel?"Spiel":"Training"}
@@ -2254,7 +2300,7 @@ export default function Teamchemie({user,onLogout}) {
                           <div style={{color:C.white,fontWeight:700,fontSize:14,marginBottom:3}}>
                             {isSpiel?`vs. ${ev.gegner}`:(ev.notiz||"Training")}
                           </div>
-                          <div style={{color:C.gray,fontSize:11,marginBottom:10}}>
+                          <div style={{color:C.gray,fontSize:14,marginBottom:10}}>
                             {ev.datum?new Date(ev.datum+"T12:00:00").toLocaleDateString("de",{weekday:"long",day:"2-digit",month:"long"}):""}
                             {ev.zeit?` · ${ev.zeit} Uhr`:""}{ev.ort?` · ${ev.ort}`:""}
                           </div>
@@ -2263,7 +2309,7 @@ export default function Teamchemie({user,onLogout}) {
                               <button key={opt.k} onClick={()=>{
                                 setSpieltage(prev=>prev.map(s=>s.id===ev.id?{...s,attendance:{...(s.attendance||{}),[user?.uid]:opt.k}}:s));
                                 showNotif(opt.k==="ja"?"Zugesagt!":opt.k==="nein"?"Abgesagt":"Als unsicher markiert");
-                              }} style={{flex:1,padding:"7px 4px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600,
+                              }} style={{flex:1,padding:"14px 4px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                                 border:`1px solid ${myAtt===opt.k?opt.c:`${opt.c}44`}`,background:myAtt===opt.k?`${opt.c}18`:"transparent",color:opt.c}}>
                                 {opt.l}
                               </button>
@@ -2274,18 +2320,18 @@ export default function Teamchemie({user,onLogout}) {
                     })}
                   </Card>
                 ) : (
-                  <Card style={{marginBottom:10}}>
+                  <Card style={{marginBottom:14}}>
                     <Label>Termine</Label>
-                    <div style={{color:C.grayDark,fontSize:12,textAlign:"center",padding:"10px 0"}}>Noch keine Termine vom Trainer freigegeben</div>
+                    <div style={{color:C.grayDark,fontSize:14,textAlign:"center",padding:"10px 0"}}>Noch keine Termine vom Trainer freigegeben</div>
                   </Card>
                 )}
 
-                <Card style={{marginBottom:10}}>
+                <Card style={{marginBottom:14}}>
                   <Label info={PLAYER_INFOS.attendance}>Zum nächsten Spiel</Label>
                   <div style={{display:"flex",gap:8}}>
                     {[{k:"ja",l:"Ich bin dabei",c:C.greenText},{k:"vielleicht",l:"Vielleicht",c:C.yellowText},{k:"nein",l:"Kann nicht",c:C.error}].map(opt=>(
                       <button key={opt.k} onClick={()=>setMyAttendance(opt.k)}
-                        style={{flex:1,padding:"9px 4px",borderRadius:8,cursor:"pointer",fontSize:10,fontFamily:"inherit",fontWeight:600,
+                        style={{flex:1,padding:"14px 4px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                           border:`1px solid ${myAttendance===opt.k?opt.c:`${opt.c}44`}`,background:myAttendance===opt.k?`${opt.c}18`:"transparent",color:opt.c,lineHeight:1.3}}>
                         {opt.l}
                       </button>
@@ -2294,14 +2340,14 @@ export default function Teamchemie({user,onLogout}) {
                 </Card>
 
                 {tacticReleased && (
-                  <Card style={{marginBottom:10,borderColor:C.accentBorder}}>
+                  <Card style={{marginBottom:14,borderColor:C.accentBorder}}>
                     <Label>Taktik vom Trainer</Label>
                     <div style={{color:C.white,fontSize:16,fontWeight:700}}>{releasedTactic.name}</div>
-                    <div style={{color:C.gray,fontSize:12,marginTop:4}}>{releasedTactic.note}</div>
+                    <div style={{color:C.gray,fontSize:14,marginTop:4}}>{releasedTactic.note}</div>
                   </Card>
                 )}
 
-                <Card style={{marginBottom:10}}>
+                <Card style={{marginBottom:14}}>
                   <Label info={PLAYER_INFOS.fitness}>Fitnesszustand</Label>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
                     {[100,85,70,55,40].map(v=><Pill key={v} active={myFitness===v} onClick={()=>setMyFitness(v)}>{v}%</Pill>)}
@@ -2309,15 +2355,36 @@ export default function Teamchemie({user,onLogout}) {
                   <FitnessBar value={myFitness}/>
                 </Card>
 
-                <Card style={{marginBottom:10}}>
+                <Card style={{marginBottom:14}}>
+                  <Label info={PLAYER_INFOS.wishRole}>Lieblingsposition</Label>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                    {POSITIONS.map(pos=>(
+                      <button key={pos.id} onClick={()=>setMyWish(pos.id)}
+                        style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+                          border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,
+                          background:myWish===pos.id?C.accentDim:"transparent"}}>
+                        <div style={{width:34,height:34,borderRadius:8,background:myWish===pos.id?C.accentDim:"rgba(255,255,255,0.04)",border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                          <span style={{color:myWish===pos.id?C.accent:C.gray,fontSize:9,fontWeight:700}}>{pos.id}</span>
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{color:myWish===pos.id?C.accent:C.white,fontSize:14,fontWeight:600}}>{pos.label}</div>
+                          <div style={{color:C.grayDark,fontSize:10,marginTop:1}}>{pos.sub}</div>
+                        </div>
+                        {myWish===pos.id && <span style={{color:C.accent,fontSize:13,flexShrink:0}}>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+
+                <Card style={{marginBottom:14}}>
                   <Label info={PLAYER_INFOS.strengths}>Spielerische Stärken {myWish==="TW"&&<span style={{color:"#e0b040",fontSize:9}}>(Torwart)</span>}</Label>
                   {(myWish==="TW" ? GK_SKILL_ATTRIBUTES : SKILL_ATTRIBUTES).map(attr=>{
                     const val = mySelfSkills[attr.id]||0;
                     return (
                       <div key={attr.id} style={{marginBottom:10}}>
                         <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                          <span style={{color:C.gray,fontSize:11}}>{attr.label} <InfoBtn text={attr.sub}/></span>
-                          <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                          <span style={{color:C.gray,fontSize:14}}>{attr.label} <InfoBtn text={attr.sub}/></span>
+                          <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:14,fontWeight:700}}>{val||"–"}/10</span>
                         </div>
                         <div style={{display:"flex",gap:3}}>
                           {[1,2,3,4,5,6,7,8,9,10].map(n=>(
@@ -2331,15 +2398,15 @@ export default function Teamchemie({user,onLogout}) {
                   })}
                 </Card>
 
-                <Card style={{marginBottom:10}}>
+                <Card style={{marginBottom:14}}>
                   <Label info="Bewerte dich selbst in den 8 Kriterien. Der Trainer sieht seine Einschätzung daneben – so könnt ihr Unterschiede besprechen.">Selbsteinschätzung</Label>
                   {(myWish==="TW" ? GK_SKILL_ATTRIBUTES : TRAINER_ATTRIBUTES).map(attr=>{
                     const val = mySelfRating[attr.id]||0;
                     return (
                       <div key={attr.id} style={{marginBottom:12}}>
                         <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                          <span style={{color:C.gray,fontSize:11}}>{attr.label}</span>
-                          <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:11,fontWeight:700}}>{val||"–"}/10</span>
+                          <span style={{color:C.gray,fontSize:14}}>{attr.label}</span>
+                          <span style={{color:val>=8?C.greenText:val>=5?C.yellowText:val>0?C.accent:C.grayDark,fontSize:14,fontWeight:700}}>{val||"–"}/10</span>
                         </div>
                         <div style={{display:"flex",gap:3}}>
                           {[1,2,3,4,5,6,7,8,9,10].map(n=>(
@@ -2353,10 +2420,10 @@ export default function Teamchemie({user,onLogout}) {
                   })}
                 </Card>
 
-                <Card style={{marginBottom:10}}>
+                <Card style={{marginBottom:14}}>
                   <Label info={PLAYER_INFOS.partners}>Harmonie – mit wem spielst du am liebsten?</Label>
                   {players.filter(p=>!p.isPlaceholder&&p.uid!==user?.uid).length===0 ? (
-                    <div style={{color:C.grayDark,fontSize:12}}>Noch keine anderen Spieler im Team</div>
+                    <div style={{color:C.grayDark,fontSize:14}}>Noch keine anderen Spieler im Team</div>
                   ) : (
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                       {players.filter(p=>!p.isPlaceholder&&p.uid!==user?.uid).map(p=>(
@@ -2372,7 +2439,7 @@ export default function Teamchemie({user,onLogout}) {
                   )}
                 </Card>
 
-                <Card style={{marginBottom:10}}>
+                <Card style={{marginBottom:14}}>
                   <Label info={PLAYER_INFOS.formation}>Lieblingsformation</Label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                     {ALL_TACTICS.map(t=>(
@@ -2381,37 +2448,17 @@ export default function Teamchemie({user,onLogout}) {
                   </div>
                 </Card>
 
-                <Card style={{marginBottom:10}}>
-                  <Label info={PLAYER_INFOS.wishRole}>Lieblingsposition</Label>
-                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                    {POSITIONS.map(pos=>(
-                      <button key={pos.id} onClick={()=>setMyWish(pos.id)}
-                        style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",textAlign:"left",
-                          border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,
-                          background:myWish===pos.id?C.accentDim:"transparent"}}>
-                        <div style={{width:34,height:34,borderRadius:8,background:myWish===pos.id?C.accentDim:"rgba(255,255,255,0.04)",border:`1px solid ${myWish===pos.id?C.accentBorder:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                          <span style={{color:myWish===pos.id?C.accent:C.gray,fontSize:9,fontWeight:700}}>{pos.id}</span>
-                        </div>
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{color:myWish===pos.id?C.accent:C.white,fontSize:12,fontWeight:600}}>{pos.label}</div>
-                          <div style={{color:C.grayDark,fontSize:10,marginTop:1}}>{pos.sub}</div>
-                        </div>
-                        {myWish===pos.id && <span style={{color:C.accent,fontSize:13,flexShrink:0}}>✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                </Card>
-
-                <Card style={{marginBottom:10}}>
+                <Card style={{marginBottom:14}}>
                   <Label info={PLAYER_INFOS.note}>Nachricht an Trainer</Label>
                   <textarea value={myNote} onChange={e=>setMyNote(e.target.value)} placeholder="Verletzung, besondere Situation..."
-                    style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:13,fontFamily:"inherit",resize:"none",height:80,outline:"none",boxSizing:"border-box"}}/>
+                    style={{width:"100%",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px 12px",fontSize:14,fontFamily:"inherit",resize:"none",height:80,outline:"none",boxSizing:"border-box"}}/>
                 </Card>
 
                 <button onClick={syncStatus} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:12,color:C.accent,padding:"14px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>
                   Status absenden
                 </button>
               </>
+              )
             )}
 
             {/* Feld - Atom Navigation (readonly) */}
@@ -2421,8 +2468,8 @@ export default function Teamchemie({user,onLogout}) {
                   <>
                     {tacticReleased ? (
                       <>
-                        <div style={{color:C.accent,fontSize:12,textAlign:"center",marginBottom:4}}>Taktik vom Trainer: <span style={{color:C.white,fontWeight:700}}>{releasedTactic.name}</span></div>
-                        <div style={{color:C.grayDark,fontSize:11,textAlign:"center",marginBottom:8}}>Antippen zum Anzeigen</div>
+                        <div style={{color:C.accent,fontSize:14,textAlign:"center",marginBottom:4}}>Taktik vom Trainer: <span style={{color:C.white,fontWeight:700}}>{releasedTactic.name}</span></div>
+                        <div style={{color:C.grayDark,fontSize:14,textAlign:"center",marginBottom:8}}>Antippen zum Anzeigen</div>
                         <div style={{position:"relative",height:300,margin:"0 auto"}}>
                           <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="-150 -150 300 300">
                             <ellipse cx="0" cy="0" rx="130" ry="50" fill="none" stroke="rgba(200,74,255,0.12)" strokeWidth="1"/>
@@ -2466,7 +2513,7 @@ export default function Teamchemie({user,onLogout}) {
                                 if (!p) return null;
                                 return (
                                   <div key={key} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                                    <span style={{color:C.gray,fontSize:12}}>{label}</span>
+                                    <span style={{color:C.gray,fontSize:14}}>{label}</span>
                                     <span style={{background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:20,padding:"3px 12px",color:C.accent,fontSize:12,fontWeight:600}}>{p.name.split(" ")[0]} #{p.number}</span>
                                   </div>
                                 );
@@ -2479,17 +2526,17 @@ export default function Teamchemie({user,onLogout}) {
                       <div style={{background:C.surface,borderRadius:12,padding:32,border:`1px solid ${C.border}`,textAlign:"center",marginTop:20}}>
                         <div style={{color:C.grayDark,fontSize:32,marginBottom:12}}>🔒</div>
                         <div style={{color:C.gray,fontSize:14,fontWeight:600,marginBottom:6}}>Noch keine Taktik freigegeben</div>
-                        <div style={{color:C.grayDark,fontSize:12}}>Der Trainer hat noch keine Taktik geteilt</div>
+                        <div style={{color:C.grayDark,fontSize:14}}>Der Trainer hat noch keine Taktik geteilt</div>
                       </div>
                     )}
                   </>
                 ) : (
                   <>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                      <button onClick={()=>setPlayerFieldView(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:13,padding:0}}>
+                      <button onClick={()=>setPlayerFieldView(null)} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:14,padding:"12px 0"}}>
                         ← zurück
                       </button>
-                      <div style={{color:C.white,fontSize:13,fontWeight:600}}>
+                      <div style={{color:C.white,fontSize:14,fontWeight:600}}>
                         {playerFieldView==="grund"?"Aufstellung":
                          playerFieldView==="offensiv"?"Offensiv":
                          playerFieldView==="defensiv"?"Defensiv":
@@ -2506,7 +2553,7 @@ export default function Teamchemie({user,onLogout}) {
                         <div style={{display:"flex",gap:8,marginBottom:10}}>
                           {["links","rechts"].map(s=>(
                             <button key={s} onClick={()=>setCornerSide(s)}
-                              style={{flex:1,padding:"8px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600,
+                              style={{flex:1,padding:"12px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                                 border:`1px solid ${cornerSide===s?C.accentBorder:C.border}`,
                                 background:cornerSide===s?C.accentDim:"transparent",
                                 color:cornerSide===s?C.accent:C.gray}}>
@@ -2547,8 +2594,8 @@ export default function Teamchemie({user,onLogout}) {
                 {spieltage.length===0 && (
                   <div style={{background:C.surface,borderRadius:12,padding:24,border:`1px solid ${C.border}`,textAlign:"center"}}>
                     <div style={{fontSize:28,marginBottom:8}}>📅</div>
-                    <div style={{color:C.gray,fontSize:13}}>Noch keine Termine eingetragen</div>
-                    <div style={{color:C.grayDark,fontSize:11,marginTop:4}}>Der Trainer trägt bald Spiele und Trainings ein</div>
+                    <div style={{color:C.gray,fontSize:14}}>Noch keine Termine eingetragen</div>
+                    <div style={{color:C.grayDark,fontSize:14,marginTop:4}}>Der Trainer trägt bald Spiele und Trainings ein</div>
                   </div>
                 )}
                 {[...spieltage].sort((a,b)=>new Date(a.datum+"T"+(a.zeit||"00:00"))-new Date(b.datum+"T"+(b.zeit||"00:00"))).map(ev=>{
@@ -2566,7 +2613,7 @@ export default function Teamchemie({user,onLogout}) {
                       <div style={{color:C.white,fontWeight:700,fontSize:15,marginBottom:3}}>
                         {isSpiel?`vs. ${ev.gegner||"–"}`:(ev.notiz||"Training")}
                       </div>
-                      <div style={{color:C.gray,fontSize:12,marginBottom:10}}>
+                      <div style={{color:C.gray,fontSize:14,marginBottom:10}}>
                         {ev.datum?new Date(ev.datum+"T12:00:00").toLocaleDateString("de",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}):""}
                         {ev.zeit?` · ${ev.zeit} Uhr`:""}{ev.ort?` · ${ev.ort}`:""}
                       </div>
@@ -2586,7 +2633,7 @@ export default function Teamchemie({user,onLogout}) {
                               }
                               showNotif(opt.k==="ja"?"Angemeldet!":opt.k==="nein"?"Abgemeldet":"Als unsicher markiert");
                             }}
-                            style={{flex:1,padding:"9px 4px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600,
+                            style={{flex:1,padding:"14px 4px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:600,
                               border:`1px solid ${myAtt===opt.k?opt.c:`${opt.c}44`}`,
                               background:myAtt===opt.k?`${opt.c}18`:"transparent",
                               color:opt.c,lineHeight:1.3}}>
@@ -2608,15 +2655,15 @@ export default function Teamchemie({user,onLogout}) {
             <div style={{background:C.surface,borderRadius:16,maxWidth:440,width:"calc(100% - 32px)",maxHeight:"85vh",overflowY:"auto",border:`1px solid ${C.border}`,padding:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                 <div style={{color:C.white,fontSize:18,fontWeight:700}}>📊 Spielstatistiken</div>
-                <button onClick={()=>{setShowMatchStats(false);setMatchStatFormData({});}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0}}>✕</button>
+                <button onClick={()=>{setShowMatchStats(false);setMatchStatFormData({});}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0,width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
               </div>
 
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
                 {players.filter(p=>!p.isPlaceholder).map(player=>(
-                  <div key={player.uid||player.id} style={{background:C.surface2,borderRadius:12,padding:12,border:`1px solid ${C.border}`}}>
-                    <div style={{color:C.white,fontSize:13,fontWeight:600,marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+                  <div key={player.uid||player.id} style={{background:C.surface2,borderRadius:12,padding:14,border:`1px solid ${C.border}`}}>
+                    <div style={{color:C.white,fontSize:14,fontWeight:600,marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
                       <span style={{width:32,height:32,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",color:C.accent,fontWeight:700,fontSize:12}}>
-                        {player.number}
+                        {getInitials(player.name)}
                       </span>
                       {player.name}
                     </div>
@@ -2624,29 +2671,29 @@ export default function Teamchemie({user,onLogout}) {
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
                       {/* Tore */}
                       <div>
-                        <label style={{display:"block",color:C.gray,fontSize:10,fontWeight:600,marginBottom:4}}>Tore</label>
+                        <label style={{display:"block",color:C.gray,fontSize:11,fontWeight:600,marginBottom:4}}>Tore</label>
                         <input type="number" min="0" max="10" value={matchStatFormData[player.uid||player.id]?.goals||0} onChange={e=>{
                           const pid = player.uid||player.id;
                           setMatchStatFormData(prev=>({...prev,[pid]:{...prev[pid]||{},goals:parseInt(e.target.value)||0}}));
-                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"8px",fontSize:12,fontFamily:"inherit",boxSizing:"border-box"}}/>
+                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px",fontSize:14,fontFamily:"inherit",boxSizing:"border-box"}}/>
                       </div>
 
                       {/* Assists */}
                       <div>
-                        <label style={{display:"block",color:C.gray,fontSize:10,fontWeight:600,marginBottom:4}}>Assists</label>
+                        <label style={{display:"block",color:C.gray,fontSize:11,fontWeight:600,marginBottom:4}}>Assists</label>
                         <input type="number" min="0" max="10" value={matchStatFormData[player.uid||player.id]?.assists||0} onChange={e=>{
                           const pid = player.uid||player.id;
                           setMatchStatFormData(prev=>({...prev,[pid]:{...prev[pid]||{},assists:parseInt(e.target.value)||0}}));
-                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"8px",fontSize:12,fontFamily:"inherit",boxSizing:"border-box"}}/>
+                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px",fontSize:14,fontFamily:"inherit",boxSizing:"border-box"}}/>
                       </div>
 
                       {/* Spielnote */}
                       <div>
-                        <label style={{display:"block",color:C.gray,fontSize:10,fontWeight:600,marginBottom:4}}>Note</label>
+                        <label style={{display:"block",color:C.gray,fontSize:11,fontWeight:600,marginBottom:4}}>Note</label>
                         <select value={matchStatFormData[player.uid||player.id]?.note||0} onChange={e=>{
                           const pid = player.uid||player.id;
                           setMatchStatFormData(prev=>({...prev,[pid]:{...prev[pid]||{},note:parseInt(e.target.value)||0}}));
-                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"8px",fontSize:12,fontFamily:"inherit",boxSizing:"border-box"}}>
+                        }} style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.white,padding:"10px",fontSize:14,fontFamily:"inherit",boxSizing:"border-box"}}>
                           <option value={0}>–</option>
                           <option value={1}>1 (sehr gut)</option>
                           <option value={2}>2 (gut)</option>
@@ -2662,7 +2709,7 @@ export default function Teamchemie({user,onLogout}) {
               </div>
 
               <div style={{display:"flex",gap:10,marginTop:20}}>
-                <button onClick={()=>{setShowMatchStats(false);setMatchStatFormData({});}} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                <button onClick={()=>{setShowMatchStats(false);setMatchStatFormData({});}} style={{flex:1,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.gray,padding:"12px",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
                   Abbrechen
                 </button>
                 <button onClick={async ()=>{
@@ -2681,7 +2728,7 @@ export default function Teamchemie({user,onLogout}) {
                   } catch(e) {
                     showNotif("Fehler beim Speichern");
                   }
-                }} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                }} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
                   Speichern
                 </button>
               </div>
@@ -2695,7 +2742,7 @@ export default function Teamchemie({user,onLogout}) {
             <div style={{background:C.surface,borderRadius:16,maxWidth:480,width:"calc(100% - 32px)",maxHeight:"90vh",overflowY:"auto",border:`1px solid ${C.border}`,padding:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                 <div style={{color:C.white,fontSize:18,fontWeight:700}}>🔄 Spielervergleich</div>
-                <button onClick={()=>{setShowPlayerComparison(false);setComparisonPlayer1Id(null);setComparisonPlayer2Id(null);}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0}}>✕</button>
+                <button onClick={()=>{setShowPlayerComparison(false);setComparisonPlayer1Id(null);setComparisonPlayer2Id(null);}} style={{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:20,padding:0,width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
               </div>
 
               {(!comparisonPlayer1Id || !comparisonPlayer2Id) ? (
@@ -2711,11 +2758,11 @@ export default function Teamchemie({user,onLogout}) {
                         }
                       }} style={{background:C.surface2,borderRadius:12,padding:"12px 14px",border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left"}}>
                         <div style={{width:36,height:36,borderRadius:"50%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,color:C.accent,flexShrink:0}}>
-                          {player.number}
+                          {getInitials(player.name)}
                         </div>
                         <div style={{flex:1}}>
-                          <div style={{color:C.white,fontWeight:600,fontSize:13}}>{player.name}</div>
-                          <div style={{color:C.gray,fontSize:10}}>{player.wishRole||ROLE_LABELS[order.indexOf(player.id)]||"–"}</div>
+                          <div style={{color:C.white,fontWeight:600,fontSize:14}}>{player.name}</div>
+                          <div style={{color:C.gray,fontSize:14}}>{player.wishRole||ROLE_LABELS[order.indexOf(player.id)]||"–"}</div>
                         </div>
                         <span style={{color:comparisonPlayer1Id===player.uid||player.id||comparisonPlayer2Id===player.uid||player.id?C.greenText:C.accent,fontSize:16}}>{comparisonPlayer1Id===player.uid||player.id||comparisonPlayer2Id===player.uid||player.id?"✓":"+"}</span>
                       </button>
@@ -2726,11 +2773,11 @@ export default function Teamchemie({user,onLogout}) {
                 <div>
                   {/* Player Selection Bar */}
                   <div style={{display:"flex",gap:8,marginBottom:20}}>
-                    <button onClick={()=>setComparisonPlayer1Id(null)} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>
+                    <button onClick={()=>setComparisonPlayer1Id(null)} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700}}>
                       {players.find(p=>p.uid===comparisonPlayer1Id||p.id===comparisonPlayer1Id)?.name||"Spieler 1"}
                     </button>
                     <div style={{width:32,display:"flex",alignItems:"center",justifyContent:"center",color:C.gray}}>vs</div>
-                    <button onClick={()=>setComparisonPlayer2Id(null)} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"10px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:700}}>
+                    <button onClick={()=>setComparisonPlayer2Id(null)} style={{flex:1,background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,color:C.accent,padding:"12px",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:700}}>
                       {players.find(p=>p.uid===comparisonPlayer2Id||p.id===comparisonPlayer2Id)?.name||"Spieler 2"}
                     </button>
                   </div>
@@ -2777,20 +2824,20 @@ export default function Teamchemie({user,onLogout}) {
                             const p1Pts = attrs.map((_,i)=>`${px(p1Vals[i],i)},${py(p1Vals[i],i)}`).join(" ");
                             const p2Pts = attrs.map((_,i)=>`${px(p2Vals[i],i)},${py(p2Vals[i],i)}`).join(" ");
 
-                            if (!hasData) return <div style={{color:C.grayDark,fontSize:12,textAlign:"center",padding:"10px 0"}}>Noch keine Selbsteinschätzung</div>;
+                            if (!hasData) return <div style={{color:C.grayDark,fontSize:14,textAlign:"center",padding:"10px 0"}}>Noch keine Selbsteinschätzung</div>;
 
                             return (
                               <div>
                                 <div style={{display:"flex",gap:12,marginBottom:10,justifyContent:"center"}}>
-                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.accent}}><div style={{width:10,height:2,borderRadius:1,background:C.accent}}/> {p1.name.split(" ")[0]}</div>
-                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.greenText}}><div style={{width:10,height:2,borderRadius:1,background:C.greenText}}/> {p2.name.split(" ")[0]}</div>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.accent}}><div style={{width:10,height:2,borderRadius:1,background:C.accent}}/> {p1.name.split(" ")[0]}</div>
+                                  <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:C.greenText}}><div style={{width:10,height:2,borderRadius:1,background:C.greenText}}/> {p2.name.split(" ")[0]}</div>
                                 </div>
                                 <svg viewBox="-60 -60 380 380" style={{width:"100%",maxWidth:260,display:"block",margin:"0 auto"}}>
                                   {[0.25,0.5,0.75,1].map(v=><polygon key={v} points={gPts(v)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="0.8"/>)}
                                   {attrs.map((_,i)=><line key={i} x1={cx} y1={cy} x2={px(1,i)} y2={py(1,i)} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>)}
                                   {p1Vals.some(v=>v>0)&&<polygon points={p1Pts} fill="rgba(200,74,255,0.15)" stroke={C.accent} strokeWidth="1.5"/>}
                                   {p2Vals.some(v=>v>0) &&<polygon points={p2Pts} fill="rgba(74,200,200,0.12)" stroke={C.greenText} strokeWidth="1.5" strokeDasharray="3,2"/>}
-                                  {attrs.map((a,i)=><text key={i} x={px(1.15,i)} y={py(1.15,i)} textAnchor="middle" dominantBaseline="middle" fontSize="7" fill={C.grayLight} fontFamily="inherit">{a.label.split(" ")[0]}</text>)}
+                                  {attrs.map((a,i)=><text key={i} x={px(1.15,i)} y={py(1.15,i)} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill={C.grayLight} fontFamily="inherit">{a.label.split(" ")[0]}</text>)}
                                 </svg>
                               </div>
                             );
@@ -2852,7 +2899,7 @@ export default function Teamchemie({user,onLogout}) {
                     );
                   })()}
 
-                  <button onClick={()=>{setShowPlayerComparison(false);setComparisonPlayer1Id(null);setComparisonPlayer2Id(null);}} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:20}}>
+                  <button onClick={()=>{setShowPlayerComparison(false);setComparisonPlayer1Id(null);setComparisonPlayer2Id(null);}} style={{width:"100%",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:8,color:C.accent,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:20}}>
                     Schließen
                   </button>
                 </div>
@@ -2860,24 +2907,25 @@ export default function Teamchemie({user,onLogout}) {
             </div>
           </div>
         )}
+        </div>
 
         {/* Offline Banner */}
         {isOffline && (
-          <div style={{position:"fixed",top:0,left:0,right:0,background:"#cc8800",zIndex:999,padding:"8px 16px",textAlign:"center",fontSize:12,fontWeight:600,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          <div style={{position:"fixed",top:0,left:0,right:0,background:"#cc8800",zIndex:999,padding:"8px 16px",textAlign:"center",fontSize:14,fontWeight:600,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             <span>●</span> Offline – Änderungen werden gespeichert sobald du wieder verbunden bist
           </div>
         )}
 
         {/* Firebase Fehler Banner */}
         {firebaseError && (
-          <div style={{position:"fixed",top:isOffline?32:0,left:0,right:0,background:C.error,zIndex:999,padding:"8px 16px",textAlign:"center",fontSize:12,fontWeight:600,color:"#fff"}}>
+          <div style={{position:"fixed",top:isOffline?32:0,left:0,right:0,background:C.error,zIndex:999,padding:"8px 16px",textAlign:"center",fontSize:14,fontWeight:600,color:"#fff"}}>
             ⚠ {firebaseError}
           </div>
         )}
 
         {/* Notification */}
         {notif && (
-          <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"11px 20px",color:C.accent,fontWeight:700,fontSize:13,zIndex:999,whiteSpace:"nowrap"}}>
+          <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:C.accentDim,border:`1px solid ${C.accentBorder}`,borderRadius:10,padding:"11px 20px",color:C.accent,fontWeight:700,fontSize:14,zIndex:999,whiteSpace:"nowrap"}}>
             {notif}
           </div>
         )}
@@ -2890,7 +2938,7 @@ export default function Teamchemie({user,onLogout}) {
             const active = tab===item.key;
             return (
               <button key={item.key} onClick={()=>{setTab(item.key);setSwapFirst(null);}}
-                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 4px 10px",background:"transparent",border:"none",cursor:"pointer",gap:0,borderTop:`2px solid ${active?C.accent:"transparent"}`}}>
+                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"16px 4px 14px",background:"transparent",border:"none",cursor:"pointer",gap:0,borderTop:`2px solid ${active?C.accent:"transparent"}`}}>
                 <span style={{fontSize:11,fontWeight:active?700:500,color:active?C.accent:"rgba(120,120,170,0.7)",letterSpacing:"0.3px"}}>{item.label}</span>
               </button>
             );
